@@ -24,3 +24,4 @@ apps/mobile/office-game/dist/
 apps/mobile/office-game/node_modules/
 
 apps/*/wrangler.local.toml
+.omc/
