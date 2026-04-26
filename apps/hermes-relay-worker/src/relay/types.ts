@@ -75,6 +75,9 @@ export type RelayControlEnvelope = Record<string, unknown> & {
   event?: string;
   sourceClientId?: string;
   targetClientId?: string;
+  requestId?: string;
+  count?: number;
+  payload?: Record<string, unknown>;
 };
 
 export const HERMES_ROOM_META_KEY = 'room-meta';

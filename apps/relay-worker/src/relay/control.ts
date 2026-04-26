@@ -43,17 +43,15 @@ function normalizeControlEvent(envelope: RelayControlEnvelope): string | null {
 export function sendControlToGateway(
   runtime: RelayRuntime,
   event: string,
-  payload?: Record<string, unknown>,
+  meta?: { count?: number },
 ): void {
   if (!runtime.gatewaySocket || runtime.gatewaySocket.readyState !== WebSocket.OPEN) return;
-  runtime.gatewaySocket.send(serializeControlEnvelope({
-    type: 'control',
-    event,
-    ...(payload ?? {}),
-  }));
+  const envelope: RelayControlEnvelope = { type: 'control', event };
+  if (meta?.count !== undefined) envelope.count = meta.count;
+  runtime.gatewaySocket.send(serializeControlEnvelope(envelope));
   logRelayTelemetry('relay_worker', 'control_sent', {
     controlEvent: event,
-    count: payload?.count,
+    count: meta?.count,
     clientCount: runtime.clients.size,
   });
 }

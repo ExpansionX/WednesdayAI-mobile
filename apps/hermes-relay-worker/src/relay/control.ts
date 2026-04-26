@@ -45,17 +45,16 @@ function normalizeControlEvent(envelope: RelayControlEnvelope): string | null {
 export function sendControlToBridge(
   runtime: RelayRuntime,
   event: string,
-  payload?: Record<string, unknown>,
+  meta?: { count?: number; ts?: number },
 ): void {
   if (!runtime.bridgeSocket || runtime.bridgeSocket.readyState !== WebSocket.OPEN) return;
-  runtime.bridgeSocket.send(serializeControlEnvelope({
-    type: 'control',
-    event,
-    ...(payload ?? {}),
-  }));
+  const envelope: RelayControlEnvelope = { type: 'control', event };
+  if (meta?.count !== undefined) envelope.count = meta.count;
+  if (meta?.ts !== undefined) (envelope as Record<string, unknown>).ts = meta.ts;
+  runtime.bridgeSocket.send(serializeControlEnvelope(envelope));
   logRelayTelemetry('hermes_relay_worker', 'control_sent', {
     controlEvent: event,
-    count: payload?.count,
+    count: meta?.count,
     clientCount: runtime.clients.size,
   });
 }

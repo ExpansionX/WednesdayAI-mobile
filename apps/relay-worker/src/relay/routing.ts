@@ -427,9 +427,12 @@ export function forwardClientControlToGateway(
 
   const gatewayAttachment = runtime.gatewaySocket.deserializeAttachment() as SocketAttachment | null;
   const forwardedEnvelope: RelayControlEnvelope = {
-    ...envelope,
     type: typeof envelope.type === 'string' && envelope.type.trim() ? envelope.type : 'control',
+    event: envelope.event,
     sourceClientId: attachment.clientId,
+    ...(typeof envelope.targetClientId === 'string' ? { targetClientId: envelope.targetClientId } : {}),
+    ...(typeof envelope.requestId === 'string' ? { requestId: envelope.requestId } : {}),
+    ...(envelope.payload !== undefined ? { payload: envelope.payload } : {}),
   };
   runtime.gatewaySocket.send(serializeControlEnvelope(forwardedEnvelope));
   logControlRoutingTelemetry(runtime, 'client_control_forwarded', attachment, forwardedEnvelope, {
