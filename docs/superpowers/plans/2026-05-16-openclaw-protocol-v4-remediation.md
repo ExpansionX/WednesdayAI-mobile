@@ -89,14 +89,14 @@
 - `apps/mobile/src/services/gateway-relay.ts`
 - `apps/mobile/src/services/gateway.test.ts`
 
-- [ ] Add failing tests for relay reconnect with a stored device-auth record whose scopes are narrower than the default admin set.
-- [ ] Update connect planning so an explicit shared token or explicit caller scopes remain authoritative.
-- [ ] When reusing a stored device token, use the stored role/scopes returned by the gateway for that token.
-- [ ] If a stored token has no metadata because it was migrated from the old string-only format, keep current default scopes for backward compatibility.
-- [ ] Keep bootstrap requests bounded. Do not request `operator.admin` from bootstrap unless the product flow explicitly needs admin and OpenClaw approval rules allow it.
-- [ ] Add tests for `AUTH_SCOPE_MISMATCH` so Clawket surfaces a re-pair guidance state instead of treating it as a generic bad token.
-- [ ] Run `npm run --workspace clawket test -- gateway.test.ts --runInBand`.
-- [ ] Commit with `git commit -m "fix: reconnect with approved OpenClaw scopes"`.
+- [x] Add failing tests for relay reconnect with a stored device-auth record whose scopes are narrower than the default admin set.
+- [x] Update connect planning so an explicit shared token or explicit caller scopes remain authoritative.
+- [x] When reusing a stored device token, use the stored role/scopes returned by the gateway for that token.
+- [x] If a stored token has no metadata because it was migrated from the old string-only format, keep current default scopes for backward compatibility.
+- [x] Keep bootstrap requests bounded. Do not request `operator.admin` from bootstrap unless the product flow explicitly needs admin and OpenClaw approval rules allow it.
+- [x] Add tests for `AUTH_SCOPE_MISMATCH` so Clawket surfaces a re-pair guidance state instead of treating it as a generic bad token.
+- [x] Run `npm run --workspace clawket test -- gateway.test.ts --runInBand`.
+- [x] Commit with `git commit -m "fix: reconnect with approved OpenClaw scopes"`.
 
 ## Phase 4: Retryable Startup And Protocol/Auth Diagnostics
 

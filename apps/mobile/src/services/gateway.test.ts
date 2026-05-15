@@ -1,6 +1,6 @@
 import { extractText, GatewayClient } from './gateway';
 import type { ConnectChallengePayload } from '../types';
-import { RELAY_CONTROL_PREFIX } from './gateway-relay';
+import { RELAY_CONTROL_PREFIX, selectRelayConnectAuth } from './gateway-relay';
 
 // Mock tweetnacl
 jest.mock('tweetnacl', () => ({
@@ -123,6 +123,24 @@ describe('extractText', () => {
 
   it('works with message without role', () => {
     expect(extractText({ content: 'no role' })).toBe('no role');
+  });
+});
+
+describe('selectRelayConnectAuth', () => {
+  it('forwards explicit token and password together before stored or bootstrap tokens', () => {
+    expect(selectRelayConnectAuth({
+      token: ' explicit-token ',
+      password: ' explicit-password ',
+      storedDeviceToken: 'stored-device-token',
+      bootstrapToken: 'bootstrap-token',
+    })).toEqual({
+      auth: {
+        token: 'explicit-token',
+        password: 'explicit-password',
+      },
+      signatureToken: 'explicit-token',
+      source: 'legacy-token',
+    });
   });
 });
 
@@ -1140,9 +1158,14 @@ describe('GatewayClient', () => {
   describe('relay bootstrap v2', () => {
     it('uses stored deviceToken in relay mode even when no legacy token or password is configured', async () => {
       const { StorageService } = jest.requireMock('./storage') as {
-        StorageService: { getDeviceToken: jest.Mock };
+        StorageService: { getOpenClawDeviceAuth: jest.Mock };
       };
-      StorageService.getDeviceToken.mockResolvedValue('stored-device-token');
+      StorageService.getOpenClawDeviceAuth.mockResolvedValue({
+        token: 'stored-device-token',
+        role: null,
+        scopes: null,
+        issuedAtMs: null,
+      });
       mockDeviceIdentity();
 
       client.configure({
@@ -1172,17 +1195,22 @@ describe('GatewayClient', () => {
       expect(createdWs.send).toHaveBeenCalledTimes(1);
       const connectFrame = JSON.parse(createdWs.send.mock.calls[0][0] as string);
       expect(connectFrame.params.auth).toEqual({ deviceToken: 'stored-device-token' });
-      expect(StorageService.getDeviceToken).toHaveBeenCalledWith('a'.repeat(64), {
+      expect(StorageService.getOpenClawDeviceAuth).toHaveBeenCalledWith('a'.repeat(64), {
         serverUrl: 'https://registry.example.com',
         gatewayId: 'gateway-device-relay',
       }, 'operator');
     });
 
-    it('uses stored deviceToken in relay mode without requesting bootstrap', async () => {
+    it('uses explicit legacy token before stored deviceToken in relay mode', async () => {
       const { StorageService } = jest.requireMock('./storage') as {
-        StorageService: { getDeviceToken: jest.Mock };
+        StorageService: { getOpenClawDeviceAuth: jest.Mock };
       };
-      StorageService.getDeviceToken.mockResolvedValue('stored-device-token');
+      StorageService.getOpenClawDeviceAuth.mockResolvedValue({
+        token: 'stored-device-token',
+        role: null,
+        scopes: null,
+        issuedAtMs: null,
+      });
       mockDeviceIdentity();
 
       client.configure({
@@ -1213,25 +1241,104 @@ describe('GatewayClient', () => {
       expect(createdWs.send).toHaveBeenCalledTimes(1);
       const connectFrame = JSON.parse(createdWs.send.mock.calls[0][0] as string);
       expect(connectFrame.method).toBe('connect');
-      expect(connectFrame.params.auth).toEqual({ deviceToken: 'stored-device-token' });
+      expect(connectFrame.params.auth).toEqual({ token: 'legacy-token' });
       expect(createdWs.send.mock.calls[0][0]).not.toContain(RELAY_CONTROL_PREFIX);
-      expect(decodeLatestSignedPayload()).toContain(`|stored-device-token|${'b'.repeat(64)}|`);
-      expect(StorageService.getDeviceToken).toHaveBeenCalledWith('a'.repeat(64), {
-        serverUrl: 'https://registry.example.com',
-        gatewayId: 'gateway-device-relay',
-      }, 'operator');
+      expect(decodeLatestSignedPayload()).toContain(`|legacy-token|${'b'.repeat(64)}|`);
     });
 
-    it('requests bootstrap and connects with bootstrapToken when relay supports V2 and no deviceToken exists', async () => {
+    it('reconnects with stored deviceToken role and approved scopes', async () => {
       const { StorageService } = jest.requireMock('./storage') as {
-        StorageService: { getDeviceToken: jest.Mock };
+        StorageService: { getOpenClawDeviceAuth: jest.Mock };
       };
-      StorageService.getDeviceToken.mockResolvedValue(null);
+      StorageService.getOpenClawDeviceAuth.mockResolvedValue({
+        token: 'stored-device-token',
+        role: 'operator',
+        scopes: ['operator.read'],
+        issuedAtMs: 123,
+      });
       mockDeviceIdentity();
 
       client.configure({
         url: 'wss://relay-us.example.com/ws',
-        token: 'legacy-token',
+        mode: 'relay',
+        relay: {
+          serverUrl: 'https://registry.example.com',
+          gatewayId: 'gateway-device-relay',
+          clientToken: 'relay-access-token',
+          supportsBootstrap: true,
+        },
+      });
+
+      client.connect();
+      await flushPromises();
+      createdWs.readyState = MockWebSocket.OPEN;
+      createdWs.onopen!();
+      createdWs.onmessage!({
+        data: JSON.stringify({
+          type: 'event',
+          event: 'connect.challenge',
+          payload: { nonce: 'b'.repeat(64), ts: Date.now() },
+        }),
+      });
+      await flushPromises();
+
+      expect(createdWs.send).toHaveBeenCalledTimes(1);
+      const connectFrame = JSON.parse(createdWs.send.mock.calls[0][0] as string);
+      expect(connectFrame.params.auth).toEqual({ deviceToken: 'stored-device-token' });
+      expect(connectFrame.params.role).toBe('operator');
+      expect(connectFrame.params.scopes).toEqual(['operator.read']);
+      expect(decodeLatestSignedPayload()).toContain('|operator|operator.read|');
+    });
+
+    it('keeps default scopes when stored deviceToken has legacy token-only metadata', async () => {
+      const { StorageService } = jest.requireMock('./storage') as {
+        StorageService: { getOpenClawDeviceAuth: jest.Mock };
+      };
+      StorageService.getOpenClawDeviceAuth.mockResolvedValue({
+        token: 'legacy-scoped-token',
+        role: null,
+        scopes: null,
+        issuedAtMs: null,
+      });
+      mockDeviceIdentity();
+
+      client.configure({
+        url: 'wss://relay-us.example.com/ws',
+        mode: 'relay',
+        relay: {
+          serverUrl: 'https://registry.example.com',
+          gatewayId: 'gateway-device-relay',
+          clientToken: 'relay-access-token',
+          supportsBootstrap: true,
+        },
+      });
+
+      client.connect();
+      await flushPromises();
+      createdWs.readyState = MockWebSocket.OPEN;
+      createdWs.onopen!();
+      createdWs.onmessage!({
+        data: JSON.stringify({
+          type: 'event',
+          event: 'connect.challenge',
+          payload: { nonce: 'b'.repeat(64), ts: Date.now() },
+        }),
+      });
+      await flushPromises();
+
+      const connectFrame = JSON.parse(createdWs.send.mock.calls[0][0] as string);
+      expect(connectFrame.params.scopes).toEqual(['operator.admin', 'operator.read', 'operator.write', 'operator.pairing']);
+    });
+
+    it('requests bootstrap and connects with bootstrapToken when relay supports V2 and no deviceToken exists', async () => {
+      const { StorageService } = jest.requireMock('./storage') as {
+        StorageService: { getOpenClawDeviceAuth: jest.Mock };
+      };
+      StorageService.getOpenClawDeviceAuth.mockResolvedValue(null);
+      mockDeviceIdentity();
+
+      client.configure({
+        url: 'wss://relay-us.example.com/ws',
         mode: 'relay',
         relay: {
           serverUrl: 'https://registry.example.com',
@@ -1265,7 +1372,7 @@ describe('GatewayClient', () => {
           deviceId: 'a'.repeat(64),
           publicKey: expect.any(String),
           role: 'operator',
-          scopes: ['operator.admin', 'operator.read', 'operator.write', 'operator.pairing'],
+          scopes: ['operator.read', 'operator.write', 'operator.approvals', 'operator.talk.secrets'],
         },
       });
       expect(bootstrapRequest.deviceId).toBeUndefined();
@@ -1291,9 +1398,9 @@ describe('GatewayClient', () => {
 
     it('requests bootstrap without legacy fallback credentials when relay supports V2 and no deviceToken exists', async () => {
       const { StorageService } = jest.requireMock('./storage') as {
-        StorageService: { getDeviceToken: jest.Mock };
+        StorageService: { getOpenClawDeviceAuth: jest.Mock };
       };
-      StorageService.getDeviceToken.mockResolvedValue(null);
+      StorageService.getOpenClawDeviceAuth.mockResolvedValue(null);
       mockDeviceIdentity();
 
       client.configure({
@@ -1338,9 +1445,14 @@ describe('GatewayClient', () => {
 
     it('stores issued deviceToken using the active relay gateway scope', async () => {
       const { StorageService } = jest.requireMock('./storage') as {
-        StorageService: { getDeviceToken: jest.Mock; setOpenClawDeviceAuth: jest.Mock };
+        StorageService: { getOpenClawDeviceAuth: jest.Mock; setOpenClawDeviceAuth: jest.Mock };
       };
-      StorageService.getDeviceToken.mockResolvedValue('stored-device-token');
+      StorageService.getOpenClawDeviceAuth.mockResolvedValue({
+        token: 'stored-device-token',
+        role: 'operator',
+        scopes: ['operator.read'],
+        issuedAtMs: 123,
+      });
       mockDeviceIdentity();
 
       client.configure({
@@ -1398,9 +1510,14 @@ describe('GatewayClient', () => {
 
     it('clears stale relay deviceToken and restarts when gateway reports device token mismatch', async () => {
       const { StorageService } = jest.requireMock('./storage') as {
-        StorageService: { getDeviceToken: jest.Mock; deleteDeviceToken: jest.Mock };
+        StorageService: { getOpenClawDeviceAuth: jest.Mock; deleteDeviceToken: jest.Mock };
       };
-      StorageService.getDeviceToken.mockResolvedValue('stored-device-token');
+      StorageService.getOpenClawDeviceAuth.mockResolvedValue({
+        token: 'stored-device-token',
+        role: 'operator',
+        scopes: ['operator.read'],
+        issuedAtMs: 123,
+      });
       mockDeviceIdentity();
 
       client.configure({
@@ -1436,11 +1553,57 @@ describe('GatewayClient', () => {
       expect(restartSpy).toHaveBeenCalledWith('Connection restarted');
     });
 
-    it('falls back to legacy token when bootstrap times out', async () => {
+    it('blocks reconnect with re-pair guidance on auth scope mismatch', async () => {
       const { StorageService } = jest.requireMock('./storage') as {
-        StorageService: { getDeviceToken: jest.Mock };
+        StorageService: { getOpenClawDeviceAuth: jest.Mock };
       };
-      StorageService.getDeviceToken.mockResolvedValue(null);
+      StorageService.getOpenClawDeviceAuth.mockResolvedValue({
+        token: 'stored-device-token',
+        role: 'operator',
+        scopes: ['operator.read'],
+        issuedAtMs: 123,
+      });
+      mockDeviceIdentity();
+      const blockReconnectSpy = jest.spyOn(
+        client as unknown as { blockReconnect: (reason: { code: string; message: string; hint?: string }) => void },
+        'blockReconnect',
+      );
+
+      client.configure({
+        url: 'wss://relay-us.example.com/ws',
+        mode: 'relay',
+        relay: {
+          serverUrl: 'https://registry.example.com/',
+          gatewayId: 'gateway-device-relay',
+          clientToken: 'relay-access-token',
+          supportsBootstrap: true,
+        },
+      });
+
+      client.connect();
+      await flushPromises();
+      createdWs.readyState = MockWebSocket.OPEN;
+      createdWs.onopen!();
+
+      jest
+        .spyOn(client as unknown as { sendRequest: (method: string, params?: object, options?: object) => Promise<unknown> }, 'sendRequest')
+        .mockRejectedValue(new Error('[INVALID_REQUEST] AUTH_SCOPE_MISMATCH: token does not cover requested scopes'));
+
+      await (client as unknown as { handleConnectChallenge: (payload: ConnectChallengePayload) => Promise<void> })
+        .handleConnectChallenge({ nonce: 'b'.repeat(64), ts: Date.now() });
+
+      expect(blockReconnectSpy).toHaveBeenCalledWith(expect.objectContaining({
+        code: 'auth_scope_mismatch',
+        hint: expect.stringContaining('re-pair'),
+      }));
+      expect(createdWs.close).toHaveBeenCalled();
+    });
+
+    it('uses explicit legacy token without requesting bootstrap', async () => {
+      const { StorageService } = jest.requireMock('./storage') as {
+        StorageService: { getOpenClawDeviceAuth: jest.Mock };
+      };
+      StorageService.getOpenClawDeviceAuth.mockResolvedValue(null);
       mockDeviceIdentity();
       const errorListener = jest.fn();
       client.on('error', errorListener);
@@ -1471,21 +1634,18 @@ describe('GatewayClient', () => {
       await flushPromises();
 
       expect(createdWs.send).toHaveBeenCalledTimes(1);
-      jest.advanceTimersByTime(12_100);
-      await flushPromises();
-
-      expect(createdWs.send).toHaveBeenCalledTimes(2);
-      const connectFrame = JSON.parse(createdWs.send.mock.calls[1][0] as string);
+      const connectFrame = JSON.parse(createdWs.send.mock.calls[0][0] as string);
       expect(connectFrame.params.auth).toEqual({ token: 'legacy-token' });
       expect(decodeLatestSignedPayload()).toContain(`|legacy-token|${'b'.repeat(64)}|`);
+      expect(createdWs.send.mock.calls[0][0]).not.toContain(RELAY_CONTROL_PREFIX);
       expect(errorListener).not.toHaveBeenCalled();
     });
 
-    it('falls back to legacy password when relay bootstrap returns bootstrap.error', async () => {
+    it('uses explicit legacy password without requesting bootstrap', async () => {
       const { StorageService } = jest.requireMock('./storage') as {
-        StorageService: { getDeviceToken: jest.Mock };
+        StorageService: { getOpenClawDeviceAuth: jest.Mock };
       };
-      StorageService.getDeviceToken.mockResolvedValue(null);
+      StorageService.getOpenClawDeviceAuth.mockResolvedValue(null);
       mockDeviceIdentity();
 
       client.configure({
@@ -1513,187 +1673,13 @@ describe('GatewayClient', () => {
       });
       await flushPromises();
 
-      const bootstrapRequestRaw = createdWs.send.mock.calls[0][0] as string;
-      const bootstrapRequest = JSON.parse(bootstrapRequestRaw.slice(RELAY_CONTROL_PREFIX.length));
-      createdWs.onmessage!({
-        data: `${RELAY_CONTROL_PREFIX}${JSON.stringify({
-          event: 'bootstrap.error',
-          requestId: bootstrapRequest.requestId,
-          error: {
-            code: 'BOOTSTRAP_DENIED',
-            message: 'Relay rejected bootstrap',
-          },
-        })}`,
-      });
-      await flushPromises();
-
-      expect(createdWs.send).toHaveBeenCalledTimes(2);
-      const connectFrame = JSON.parse(createdWs.send.mock.calls[1][0] as string);
+      expect(createdWs.send).toHaveBeenCalledTimes(1);
+      const connectFrame = JSON.parse(createdWs.send.mock.calls[0][0] as string);
       expect(connectFrame.params.auth).toEqual({ password: 'legacy-password' });
       expect(decodeLatestSignedPayload()).toContain(`||${'b'.repeat(64)}|`);
+      expect(createdWs.send.mock.calls[0][0]).not.toContain(RELAY_CONTROL_PREFIX);
     });
 
-    it('falls back to legacy token when gateway rejects bootstrapToken auth schema', async () => {
-      const { StorageService } = jest.requireMock('./storage') as {
-        StorageService: { getDeviceToken: jest.Mock };
-      };
-      StorageService.getDeviceToken.mockResolvedValue(null);
-      mockDeviceIdentity();
-      const errorListener = jest.fn();
-      client.on('error', errorListener);
-
-      client.configure({
-        url: 'wss://relay-us.example.com/ws',
-        token: 'legacy-token',
-        mode: 'relay',
-        relay: {
-          serverUrl: 'https://registry.example.com',
-          gatewayId: 'gateway-device-relay',
-          clientToken: 'relay-access-token',
-          supportsBootstrap: true,
-        },
-      });
-
-      client.connect();
-      await flushPromises();
-      const firstWs = createdWs;
-      firstWs.readyState = MockWebSocket.OPEN;
-      firstWs.onopen!();
-      firstWs.onmessage!({
-        data: JSON.stringify({
-          type: 'event',
-          event: 'connect.challenge',
-          payload: { nonce: 'b'.repeat(64), ts: Date.now() },
-        }),
-      });
-      await flushPromises();
-
-      const bootstrapRequestRaw = firstWs.send.mock.calls[0][0] as string;
-      const bootstrapRequest = JSON.parse(bootstrapRequestRaw.slice(RELAY_CONTROL_PREFIX.length));
-      firstWs.onmessage!({
-        data: `${RELAY_CONTROL_PREFIX}${JSON.stringify({
-          event: 'bootstrap.issued',
-          requestId: bootstrapRequest.requestId,
-          bootstrapToken: 'bootstrap-token',
-        })}`,
-      });
-      await flushPromises();
-
-      const bootstrapConnectFrame = JSON.parse(firstWs.send.mock.calls[1][0] as string);
-      firstWs.onmessage!({
-        data: JSON.stringify({
-          type: 'res',
-          id: bootstrapConnectFrame.id,
-          ok: false,
-          error: {
-            code: 'INVALID_REQUEST',
-            message: "invalid connect params: at /auth: unexpected property 'bootstrapToken'",
-          },
-        }),
-      });
-      await flushPromises();
-
-      expect((globalThis as any).WebSocket).toHaveBeenCalledTimes(2);
-      expect(errorListener).not.toHaveBeenCalled();
-
-      const fallbackWs = createdWs;
-      fallbackWs.readyState = MockWebSocket.OPEN;
-      fallbackWs.onopen!();
-      fallbackWs.onmessage!({
-        data: JSON.stringify({
-          type: 'event',
-          event: 'connect.challenge',
-          payload: { nonce: 'c'.repeat(64), ts: Date.now() },
-        }),
-      });
-      await flushPromises();
-
-      expect(fallbackWs.send).toHaveBeenCalledTimes(1);
-      const fallbackConnectFrame = JSON.parse(fallbackWs.send.mock.calls[0][0] as string);
-      expect(fallbackConnectFrame.params.auth).toEqual({ token: 'legacy-token' });
-      expect(decodeLatestSignedPayload()).toContain(`|legacy-token|${'c'.repeat(64)}|`);
-    });
-
-    it('falls back to legacy password when gateway rejects bootstrapToken auth schema', async () => {
-      const { StorageService } = jest.requireMock('./storage') as {
-        StorageService: { getDeviceToken: jest.Mock };
-      };
-      StorageService.getDeviceToken.mockResolvedValue(null);
-      mockDeviceIdentity();
-      const errorListener = jest.fn();
-      client.on('error', errorListener);
-
-      client.configure({
-        url: 'wss://relay-us.example.com/ws',
-        password: 'legacy-password',
-        mode: 'relay',
-        relay: {
-          serverUrl: 'https://registry.example.com',
-          gatewayId: 'gateway-device-relay',
-          clientToken: 'relay-access-token',
-          supportsBootstrap: true,
-        },
-      });
-
-      client.connect();
-      await flushPromises();
-      const firstWs = createdWs;
-      firstWs.readyState = MockWebSocket.OPEN;
-      firstWs.onopen!();
-      firstWs.onmessage!({
-        data: JSON.stringify({
-          type: 'event',
-          event: 'connect.challenge',
-          payload: { nonce: 'b'.repeat(64), ts: Date.now() },
-        }),
-      });
-      await flushPromises();
-
-      const bootstrapRequestRaw = firstWs.send.mock.calls[0][0] as string;
-      const bootstrapRequest = JSON.parse(bootstrapRequestRaw.slice(RELAY_CONTROL_PREFIX.length));
-      firstWs.onmessage!({
-        data: `${RELAY_CONTROL_PREFIX}${JSON.stringify({
-          event: 'bootstrap.issued',
-          requestId: bootstrapRequest.requestId,
-          bootstrapToken: 'bootstrap-token',
-        })}`,
-      });
-      await flushPromises();
-
-      const bootstrapConnectFrame = JSON.parse(firstWs.send.mock.calls[1][0] as string);
-      firstWs.onmessage!({
-        data: JSON.stringify({
-          type: 'res',
-          id: bootstrapConnectFrame.id,
-          ok: false,
-          error: {
-            code: 'INVALID_REQUEST',
-            message: "invalid connect params: at /auth: unexpected property 'bootstrapToken'",
-          },
-        }),
-      });
-      await flushPromises();
-
-      expect((globalThis as any).WebSocket).toHaveBeenCalledTimes(2);
-      expect(errorListener).not.toHaveBeenCalled();
-
-      const fallbackWs = createdWs;
-      fallbackWs.readyState = MockWebSocket.OPEN;
-      fallbackWs.onopen!();
-      fallbackWs.onmessage!({
-        data: JSON.stringify({
-          type: 'event',
-          event: 'connect.challenge',
-          payload: { nonce: 'd'.repeat(64), ts: Date.now() },
-        }),
-      });
-      await flushPromises();
-
-      expect(fallbackWs.send).toHaveBeenCalledTimes(1);
-      const fallbackConnectFrame = JSON.parse(fallbackWs.send.mock.calls[0][0] as string);
-      expect(fallbackConnectFrame.params.auth).toEqual({ password: 'legacy-password' });
-      expect(decodeLatestSignedPayload()).toContain(`||${'d'.repeat(64)}|`);
-    });
   });
 
   describe('connect challenge handling', () => {

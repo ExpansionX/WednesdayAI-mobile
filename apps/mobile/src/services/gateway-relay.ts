@@ -164,6 +164,26 @@ export function selectRelayConnectAuth(params: {
   storedDeviceToken?: string | null;
   bootstrapToken?: string | null;
 }): RelayConnectAuthSelection {
+  const token = trimToUndefined(params.token);
+  const password = trimToUndefined(params.password);
+  if (token) {
+    return {
+      auth: {
+        token,
+        ...(password ? { password } : {}),
+      },
+      signatureToken: token,
+      source: 'legacy-token',
+    };
+  }
+
+  if (password) {
+    return {
+      auth: { password },
+      source: 'legacy-password',
+    };
+  }
+
   const deviceToken = trimToUndefined(params.storedDeviceToken);
   if (deviceToken) {
     return {
@@ -179,23 +199,6 @@ export function selectRelayConnectAuth(params: {
       auth: { bootstrapToken },
       signatureToken: bootstrapToken,
       source: 'bootstrap-token',
-    };
-  }
-
-  const token = trimToUndefined(params.token);
-  if (token) {
-    return {
-      auth: { token },
-      signatureToken: token,
-      source: 'legacy-token',
-    };
-  }
-
-  const password = trimToUndefined(params.password);
-  if (password) {
-    return {
-      auth: { password },
-      source: 'legacy-password',
     };
   }
 

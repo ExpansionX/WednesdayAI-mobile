@@ -1413,17 +1413,19 @@ export class GatewayClient {
     const signedAt = Date.now();
     const clientId = getRuntimeClientId();
     const clientMode = 'ui';
-    const role = this.getConnectRole();
-    const scopes = this.getConnectScopes();
+    const baseRole = this.getConnectRole();
+    const baseScopes = this.getConnectScopes();
     const platform = getRuntimePlatform();
     const deviceFamily = getRuntimeDeviceFamily();
     const connectAuth = await this.resolveConnectAuth({
       identity,
       publicKey: publicKeyB64,
-      role,
-      scopes,
+      role: baseRole,
+      scopes: baseScopes,
     });
     if (!this.isActiveConnectAttempt(attemptId)) return;
+    const role = connectAuth.role;
+    const scopes = connectAuth.scopes;
 
     // Build the v3 auth payload and sign it
     const authPayload = buildDeviceAuthPayload({
@@ -1576,6 +1578,15 @@ export class GatewayClient {
           elapsedMs: Date.now() - this.connectStartedAt,
         });
         this.restartConnection('Connection restarted');
+        return;
+      }
+      if (this.isAuthScopeMismatchError(msg)) {
+        this.blockReconnect({
+          code: 'auth_scope_mismatch',
+          message: 'OpenClaw rejected the saved device token scope. Please re-pair this gateway.',
+          hint: 'Scan a fresh Relay QR code to re-pair this gateway.',
+        });
+        this.ws?.close();
         return;
       }
       if (
@@ -1913,6 +1924,10 @@ export class GatewayClient {
     return ['operator.admin', 'operator.read', 'operator.write', 'operator.pairing'];
   }
 
+  private getBootstrapConnectScopes(): string[] {
+    return ['operator.read', 'operator.write', 'operator.approvals', 'operator.talk.secrets'];
+  }
+
   private hasLegacyConnectCredential(): boolean {
     return Boolean(this.config?.token?.trim() || this.config?.password?.trim());
   }
@@ -1921,37 +1936,53 @@ export class GatewayClient {
     return message.toLowerCase().includes('device token mismatch');
   }
 
+  private isAuthScopeMismatchError(message: string): boolean {
+    return message.toLowerCase().includes('auth_scope_mismatch');
+  }
+
   private async resolveConnectAuth(input: {
     identity: DeviceIdentity;
     publicKey: string;
     role: string;
     scopes: string[];
-  }): Promise<ReturnType<typeof selectRelayConnectAuth>> {
+  }): Promise<ReturnType<typeof selectRelayConnectAuth> & { role: string; scopes: string[] }> {
     let storedDeviceToken: string | null = null;
-    if (this.activeRoute === 'relay') {
-      storedDeviceToken = await StorageService.getDeviceToken(
+    let role = input.role;
+    let scopes = input.scopes;
+    const hasLegacyConnectCredential = this.hasLegacyConnectCredential();
+    if (this.activeRoute === 'relay' && !hasLegacyConnectCredential) {
+      const storedDeviceAuth = await StorageService.getOpenClawDeviceAuth(
         input.identity.deviceId,
         this.getDeviceTokenStorageScope(),
         input.role,
       );
+      storedDeviceToken = storedDeviceAuth?.token ?? null;
+      if (storedDeviceToken?.trim() && storedDeviceAuth?.role && storedDeviceAuth.scopes) {
+        role = storedDeviceAuth.role;
+        scopes = storedDeviceAuth.scopes;
+      }
     }
 
     let bootstrapToken: string | null = null;
     if (
       this.activeRoute === 'relay'
       && !storedDeviceToken?.trim()
+      && !hasLegacyConnectCredential
       && !this.isRelayBootstrapCompatibilityDisabledForCurrentConfig()
       && relaySupportsBootstrapV2(this.config?.relay)
     ) {
       try {
+        scopes = this.getBootstrapConnectScopes();
         bootstrapToken = await this.requestRelayBootstrapToken({
           deviceId: input.identity.deviceId,
           publicKey: input.publicKey,
-          role: input.role,
-          scopes: input.scopes,
+          role,
+          scopes,
         });
       } catch (error: unknown) {
         if (this.hasLegacyConnectCredential()) {
+          role = input.role;
+          scopes = input.scopes;
           const message = error instanceof Error ? error.message : String(error);
           this.logTelemetry('relay_bootstrap_fallback_legacy', {
             attemptId: this.connectAttemptId,
@@ -1964,12 +1995,16 @@ export class GatewayClient {
       }
     }
 
-    return selectRelayConnectAuth({
-      token: this.config?.token,
-      password: this.config?.password,
-      storedDeviceToken,
-      bootstrapToken,
-    });
+    return {
+      ...selectRelayConnectAuth({
+        token: this.config?.token,
+        password: this.config?.password,
+        storedDeviceToken,
+        bootstrapToken,
+      }),
+      role,
+      scopes,
+    };
   }
 
   private async requestRelayBootstrapToken(params: {
