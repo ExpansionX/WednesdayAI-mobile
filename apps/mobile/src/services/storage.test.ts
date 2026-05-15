@@ -257,14 +257,135 @@ describe('StorageService gateway config backups', () => {
     })).resolves.toBe('legacy-token');
   });
 
+  it('falls back to legacy roleless scoped device tokens for role-aware reads', async () => {
+    secureStoreValues[`clawket.deviceToken.device-1_relay_${sha256('https://registry.example.com::gw_alpha')}`] = 'legacy-scoped-token';
+
+    await expect(StorageService.getOpenClawDeviceAuth('device-1', {
+      serverUrl: 'https://registry.example.com',
+      gatewayId: 'gw_alpha',
+    }, 'operator')).resolves.toEqual({
+      token: 'legacy-scoped-token',
+      role: null,
+      scopes: null,
+      issuedAtMs: null,
+    });
+  });
+
+  it('reads legacy device token strings as OpenClaw device auth metadata', async () => {
+    secureStoreValues['clawket.deviceToken.device-1'] = 'legacy-token';
+
+    await expect(StorageService.getOpenClawDeviceAuth('device-1', {
+      serverUrl: 'https://registry.example.com',
+      gatewayId: 'gw_alpha',
+    })).resolves.toEqual({
+      token: 'legacy-token',
+      role: null,
+      scopes: null,
+      issuedAtMs: null,
+    });
+  });
+
+  it('stores OpenClaw device auth metadata under the same scoped key as device tokens', async () => {
+    await StorageService.setOpenClawDeviceAuth('device-1', {
+      token: 'token-a',
+      role: 'operator',
+      scopes: ['operator.read', 'operator.write'],
+      issuedAtMs: 123,
+    }, {
+      serverUrl: 'https://registry.example.com/',
+      gatewayId: 'gw_alpha',
+    });
+
+    const key = `clawket.deviceToken.device-1_role_operator_relay_${sha256('https://registry.example.com::gw_alpha')}`;
+    expect(JSON.parse(secureStoreValues[key])).toEqual({
+      version: 1,
+      token: 'token-a',
+      role: 'operator',
+      scopes: ['operator.read', 'operator.write'],
+      issuedAtMs: 123,
+    });
+    await expect(StorageService.getOpenClawDeviceAuth('device-1', {
+      serverUrl: 'https://registry.example.com',
+      gatewayId: 'gw_alpha',
+    }, 'operator')).resolves.toEqual({
+      token: 'token-a',
+      role: 'operator',
+      scopes: ['operator.read', 'operator.write'],
+      issuedAtMs: 123,
+    });
+    await expect(StorageService.getDeviceToken('device-1', {
+      serverUrl: 'https://registry.example.com',
+      gatewayId: 'gw_alpha',
+    }, 'operator')).resolves.toBe('token-a');
+  });
+
+  it('isolates OpenClaw device auth metadata by role for the same scoped gateway', async () => {
+    const scope = {
+      serverUrl: 'https://registry.example.com',
+      gatewayId: 'gw_alpha',
+    };
+    await StorageService.setOpenClawDeviceAuth('device-1', {
+      token: 'operator-token',
+      role: 'operator',
+      scopes: ['operator.read'],
+      issuedAtMs: 100,
+    }, scope);
+    await StorageService.setOpenClawDeviceAuth('device-1', {
+      token: 'node-token',
+      role: 'node',
+      scopes: [],
+      issuedAtMs: 200,
+    }, scope);
+
+    await expect(StorageService.getOpenClawDeviceAuth('device-1', scope, 'operator')).resolves.toEqual({
+      token: 'operator-token',
+      role: 'operator',
+      scopes: ['operator.read'],
+      issuedAtMs: 100,
+    });
+    await expect(StorageService.getOpenClawDeviceAuth('device-1', scope, 'node')).resolves.toEqual({
+      token: 'node-token',
+      role: 'node',
+      scopes: [],
+      issuedAtMs: 200,
+    });
+  });
+
+  it('normalizes invalid OpenClaw device auth issuedAtMs to null', async () => {
+    const scope = {
+      serverUrl: 'https://registry.example.com',
+      gatewayId: 'gw_alpha',
+    };
+    await StorageService.setOpenClawDeviceAuth('device-1', {
+      token: 'token-a',
+      role: 'operator',
+      scopes: ['operator.read'],
+      issuedAtMs: -1,
+    }, scope);
+
+    await expect(StorageService.getOpenClawDeviceAuth('device-1', scope, 'operator')).resolves.toEqual({
+      token: 'token-a',
+      role: 'operator',
+      scopes: ['operator.read'],
+      issuedAtMs: null,
+    });
+  });
+
   it('deletes both scoped and legacy device token keys for a relay gateway scope', async () => {
     secureStoreValues[`clawket.deviceToken.device-1_relay_${sha256('https://registry.example.com::gw_alpha')}`] = 'scoped-token';
+    secureStoreValues[`clawket.deviceToken.device-1_role_operator_relay_${sha256('https://registry.example.com::gw_alpha')}`] = JSON.stringify({
+      version: 1,
+      token: 'operator-token',
+      role: 'operator',
+      scopes: ['operator.read'],
+      issuedAtMs: 100,
+    });
     secureStoreValues['clawket.deviceToken.device-1'] = 'legacy-token';
 
     await StorageService.deleteDeviceToken('device-1', {
       serverUrl: 'https://registry.example.com',
       gatewayId: 'gw_alpha',
-    });
+    }, 'operator');
 
     expect(secureStoreValues).toEqual({});
   });

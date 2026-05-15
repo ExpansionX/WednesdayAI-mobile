@@ -124,6 +124,13 @@ export type DeviceTokenStorageScope = {
   gatewayUrl?: string | null;
 };
 
+export type OpenClawDeviceAuthRecord = {
+  token: string;
+  role: string | null;
+  scopes: string[] | null;
+  issuedAtMs: number | null;
+};
+
 export type YouMindAuthSession = {
   accessToken: string;
   refreshToken: string;
@@ -270,20 +277,62 @@ function legacyDeviceTokenStorageKey(deviceId: string): string {
   return `${KEYS.deviceTokenPrefix}${deviceId.trim()}`;
 }
 
-function deviceTokenStorageKey(deviceId: string, scope?: DeviceTokenStorageScope): string {
+function normalizeDeviceAuthRole(role?: string | null): string | null {
+  const normalized = role?.trim();
+  return normalized || null;
+}
+
+function deviceTokenStorageKey(deviceId: string, scope?: DeviceTokenStorageScope, role?: string | null): string {
   const normalizedDeviceId = deviceId.trim();
+  const rolePart = normalizeDeviceAuthRole(role)?.replace(/[^A-Za-z0-9._-]/g, '_');
+  const baseKey = rolePart
+    ? `${legacyDeviceTokenStorageKey(normalizedDeviceId)}_role_${rolePart}`
+    : legacyDeviceTokenStorageKey(normalizedDeviceId);
   const serverUrl = normalizeDeviceTokenScopePart(scope?.serverUrl);
   const gatewayId = normalizeDeviceTokenScopePart(scope?.gatewayId);
   if (serverUrl && gatewayId) {
-    return `${legacyDeviceTokenStorageKey(normalizedDeviceId)}_relay_${sha256(`${serverUrl}::${gatewayId}`)}`;
+    return `${baseKey}_relay_${sha256(`${serverUrl}::${gatewayId}`)}`;
   }
 
   const gatewayUrl = normalizeDeviceTokenScopePart(scope?.gatewayUrl);
   if (gatewayUrl) {
-    return `${legacyDeviceTokenStorageKey(normalizedDeviceId)}_url_${sha256(gatewayUrl)}`;
+    return `${baseKey}_url_${sha256(gatewayUrl)}`;
   }
 
-  return legacyDeviceTokenStorageKey(normalizedDeviceId);
+  return baseKey;
+}
+
+function normalizeOpenClawDeviceAuthRecord(raw: string | null): OpenClawDeviceAuthRecord | null {
+  const trimmed = raw?.trim();
+  if (!trimmed) return null;
+  try {
+    const parsed = JSON.parse(trimmed) as unknown;
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      return { token: trimmed, role: null, scopes: null, issuedAtMs: null };
+    }
+    const record = parsed as Record<string, unknown>;
+    const token = typeof record.token === 'string' ? record.token.trim() : '';
+    if (!token) return null;
+    const role = typeof record.role === 'string' && record.role.trim()
+      ? record.role.trim()
+      : null;
+    const scopes = Array.isArray(record.scopes)
+      ? record.scopes
+        .filter((scope): scope is string => typeof scope === 'string' && scope.trim().length > 0)
+        .map((scope) => scope.trim())
+      : null;
+    const issuedAtMs = typeof record.issuedAtMs === 'number' && Number.isFinite(record.issuedAtMs) && record.issuedAtMs >= 0
+      ? Math.trunc(record.issuedAtMs)
+      : null;
+    return {
+      token,
+      role,
+      scopes,
+      issuedAtMs,
+    };
+  } catch {
+    return { token: trimmed, role: null, scopes: null, issuedAtMs: null };
+  }
 }
 
 function normalizeLastOpenedSessionSnapshot(value: unknown): LastOpenedSessionSnapshot | null {
@@ -1013,17 +1062,70 @@ export const StorageService = {
     );
   },
 
-  async getDeviceToken(deviceId: string, scope?: DeviceTokenStorageScope): Promise<string | null> {
-    const scopedKey = deviceTokenStorageKey(deviceId, scope);
-    const scopedValue = await SecureStore.getItemAsync(scopedKey, SECURE_OPTIONS);
-    if (scopedValue) return scopedValue;
-    if (scopedKey === legacyDeviceTokenStorageKey(deviceId)) return scopedValue;
-    return SecureStore.getItemAsync(legacyDeviceTokenStorageKey(deviceId), SECURE_OPTIONS);
+  async getDeviceToken(deviceId: string, scope?: DeviceTokenStorageScope, role?: string | null): Promise<string | null> {
+    const record = await this.getOpenClawDeviceAuth(deviceId, scope, role);
+    return record?.token ?? null;
   },
 
-  async deleteDeviceToken(deviceId: string, scope?: DeviceTokenStorageScope): Promise<void> {
-    const scopedKey = deviceTokenStorageKey(deviceId, scope);
+  async setOpenClawDeviceAuth(
+    deviceId: string,
+    record: OpenClawDeviceAuthRecord,
+    scope?: DeviceTokenStorageScope,
+  ): Promise<void> {
+    const token = record.token.trim();
+    if (!token) {
+      await this.deleteDeviceToken(deviceId, scope);
+      return;
+    }
+    await SecureStore.setItemAsync(
+      deviceTokenStorageKey(deviceId, scope, record.role),
+      JSON.stringify({
+        version: 1,
+        token,
+        role: record.role?.trim() || null,
+        scopes: record.scopes ? record.scopes.map((scopeValue) => scopeValue.trim()).filter(Boolean) : null,
+        issuedAtMs: Number.isFinite(record.issuedAtMs) && record.issuedAtMs != null && record.issuedAtMs >= 0
+          ? Math.trunc(record.issuedAtMs)
+          : null,
+      }),
+      SECURE_OPTIONS,
+    );
+  },
+
+  async getOpenClawDeviceAuth(
+    deviceId: string,
+    scope?: DeviceTokenStorageScope,
+    role?: string | null,
+  ): Promise<OpenClawDeviceAuthRecord | null> {
+    const scopedKey = deviceTokenStorageKey(deviceId, scope, role);
+    const scopedValue = await SecureStore.getItemAsync(scopedKey, SECURE_OPTIONS);
+    const scopedRecord = normalizeOpenClawDeviceAuthRecord(scopedValue);
+    if (scopedRecord) return scopedRecord;
+    if (normalizeDeviceAuthRole(role)) {
+      const rolelessScopedKey = deviceTokenStorageKey(deviceId, scope);
+      if (rolelessScopedKey !== scopedKey) {
+        const rolelessScopedRecord = normalizeOpenClawDeviceAuthRecord(
+          await SecureStore.getItemAsync(rolelessScopedKey, SECURE_OPTIONS),
+        );
+        if (rolelessScopedRecord) return rolelessScopedRecord;
+      }
+    }
+    const legacyKey = legacyDeviceTokenStorageKey(deviceId);
+    if (scopedKey === legacyKey) return null;
+    return normalizeOpenClawDeviceAuthRecord(
+      await SecureStore.getItemAsync(legacyKey, SECURE_OPTIONS),
+    );
+  },
+
+  async deleteDeviceToken(deviceId: string, scope?: DeviceTokenStorageScope, role?: string | null): Promise<void> {
+    const scopedKey = deviceTokenStorageKey(deviceId, scope, role);
     await SecureStore.deleteItemAsync(scopedKey, SECURE_OPTIONS);
+    if (normalizeDeviceAuthRole(role)) {
+      const rolelessScopedKey = deviceTokenStorageKey(deviceId, scope);
+      if (rolelessScopedKey !== scopedKey) {
+        await SecureStore.deleteItemAsync(rolelessScopedKey, SECURE_OPTIONS);
+      }
+    }
     const legacyKey = legacyDeviceTokenStorageKey(deviceId);
     if (legacyKey !== scopedKey) {
       await SecureStore.deleteItemAsync(legacyKey, SECURE_OPTIONS);

@@ -72,15 +72,15 @@
 - `apps/mobile/src/services/gateway.test.ts`
 - `apps/mobile/src/services/node-client.test.ts`
 
-- [ ] Add a storage record type for OpenClaw device auth: `{ token: string; role: string | null; scopes: string[] | null; issuedAtMs?: number | null }`.
-- [ ] Add failing storage tests proving legacy SecureStore token strings still read as `{ token, role: null, scopes: null }`.
-- [ ] Add failing storage tests proving new metadata records are stored and read using the existing relay and direct gateway scope keys.
-- [ ] Expand `HelloOkPayload.auth` to include `role`, `scopes`, `issuedAtMs`, and optional legacy/custom `deviceTokens`.
-- [ ] In `gateway.ts`, persist the primary `hello-ok.auth.deviceToken` with returned role/scopes after successful connect.
-- [ ] In `node-client.ts`, parse response `payload`, not `result`, and persist the primary node token if `hello-ok.auth.deviceToken` is present.
-- [ ] Avoid persisting optional `hello-ok.auth.deviceTokens` entries unless the connect used bootstrap auth on a trusted transport. If this is not already modelled, leave it unimplemented and document the limitation in code comments/tests rather than storing broad tokens blindly.
-- [ ] Run `npm run --workspace clawket test -- storage.test.ts gateway.test.ts node-client.test.ts --runInBand`.
-- [ ] Commit with `git commit -m "fix: persist OpenClaw device auth metadata"`.
+- [x] Add a storage record type for OpenClaw device auth: `{ token: string; role: string | null; scopes: string[] | null; issuedAtMs?: number | null }`.
+- [x] Add failing storage tests proving legacy SecureStore token strings still read as `{ token, role: null, scopes: null }`.
+- [x] Add failing storage tests proving new metadata records are stored and read using the existing relay and direct gateway scope keys.
+- [x] Expand `HelloOkPayload.auth` to include `role`, `scopes`, `issuedAtMs`, and optional legacy/custom `deviceTokens`.
+- [x] In `gateway.ts`, persist the primary `hello-ok.auth.deviceToken` with returned role/scopes after successful connect.
+- [x] In `node-client.ts`, parse response `payload`, not `result`, and persist the primary node token if `hello-ok.auth.deviceToken` is present.
+- [x] Avoid persisting optional `hello-ok.auth.deviceTokens` entries unless the connect used bootstrap auth on a trusted transport. If this is not already modelled, leave it unimplemented and document the limitation in code comments/tests rather than storing broad tokens blindly.
+- [x] Run `npm run --workspace clawket test -- storage.test.ts gateway.test.ts node-client.test.ts --runInBand`.
+- [x] Commit with `git commit -m "fix: persist OpenClaw device auth metadata"`.
 
 ## Phase 3: Reconnect Scope Selection
 

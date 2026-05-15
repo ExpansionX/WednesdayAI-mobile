@@ -23,6 +23,7 @@ jest.mock('./storage', () => ({
     setIdentity: jest.fn(() => Promise.resolve()),
     clearIdentity: jest.fn(() => Promise.resolve()),
     setDeviceToken: jest.fn(() => Promise.resolve()),
+    setOpenClawDeviceAuth: jest.fn(() => Promise.resolve()),
   },
 }));
 
@@ -201,6 +202,54 @@ describe('NodeClient', () => {
     });
 
     return expect(promise).resolves.toEqual({ success: true });
+  });
+
+  it('persists device auth metadata from hello-ok payload responses', async () => {
+    const { StorageService } = jest.requireMock('./storage') as {
+      StorageService: { setOpenClawDeviceAuth: jest.Mock };
+    };
+    client.configure({ url: 'ws://localhost:18789', token: 'gateway-token' });
+    client.connect();
+
+    const ws = (client as any).ws as MockWebSocket;
+    ws.onopen?.();
+    ws.onmessage?.({
+      data: JSON.stringify({
+        type: 'event',
+        event: 'connect.challenge',
+        payload: { nonce: 'b'.repeat(64), ts: Date.now() },
+      }),
+    });
+    await flushUntil(() => ws.send.mock.calls.length > 0);
+
+    const connectFrame = JSON.parse(ws.send.mock.calls[0][0]);
+    ws.onmessage?.({
+      data: JSON.stringify({
+        type: 'res',
+        id: connectFrame.id,
+        ok: true,
+        payload: {
+          type: 'hello-ok',
+          protocol: 4,
+          auth: {
+            deviceToken: 'node-device-token',
+            role: 'node',
+            scopes: [],
+            issuedAtMs: 123,
+          },
+        },
+      }),
+    });
+    await flushUntil(() => StorageService.setOpenClawDeviceAuth.mock.calls.length > 0);
+
+    expect(StorageService.setOpenClawDeviceAuth).toHaveBeenCalledWith('a'.repeat(64), {
+      token: 'node-device-token',
+      role: 'node',
+      scopes: [],
+      issuedAtMs: 123,
+    }, {
+      gatewayUrl: 'ws://localhost:18789',
+    });
   });
 
   it('rejects pending requests on error response', () => {

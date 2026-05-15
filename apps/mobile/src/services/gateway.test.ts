@@ -25,7 +25,9 @@ jest.mock('./storage', () => ({
     setIdentity: jest.fn(() => Promise.resolve()),
     clearIdentity: jest.fn(() => Promise.resolve()),
     setDeviceToken: jest.fn(() => Promise.resolve()),
+    setOpenClawDeviceAuth: jest.fn(() => Promise.resolve()),
     getDeviceToken: jest.fn(() => Promise.resolve(null)),
+    getOpenClawDeviceAuth: jest.fn(() => Promise.resolve(null)),
     deleteDeviceToken: jest.fn(() => Promise.resolve()),
     getGatewayConfig: jest.fn(() => Promise.resolve(null)),
     setGatewayConfig: jest.fn(() => Promise.resolve()),
@@ -1173,7 +1175,7 @@ describe('GatewayClient', () => {
       expect(StorageService.getDeviceToken).toHaveBeenCalledWith('a'.repeat(64), {
         serverUrl: 'https://registry.example.com',
         gatewayId: 'gateway-device-relay',
-      });
+      }, 'operator');
     });
 
     it('uses stored deviceToken in relay mode without requesting bootstrap', async () => {
@@ -1217,7 +1219,7 @@ describe('GatewayClient', () => {
       expect(StorageService.getDeviceToken).toHaveBeenCalledWith('a'.repeat(64), {
         serverUrl: 'https://registry.example.com',
         gatewayId: 'gateway-device-relay',
-      });
+      }, 'operator');
     });
 
     it('requests bootstrap and connects with bootstrapToken when relay supports V2 and no deviceToken exists', async () => {
@@ -1336,7 +1338,7 @@ describe('GatewayClient', () => {
 
     it('stores issued deviceToken using the active relay gateway scope', async () => {
       const { StorageService } = jest.requireMock('./storage') as {
-        StorageService: { getDeviceToken: jest.Mock; setDeviceToken: jest.Mock };
+        StorageService: { getDeviceToken: jest.Mock; setOpenClawDeviceAuth: jest.Mock };
       };
       StorageService.getDeviceToken.mockResolvedValue('stored-device-token');
       mockDeviceIdentity();
@@ -1360,7 +1362,12 @@ describe('GatewayClient', () => {
       const sendRequestSpy = jest
         .spyOn(client as unknown as { sendRequest: (method: string, params?: object, options?: object) => Promise<unknown> }, 'sendRequest')
         .mockResolvedValue({
-          auth: { deviceToken: 'issued-device-token' },
+          auth: {
+            deviceToken: 'issued-device-token',
+            role: 'operator',
+            scopes: ['operator.read', 'operator.write'],
+            issuedAtMs: 123,
+          },
         });
 
       await (client as unknown as { handleConnectChallenge: (payload: ConnectChallengePayload) => Promise<void> })
@@ -1374,10 +1381,19 @@ describe('GatewayClient', () => {
           skipAutoReconnectOnTimeout: true,
         }),
       );
-      expect(StorageService.setDeviceToken).toHaveBeenCalledWith('a'.repeat(64), 'issued-device-token', {
-        serverUrl: 'https://registry.example.com',
-        gatewayId: 'gateway-device-relay',
-      });
+      expect(StorageService.setOpenClawDeviceAuth).toHaveBeenCalledWith(
+        'a'.repeat(64),
+        {
+          token: 'issued-device-token',
+          role: 'operator',
+          scopes: ['operator.read', 'operator.write'],
+          issuedAtMs: 123,
+        },
+        {
+          serverUrl: 'https://registry.example.com',
+          gatewayId: 'gateway-device-relay',
+        },
+      );
     });
 
     it('clears stale relay deviceToken and restarts when gateway reports device token mismatch', async () => {
@@ -1416,7 +1432,7 @@ describe('GatewayClient', () => {
       expect(StorageService.deleteDeviceToken).toHaveBeenCalledWith('a'.repeat(64), {
         serverUrl: 'https://registry.example.com',
         gatewayId: 'gateway-device-relay',
-      });
+      }, 'operator');
       expect(restartSpy).toHaveBeenCalledWith('Connection restarted');
     });
 

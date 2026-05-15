@@ -289,11 +289,23 @@ export class NodeClient {
 
     try {
       const result = await this.sendRequest('connect', connectParams);
-      const helloOk = result as { auth?: { deviceToken?: string } } | null;
+      const helloOk = result as {
+        auth?: {
+          deviceToken?: string;
+          role?: string;
+          scopes?: string[];
+          issuedAtMs?: number;
+        };
+      } | null;
       if (helloOk?.auth?.deviceToken) {
-        await StorageService.setDeviceToken(
+        await StorageService.setOpenClawDeviceAuth(
           identity.deviceId,
-          helloOk.auth.deviceToken,
+          {
+            token: helloOk.auth.deviceToken,
+            role: helloOk.auth.role ?? null,
+            scopes: Array.isArray(helloOk.auth.scopes) ? helloOk.auth.scopes : null,
+            issuedAtMs: typeof helloOk.auth.issuedAtMs === 'number' ? helloOk.auth.issuedAtMs : null,
+          },
           this.getDeviceTokenStorageScope(),
         );
       }
@@ -347,7 +359,7 @@ export class NodeClient {
           const errObj = frame.error as Record<string, unknown>;
           pending.reject(new Error(String(errObj.message ?? errObj.code ?? 'Unknown error')));
         } else {
-          pending.resolve(frame.result);
+          pending.resolve(frame.payload ?? frame.result);
         }
       }
       return;

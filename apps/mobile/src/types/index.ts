@@ -136,7 +136,13 @@ export interface HelloOkPayload {
   protocol: number;
   server: { version: string };
   features?: string[];
-  auth?: { deviceToken?: string };
+  auth?: {
+    deviceToken?: string;
+    role?: string;
+    scopes?: string[];
+    issuedAtMs?: number;
+    deviceTokens?: unknown;
+  };
   policy?: unknown;
 }
 

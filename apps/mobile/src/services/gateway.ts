@@ -1483,7 +1483,12 @@ export class GatewayClient {
       if (!this.isActiveConnectAttempt(attemptId)) return;
       // Save device token and extract gateway info from hello-ok
       const helloOk = result as {
-        auth?: { deviceToken?: string };
+        auth?: {
+          deviceToken?: string;
+          role?: string;
+          scopes?: string[];
+          issuedAtMs?: number;
+        };
         server?: { version?: string; connId?: string };
         policy?: { tickIntervalMs?: number };
         snapshot?: {
@@ -1495,9 +1500,14 @@ export class GatewayClient {
       } | null;
       if (helloOk?.auth?.deviceToken) {
         const identity = await this.ensureIdentity();
-        await StorageService.setDeviceToken(
+        await StorageService.setOpenClawDeviceAuth(
           identity.deviceId,
-          helloOk.auth.deviceToken,
+          {
+            token: helloOk.auth.deviceToken,
+            role: helloOk.auth.role ?? null,
+            scopes: Array.isArray(helloOk.auth.scopes) ? helloOk.auth.scopes : null,
+            issuedAtMs: typeof helloOk.auth.issuedAtMs === 'number' ? helloOk.auth.issuedAtMs : null,
+          },
           this.getDeviceTokenStorageScope(),
         );
       }
@@ -1559,7 +1569,7 @@ export class GatewayClient {
         && this.isDeviceTokenMismatchError(msg)
       ) {
         const identity = await this.ensureIdentity();
-        await StorageService.deleteDeviceToken(identity.deviceId, this.getDeviceTokenStorageScope());
+        await StorageService.deleteDeviceToken(identity.deviceId, this.getDeviceTokenStorageScope(), role);
         this.logTelemetry('relay_device_token_cleared_after_mismatch', {
           attemptId,
           route: this.activeRoute,
@@ -1922,6 +1932,7 @@ export class GatewayClient {
       storedDeviceToken = await StorageService.getDeviceToken(
         input.identity.deviceId,
         this.getDeviceTokenStorageScope(),
+        input.role,
       );
     }
 
