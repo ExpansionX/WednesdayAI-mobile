@@ -106,13 +106,13 @@
 - `apps/mobile/src/types/index.ts`
 - `apps/mobile/src/services/gateway.test.ts`
 
-- [ ] Preserve gateway error `details`, `retryAfterMs`, and `retryable` through `sendRequest` rejection paths instead of flattening them to a message-only `Error`.
-- [ ] Add a typed helper for protocol mismatch details: `expectedProtocol`, `minimumProbeProtocol`.
-- [ ] On protocol mismatch where `expectedProtocol > OPENCLAW_PROTOCOL_VERSION`, block reconnect and surface an upgrade-required error that includes the expected and supported protocol versions.
-- [ ] On `UNAVAILABLE` with `details.reason === "startup-sidecars"` and `retryAfterMs`, retry within the existing connection budget before surfacing failure.
-- [ ] Keep `PAIRING_REQUIRED` behavior retryable when details include `recommendedNextStep: "wait_then_retry"` and `retryable: true`.
-- [ ] Run `npm run --workspace clawket test -- gateway.test.ts --runInBand`.
-- [ ] Commit with `git commit -m "fix: handle OpenClaw v4 handshake diagnostics"`.
+- [x] Preserve gateway error `details`, `retryAfterMs`, and `retryable` through `sendRequest` rejection paths instead of flattening them to a message-only `Error`.
+- [x] Add a typed helper for protocol mismatch details: `expectedProtocol`, `minimumProbeProtocol`.
+- [x] On protocol mismatch where `expectedProtocol > OPENCLAW_PROTOCOL_VERSION`, block reconnect and surface an upgrade-required error that includes the expected and supported protocol versions.
+- [x] On `UNAVAILABLE` with `details.reason === "startup-sidecars"` and `retryAfterMs`, retry within the existing connection budget before surfacing failure.
+- [x] Keep `PAIRING_REQUIRED` behavior retryable when details include `recommendedNextStep: "wait_then_retry"` and `retryable: true`.
+- [x] Run `npm run --workspace clawket test -- gateway.test.ts --runInBand`.
+- [x] Commit with `git commit -m "fix: handle OpenClaw v4 handshake diagnostics"`.
 
 ## Phase 5: Protocol v4 Policy And Plugin Surface Compatibility
 

@@ -278,7 +278,21 @@ export function handleGatewayRawMessage(context: GatewayMessageContext, rawData:
   }
 }
 
-function handleGatewayResponse(context: GatewayMessageContext, frame: { id: string; ok: boolean; payload?: unknown; error?: { message?: string; code?: string } }): void {
+function handleGatewayResponse(
+  context: GatewayMessageContext,
+  frame: {
+    id: string;
+    ok: boolean;
+    payload?: unknown;
+    error?: {
+      message?: string;
+      code?: string;
+      details?: unknown;
+      retryable?: boolean;
+      retryAfterMs?: number;
+    };
+  },
+): void {
   const pending = context.pendingRequests.get(frame.id);
   if (!pending) return;
   context.pendingRequests.delete(frame.id);
@@ -307,7 +321,17 @@ function handleGatewayResponse(context: GatewayMessageContext, frame: { id: stri
 
   const errMsg = frame.error?.message ?? 'Request failed';
   const errCode = frame.error?.code ?? 'unknown';
-  pending.reject(new Error(`[${errCode}] ${errMsg}`));
+  const error = new Error(`[${errCode}] ${errMsg}`) as Error & {
+    code?: string;
+    details?: unknown;
+    retryable?: boolean;
+    retryAfterMs?: number;
+  };
+  error.code = errCode;
+  error.details = frame.error?.details;
+  error.retryable = frame.error?.retryable;
+  error.retryAfterMs = frame.error?.retryAfterMs;
+  pending.reject(error);
 }
 
 function handleGatewayEvent(context: GatewayMessageContext, frame: GatewayEventFrame): void {

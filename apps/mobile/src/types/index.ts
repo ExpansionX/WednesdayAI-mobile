@@ -115,6 +115,15 @@ export interface ResFrame {
   };
 }
 
+export type GatewayErrorDetails = {
+  expectedProtocol?: number;
+  minimumProbeProtocol?: number;
+  reason?: string;
+  recommendedNextStep?: string;
+  retryable?: boolean;
+  [key: string]: unknown;
+};
+
 export interface EventFrame {
   type: 'event';
   event: string;

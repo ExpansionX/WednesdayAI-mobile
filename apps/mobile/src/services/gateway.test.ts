@@ -46,7 +46,7 @@ class MockWebSocket {
   CLOSED = 3;
   readyState = MockWebSocket.OPEN;
   onopen: (() => void) | null = null;
-  onclose: (() => void) | null = null;
+  onclose: ((event?: { code?: number; reason?: string; wasClean?: boolean }) => void) | null = null;
   onmessage: ((event: { data: string }) => void) | null = null;
   onerror: (() => void) | null = null;
   send = jest.fn();
@@ -1597,6 +1597,170 @@ describe('GatewayClient', () => {
         hint: expect.stringContaining('re-pair'),
       }));
       expect(createdWs.close).toHaveBeenCalled();
+    });
+
+    it('blocks reconnect with upgrade guidance on unsupported protocol mismatch', async () => {
+      mockDeviceIdentity();
+      const blockReconnectSpy = jest.spyOn(
+        client as unknown as { blockReconnect: (reason: { code: string; message: string; hint?: string }) => void },
+        'blockReconnect',
+      );
+
+      client.configure({ url: 'wss://example.com', token: 'gateway-token' });
+      client.connect();
+      await flushPromises();
+      createdWs.readyState = MockWebSocket.OPEN;
+      createdWs.onopen!();
+      createdWs.onmessage!({
+        data: JSON.stringify({
+          type: 'event',
+          event: 'connect.challenge',
+          payload: { nonce: 'b'.repeat(64), ts: Date.now() },
+        }),
+      });
+      await flushPromises();
+
+      const connectFrame = JSON.parse(createdWs.send.mock.calls[0][0] as string);
+      createdWs.onmessage!({
+        data: JSON.stringify({
+          type: 'res',
+          id: connectFrame.id,
+          ok: false,
+          error: {
+            code: 'INVALID_REQUEST',
+            message: 'protocol mismatch',
+            details: {
+              expectedProtocol: 5,
+              minimumProbeProtocol: 5,
+            },
+          },
+        }),
+      });
+      await flushPromises();
+
+      expect(blockReconnectSpy).toHaveBeenCalledWith(expect.objectContaining({
+        code: 'protocol_upgrade_required',
+        message: expect.stringContaining('protocol 5'),
+        hint: expect.stringContaining('Clawket'),
+      }));
+      expect(createdWs.close).toHaveBeenCalled();
+    });
+
+    it('retries startup-sidecars connect responses within the current handshake', async () => {
+      mockDeviceIdentity();
+      const sendRequestSpy = jest.spyOn(
+        client as unknown as {
+          sendRequest: (method: string, params?: object, options?: { timeoutMs?: number }) => Promise<unknown>;
+        },
+        'sendRequest',
+      );
+
+      client.configure({ url: 'wss://example.com', token: 'gateway-token' });
+      client.connect();
+      await flushPromises();
+      createdWs.readyState = MockWebSocket.OPEN;
+      createdWs.onopen!();
+      createdWs.onmessage!({
+        data: JSON.stringify({
+          type: 'event',
+          event: 'connect.challenge',
+          payload: { nonce: 'b'.repeat(64), ts: Date.now() },
+        }),
+      });
+      await flushPromises();
+
+      const firstConnectFrame = JSON.parse(createdWs.send.mock.calls[0][0] as string);
+      createdWs.onmessage!({
+        data: JSON.stringify({
+          type: 'res',
+          id: firstConnectFrame.id,
+          ok: false,
+          error: {
+            code: 'UNAVAILABLE',
+            message: 'gateway starting; retry shortly',
+            retryable: true,
+            retryAfterMs: 25,
+            details: { reason: 'startup-sidecars' },
+          },
+        }),
+      });
+      await flushPromises();
+
+      expect(createdWs.close).not.toHaveBeenCalled();
+      jest.advanceTimersByTime(25);
+      await flushPromises();
+
+      expect(createdWs.send).toHaveBeenCalledTimes(2);
+      const retryConnectFrame = JSON.parse(createdWs.send.mock.calls[1][0] as string);
+      expect(retryConnectFrame.method).toBe('connect');
+      expect(sendRequestSpy.mock.calls[1][2]?.timeoutMs).toBeLessThan(30000);
+
+      createdWs.onmessage!({
+        data: JSON.stringify({
+          type: 'res',
+          id: retryConnectFrame.id,
+          ok: true,
+          payload: {
+            type: 'hello-ok',
+            protocol: 4,
+            auth: { role: 'operator', scopes: ['operator.read'] },
+            server: { version: 'test', connId: 'conn-1' },
+            snapshot: { uptimeMs: 1, presence: [] },
+            policy: { tickIntervalMs: 15000 },
+          },
+        }),
+      });
+      await flushPromises();
+
+      expect(client.getConnectionState()).toBe('ready');
+    });
+
+    it('does not convert startup-sidecars socket close into terminal auth failure', async () => {
+      mockDeviceIdentity();
+      const errorListener = jest.fn();
+      client.on('error', errorListener);
+
+      client.configure({ url: 'wss://example.com', token: 'gateway-token' });
+      client.connect();
+      await flushPromises();
+      createdWs.readyState = MockWebSocket.OPEN;
+      createdWs.onopen!();
+      createdWs.onmessage!({
+        data: JSON.stringify({
+          type: 'event',
+          event: 'connect.challenge',
+          payload: { nonce: 'b'.repeat(64), ts: Date.now() },
+        }),
+      });
+      await flushPromises();
+
+      const firstConnectFrame = JSON.parse(createdWs.send.mock.calls[0][0] as string);
+      createdWs.onmessage!({
+        data: JSON.stringify({
+          type: 'res',
+          id: firstConnectFrame.id,
+          ok: false,
+          error: {
+            code: 'UNAVAILABLE',
+            message: 'gateway starting; retry shortly',
+            retryable: true,
+            retryAfterMs: 25,
+            details: { reason: 'startup-sidecars' },
+          },
+        }),
+      });
+      await flushPromises();
+
+      createdWs.readyState = MockWebSocket.CLOSED;
+      createdWs.onclose!({ code: 1013, reason: 'gateway starting', wasClean: false });
+      jest.advanceTimersByTime(25);
+      await flushPromises();
+
+      expect(createdWs.send).toHaveBeenCalledTimes(1);
+      expect(client.getConnectionState()).toBe('reconnecting');
+      expect(errorListener).not.toHaveBeenCalledWith(expect.objectContaining({
+        code: 'auth_failed',
+      }));
     });
 
     it('uses explicit legacy token without requesting bootstrap', async () => {

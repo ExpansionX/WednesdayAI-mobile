@@ -13,6 +13,7 @@ import {
   DevicePairListResult,
   DeviceIdentity,
   GatewayConfig,
+  GatewayErrorDetails,
   NodeListResult,
   NodePairListResult,
   ReqFrame,
@@ -121,6 +122,25 @@ import { markHermesConnectTrace } from './hermes-connect-debug';
 
 export { extractText };
 export type { ChatHistoryResult, GatewayInfo };
+
+function normalizeGatewayErrorDetails(details: unknown): GatewayErrorDetails | undefined {
+  if (!details || typeof details !== 'object' || Array.isArray(details)) return undefined;
+  return details as GatewayErrorDetails;
+}
+
+function isGatewayRequestError(error: unknown): error is Error & {
+  code?: string;
+  details?: GatewayErrorDetails;
+  retryable?: boolean;
+  retryAfterMs?: number;
+} {
+  return error instanceof Error;
+}
+
+function getGatewayErrorDetails(error: unknown): GatewayErrorDetails | undefined {
+  if (!isGatewayRequestError(error)) return undefined;
+  return normalizeGatewayErrorDetails(error.details);
+}
 
 // ---- GatewayClient ----
 
@@ -1478,10 +1498,7 @@ export class GatewayClient {
         route: this.activeRoute,
         elapsedMs: Date.now() - this.connectStartedAt,
       });
-      const result = await this.sendRequest('connect', connectParams, {
-        timeoutMs: CONNECT_REQUEST_TIMEOUT_MS,
-        skipAutoReconnectOnTimeout: true,
-      });
+      const result = await this.sendConnectRequestWithStartupRetry(connectParams);
       if (!this.isActiveConnectAttempt(attemptId)) return;
       // Save device token and extract gateway info from hello-ok
       const helloOk = result as {
@@ -1541,6 +1558,16 @@ export class GatewayClient {
     } catch (err: unknown) {
       if (!this.isActiveConnectAttempt(attemptId)) return;
       const msg = err instanceof Error ? err.message : String(err);
+      if (this.isProtocolUpgradeRequiredError(err)) {
+        const expectedProtocol = getGatewayErrorDetails(err)?.expectedProtocol;
+        this.blockReconnect({
+          code: 'protocol_upgrade_required',
+          message: `OpenClaw requires gateway protocol ${expectedProtocol ?? 'newer than this app supports'}. Clawket supports protocol ${OPENCLAW_PROTOCOL_VERSION}.`,
+          hint: 'Update Clawket before reconnecting to this OpenClaw gateway.',
+        });
+        this.ws?.close();
+        return;
+      }
       this.logTelemetry('connect_res_err', {
         attemptId,
         route: this.activeRoute,
@@ -1587,6 +1614,18 @@ export class GatewayClient {
           hint: 'Scan a fresh Relay QR code to re-pair this gateway.',
         });
         this.ws?.close();
+        return;
+      }
+      if (this.isStartupSidecarsRetryableError(err)) {
+        this.logTelemetry('connect_startup_sidecars_retry_deferred', {
+          attemptId,
+          route: this.activeRoute,
+          elapsedMs: Date.now() - this.connectStartedAt,
+          retryAfterMs: isGatewayRequestError(err) ? err.retryAfterMs : undefined,
+        });
+        if (this.ws?.readyState === WebSocket.OPEN) {
+          this.ws.close();
+        }
         return;
       }
       if (
@@ -1655,6 +1694,49 @@ export class GatewayClient {
   }
 
   // ---- Private: request/response ----
+
+  private async sendConnectRequestWithStartupRetry(connectParams: object): Promise<unknown> {
+    const startedAt = Date.now();
+    const deadlineMs = startedAt + CONNECT_REQUEST_TIMEOUT_MS;
+    for (;;) {
+      const remainingMs = deadlineMs - Date.now();
+      if (remainingMs <= 0) {
+        throw new Error('Request timed out: connect');
+      }
+      try {
+        return await this.sendRequest('connect', connectParams, {
+          timeoutMs: remainingMs,
+          skipAutoReconnectOnTimeout: true,
+        });
+      } catch (error: unknown) {
+        if (!this.isStartupSidecarsRetryableError(error)) throw error;
+        const retryAfterMs = Math.max(0, Math.min(
+          isGatewayRequestError(error) && typeof error.retryAfterMs === 'number'
+            ? error.retryAfterMs
+            : 250,
+          CONNECT_REQUEST_TIMEOUT_MS,
+        ));
+        if (Date.now() + retryAfterMs >= deadlineMs) throw error;
+        await this.sleep(retryAfterMs);
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) throw error;
+      }
+    }
+  }
+
+  private isStartupSidecarsRetryableError(error: unknown): boolean {
+    return isGatewayRequestError(error)
+      && error.code === 'UNAVAILABLE'
+      && getGatewayErrorDetails(error)?.reason === 'startup-sidecars'
+      && (error.retryable === true || typeof error.retryAfterMs === 'number');
+  }
+
+  private isProtocolUpgradeRequiredError(error: unknown): boolean {
+    if (!isGatewayRequestError(error)) return false;
+    const expectedProtocol = getGatewayErrorDetails(error)?.expectedProtocol;
+    return error.message.toLowerCase().includes('protocol mismatch')
+      && typeof expectedProtocol === 'number'
+      && expectedProtocol > OPENCLAW_PROTOCOL_VERSION;
+  }
 
   private sendRequest(
     method: string,
