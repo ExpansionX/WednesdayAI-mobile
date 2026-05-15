@@ -158,6 +158,20 @@ describe('relay worker helpers', () => {
     ).toBe(true);
     expect(
       __testing.isConnectStartReqFrame(
+        JSON.stringify({
+          type: 'req',
+          id: 'req_v4',
+          method: 'connect',
+          params: {
+            minProtocol: 4,
+            maxProtocol: 4,
+            device: { nonce: 'nonce-v4' },
+          },
+        }),
+      ),
+    ).toBe(true);
+    expect(
+      __testing.isConnectStartReqFrame(
         JSON.stringify({ type: 'req', method: 'chat.send' }),
       ),
     ).toBe(false);

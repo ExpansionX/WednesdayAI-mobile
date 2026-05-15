@@ -137,12 +137,12 @@
 - `packages/bridge-runtime/src/runtime.test.ts`
 - `apps/relay-worker/src/index.test.ts`
 
-- [ ] Inspect bridge and relay code for protocol-v3 assumptions or synthetic `connect.start` forwarding into OpenClaw.
-- [ ] Confirm relay and bridge do not rewrite `minProtocol`/`maxProtocol`.
-- [ ] Add or adjust tests so relay/bridge forward `connect.challenge` and `connect` frames transparently for OpenClaw protocol v4.
-- [ ] Preserve Hermes relay behavior. Do not remove Hermes-specific `connect.start` handling if it is part of the Hermes path.
-- [ ] Run `npm run bridge:test` and `npm run relay:test`.
-- [ ] Commit with `git commit -m "test: preserve OpenClaw v4 relay handshake"`.
+- [x] Inspect bridge and relay code for protocol-v3 assumptions or synthetic `connect.start` forwarding into OpenClaw.
+- [x] Confirm relay and bridge do not rewrite `minProtocol`/`maxProtocol`.
+- [x] Add or adjust tests so relay/bridge forward `connect.challenge` and `connect` frames transparently for OpenClaw protocol v4.
+- [x] Preserve Hermes relay behavior. Do not remove Hermes-specific `connect.start` handling if it is part of the Hermes path.
+- [x] Run `npm run bridge:test` and `npm run relay:test`.
+- [x] Commit with `git commit -m "test: preserve OpenClaw v4 relay handshake"`.
 
 ## Phase 7: End-To-End Verification
 

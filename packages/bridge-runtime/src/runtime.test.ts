@@ -257,6 +257,30 @@ describe('bridge runtime protocol helpers', () => {
     });
   });
 
+  it('parses OpenClaw v4 connect handshakes without treating protocol range as auth metadata', () => {
+    expect(parseConnectHandshakeMeta(JSON.stringify({
+      type: 'req',
+      id: 'req_v4',
+      method: 'connect',
+      params: {
+        minProtocol: 4,
+        maxProtocol: 4,
+        auth: {
+          deviceToken: 'secret',
+        },
+        device: {
+          nonce: 'nonce-v4',
+        },
+      },
+    }))).toEqual({
+      id: 'req_v4',
+      method: 'connect',
+      noncePresent: true,
+      nonceLength: 8,
+      authFields: ['deviceToken'],
+    });
+  });
+
   it('parses pending pair requests from gateway errors', () => {
     const parsed = parsePairingRequestFromError(JSON.stringify({
       type: 'res',
@@ -451,6 +475,36 @@ describe('bridge runtime protocol helpers', () => {
     expect(patched.injected).toBe(true);
     expect(JSON.parse(patched.text)).toMatchObject({
       params: {
+        auth: {
+          password: 'p697',
+        },
+      },
+    });
+  });
+
+  it('preserves OpenClaw v4 protocol bounds when patching proxied connect auth', () => {
+    const patched = patchConnectRequestGatewayAuth(JSON.stringify({
+      type: 'req',
+      id: 'req_v4',
+      method: 'connect',
+      params: {
+        minProtocol: 4,
+        maxProtocol: 4,
+        auth: {},
+        device: {
+          nonce: 'nonce-1',
+        },
+      },
+    }), {
+      authMode: 'password',
+      password: 'p697',
+    });
+
+    expect(patched.injected).toBe(true);
+    expect(JSON.parse(patched.text)).toMatchObject({
+      params: {
+        minProtocol: 4,
+        maxProtocol: 4,
         auth: {
           password: 'p697',
         },
