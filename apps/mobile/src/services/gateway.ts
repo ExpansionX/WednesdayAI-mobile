@@ -1509,7 +1509,11 @@ export class GatewayClient {
           issuedAtMs?: number;
         };
         server?: { version?: string; connId?: string };
-        policy?: { tickIntervalMs?: number };
+        pluginSurfaceUrls?: {
+          canvas?: string;
+          [key: string]: unknown;
+        };
+        policy?: { tickIntervalMs?: number; [key: string]: unknown };
         snapshot?: {
           uptimeMs?: number;
           presence?: Array<{ host?: string; ip?: string; platform?: string }>;

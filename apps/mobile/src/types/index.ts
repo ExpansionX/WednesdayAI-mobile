@@ -152,7 +152,14 @@ export interface HelloOkPayload {
     issuedAtMs?: number;
     deviceTokens?: unknown;
   };
-  policy?: unknown;
+  pluginSurfaceUrls?: {
+    canvas?: string;
+    [key: string]: unknown;
+  };
+  policy?: {
+    tickIntervalMs?: number;
+    [key: string]: unknown;
+  };
 }
 
 // ---- API Params / Responses ----

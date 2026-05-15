@@ -1763,6 +1763,52 @@ describe('GatewayClient', () => {
       }));
     });
 
+    it('accepts v4 plugin surface urls and applies hello-ok policy tick interval', async () => {
+      mockDeviceIdentity();
+      const reconnectSpy = jest.spyOn(client, 'reconnect');
+
+      client.configure({ url: 'wss://example.com', token: 'gateway-token' });
+      client.connect();
+      await flushPromises();
+      createdWs.readyState = MockWebSocket.OPEN;
+      createdWs.onopen!();
+      createdWs.onmessage!({
+        data: JSON.stringify({
+          type: 'event',
+          event: 'connect.challenge',
+          payload: { nonce: 'b'.repeat(64), ts: Date.now() },
+        }),
+      });
+      await flushPromises();
+
+      const connectFrame = JSON.parse(createdWs.send.mock.calls[0][0] as string);
+      createdWs.onmessage!({
+        data: JSON.stringify({
+          type: 'res',
+          id: connectFrame.id,
+          ok: true,
+          payload: {
+            type: 'hello-ok',
+            protocol: 4,
+            pluginSurfaceUrls: {
+              canvas: 'https://gateway.example.com/plugins/canvas',
+            },
+            auth: { role: 'operator', scopes: ['operator.read'] },
+            server: { version: 'test', connId: 'conn-1' },
+            snapshot: { uptimeMs: 1, presence: [] },
+            policy: { tickIntervalMs: 50 },
+          },
+        }),
+      });
+      await flushPromises();
+
+      expect(client.getConnectionState()).toBe('ready');
+      jest.advanceTimersByTime(150);
+      expect(reconnectSpy).not.toHaveBeenCalled();
+      jest.advanceTimersByTime(51);
+      expect(reconnectSpy).toHaveBeenCalledTimes(1);
+    });
+
     it('uses explicit legacy token without requesting bootstrap', async () => {
       const { StorageService } = jest.requireMock('./storage') as {
         StorageService: { getOpenClawDeviceAuth: jest.Mock };

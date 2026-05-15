@@ -121,12 +121,12 @@
 - Any canvas/plugin surface helpers discovered by `rg "canvasHostUrl|pluginSurfaceUrls|node.pluginSurface.refresh|node.canvas.capability.refresh" apps/mobile/src`
 - Matching tests
 
-- [ ] Confirm whether Clawket uses deprecated `canvasHostUrl`, `canvasCapability`, or `node.canvas.capability.refresh`.
-- [ ] If Clawket does not use these deprecated fields, add a targeted regression test proving `hello-ok.pluginSurfaceUrls` does not break parsing.
-- [ ] If Clawket does use deprecated canvas surface fields, switch to `hello-ok.pluginSurfaceUrls.canvas` and `node.pluginSurface.refresh`.
-- [ ] Ensure `hello-ok.policy.tickIntervalMs` still drives the existing tick watchdog and add coverage for the v4 policy shape.
-- [ ] Run the relevant Jest tests for gateway/canvas surfaces.
-- [ ] Commit with `git commit -m "fix: align OpenClaw plugin surface handling"`.
+- [x] Confirm whether Clawket uses deprecated `canvasHostUrl`, `canvasCapability`, or `node.canvas.capability.refresh`.
+- [x] If Clawket does not use these deprecated fields, add a targeted regression test proving `hello-ok.pluginSurfaceUrls` does not break parsing.
+- [x] If Clawket does use deprecated canvas surface fields, switch to `hello-ok.pluginSurfaceUrls.canvas` and `node.pluginSurface.refresh`.
+- [x] Ensure `hello-ok.policy.tickIntervalMs` still drives the existing tick watchdog and add coverage for the v4 policy shape.
+- [x] Run the relevant Jest tests for gateway/canvas surfaces.
+- [x] Commit with `git commit -m "fix: align OpenClaw plugin surface handling"`.
 
 ## Phase 6: Bridge And Relay Compatibility Sweep
 
