@@ -52,7 +52,8 @@ import {
   CONNECT_REQUEST_TIMEOUT_MS,
   FORCE_RECONNECT_DEBOUNCE_MS,
   PAIRING_WAIT_TIMEOUT_MS,
-  PROTOCOL_VERSION,
+  OPENCLAW_MIN_PROTOCOL_VERSION,
+  OPENCLAW_PROTOCOL_VERSION,
   RECONNECT_BASE_MS,
   RECONNECT_MAX_MS,
   REQUEST_TIMEOUT_MS,
@@ -1445,8 +1446,8 @@ export class GatewayClient {
     const signatureB64 = bytesToBase64Url(signatureBytes);
 
     const connectParams = {
-      minProtocol: PROTOCOL_VERSION,
-      maxProtocol: PROTOCOL_VERSION,
+      minProtocol: OPENCLAW_MIN_PROTOCOL_VERSION,
+      maxProtocol: OPENCLAW_PROTOCOL_VERSION,
       client: {
         id: clientId,
         displayName: 'Clawket',

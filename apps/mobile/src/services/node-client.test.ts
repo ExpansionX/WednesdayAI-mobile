@@ -53,6 +53,13 @@ class MockWebSocket {
 describe('NodeClient', () => {
   let client: NodeClient;
 
+  async function flushUntil(predicate: () => boolean, turns = 10): Promise<void> {
+    for (let index = 0; index < turns; index += 1) {
+      if (predicate()) return;
+      await Promise.resolve();
+    }
+  }
+
   beforeEach(() => {
     client = new NodeClient();
   });
@@ -84,6 +91,30 @@ describe('NodeClient', () => {
     const ws = (client as any).ws as MockWebSocket;
     ws.onopen?.();
     expect(states).toContain('challenging');
+  });
+
+  it('advertises OpenClaw protocol v4 in node connect frames', async () => {
+    client.configure({ url: 'ws://localhost:18789', token: 'gateway-token' });
+    client.connect();
+
+    const ws = (client as any).ws as MockWebSocket;
+    ws.onopen?.();
+    expect(ws.send).not.toHaveBeenCalled();
+
+    ws.onmessage?.({
+      data: JSON.stringify({
+        type: 'event',
+        event: 'connect.challenge',
+        payload: { nonce: 'b'.repeat(64), ts: Date.now() },
+      }),
+    });
+    await flushUntil(() => ws.send.mock.calls.length > 0);
+
+    expect(ws.send).toHaveBeenCalledTimes(1);
+    const connectFrame = JSON.parse(ws.send.mock.calls[0][0]);
+    expect(connectFrame.method).toBe('connect');
+    expect(connectFrame.params.minProtocol).toBe(4);
+    expect(connectFrame.params.maxProtocol).toBe(4);
   });
 
   it('transitions to closed on disconnect', () => {

@@ -16,9 +16,10 @@ import {
 } from './node-capabilities';
 import { APP_PACKAGE_VERSION } from '../constants/app-version';
 import { getRuntimeClientId, getRuntimeDeviceFamily, getRuntimePlatform } from '../utils/platform';
-
-// Protocol version must match gateway expectation
-const PROTOCOL_VERSION = 3;
+import {
+  OPENCLAW_MIN_PROTOCOL_VERSION,
+  OPENCLAW_PROTOCOL_VERSION,
+} from './gateway-shared';
 
 // Reconnect config
 const RECONNECT_BASE_MS = 800;
@@ -260,8 +261,8 @@ export class NodeClient {
     const signatureB64 = bytesToBase64Url(signatureBytes);
 
     const connectParams = {
-      minProtocol: PROTOCOL_VERSION,
-      maxProtocol: PROTOCOL_VERSION,
+      minProtocol: OPENCLAW_MIN_PROTOCOL_VERSION,
+      maxProtocol: OPENCLAW_PROTOCOL_VERSION,
       client: {
         id: clientId,
         displayName: 'Clawket Node',

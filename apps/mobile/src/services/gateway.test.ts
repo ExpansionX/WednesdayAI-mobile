@@ -1104,6 +1104,37 @@ describe('GatewayClient', () => {
     });
   });
 
+  describe('connect protocol negotiation', () => {
+    it('waits for connect.challenge and advertises OpenClaw protocol v4', async () => {
+      mockDeviceIdentity();
+
+      client.configure({ url: 'wss://example.com', token: 'gateway-token' });
+      client.connect();
+      await flushPromises();
+      createdWs.readyState = MockWebSocket.OPEN;
+      createdWs.onopen!();
+      await flushPromises();
+
+      expect(createdWs.send).not.toHaveBeenCalled();
+
+      createdWs.onmessage!({
+        data: JSON.stringify({
+          type: 'event',
+          event: 'connect.challenge',
+          payload: { nonce: 'b'.repeat(64), ts: Date.now() },
+        }),
+      });
+      await flushPromises();
+
+      expect(createdWs.send).toHaveBeenCalledTimes(1);
+      const connectFrame = JSON.parse(createdWs.send.mock.calls[0][0] as string);
+      expect(connectFrame.method).toBe('connect');
+      expect(connectFrame.params.minProtocol).toBe(4);
+      expect(connectFrame.params.maxProtocol).toBe(4);
+      expect(createdWs.send.mock.calls[0][0]).not.toContain(RELAY_CONTROL_PREFIX);
+    });
+  });
+
   describe('relay bootstrap v2', () => {
     it('uses stored deviceToken in relay mode even when no legacy token or password is configured', async () => {
       const { StorageService } = jest.requireMock('./storage') as {

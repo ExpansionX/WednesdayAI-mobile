@@ -9,7 +9,8 @@ import type {
   NodeInvokeRequest,
 } from '../types/canvas';
 
-export const PROTOCOL_VERSION = 3;
+export const OPENCLAW_MIN_PROTOCOL_VERSION = 4;
+export const OPENCLAW_PROTOCOL_VERSION = 4;
 
 export const RECONNECT_BASE_MS = 800;
 export const RECONNECT_MAX_MS = 15_000;
