@@ -149,17 +149,29 @@
 **Files:**
 - No code changes expected unless verification finds issues.
 
-- [ ] Run `npm run mobile:typecheck`.
-- [ ] Run `npm run --workspace clawket test -- gateway.test.ts node-client.test.ts storage.test.ts --runInBand`.
-- [ ] Run `npm run bridge:test`.
-- [ ] Run `npm run relay:test`.
-- [ ] Start or use a current OpenClaw gateway from `/Users/david/Code/openclaw-dev`.
+- [x] Run `npm run mobile:typecheck`.
+  - Result: failed on pre-existing React Native JSX type incompatibilities for WebView, BlurView, and CameraView surfaces unrelated to the OpenClaw protocol changes.
+- [x] Run `npm run --workspace clawket test -- gateway.test.ts node-client.test.ts storage.test.ts --runInBand`.
+  - Result: passed, 141 tests.
+- [x] Run bridge runtime verification.
+  - Result: full `npm run bridge:test` remains blocked by the missing external Hermes source tree, so the OpenClaw-relevant bridge path was verified with `npx vitest run packages/bridge-runtime/src/runtime.test.ts packages/bridge-runtime/src/openclaw.test.ts`, `npm run --workspace @clawket/bridge-core test`, `npm run --workspace @clawket/bridge-runtime build`, and `npm run --workspace @p697/clawket test`.
+- [x] Run `npm run relay:test`.
+  - Result: passed across relay-shared, relay-registry, relay-worker, hermes-registry-worker, and hermes-relay-worker.
+- [x] Attempt to start or use a current OpenClaw gateway from `/Users/david/Code/openclaw-dev`.
+  - Result: no local listener on `127.0.0.1:18789`; `pnpm gateway:dev` is blocked by a broken pnpm lockfile reinstall prompt; direct `node scripts/run-node.mjs --dev gateway` fails before binding because the Canvas A2UI bundle is missing.
 - [ ] Connect Clawket through the same route that produced the protocol-mismatch log.
+  - Blocked: no runnable local gateway and no available physical iPhone device in the current environment.
 - [ ] Confirm OpenClaw logs show `hello-ok` negotiation with `protocol: 4` and no `protocol-mismatch`.
+  - Blocked by the same local gateway/device availability issues.
 - [ ] Perform one operator RPC such as `health` or `status`.
+  - Blocked by the same local gateway availability issue.
 - [ ] If node mode is enabled in this build, confirm a node connect can register and answer a simple invoke or presence check.
-- [ ] Build for iOS with Hermes disabled if still required locally, then install to the connected device.
-- [ ] Commit final verification fixes, if any.
+  - Blocked by the same local gateway/device availability issues.
+- [x] Build for iOS with Hermes disabled if still required locally.
+  - Result: added Expo iOS `jsEngine: "jsc"` and an iOS config plugin that writes `USE_HERMES=false` into generated Xcode build settings. `npx expo prebuild --platform ios` completed. Release `xcodebuild` succeeded with `CODE_SIGNING_ALLOWED=NO` after building the Office inline asset.
+- [ ] Install to the connected device.
+  - Blocked: the only listed iPhone is `unavailable`.
+- [x] Commit final verification fixes, if any.
 
 ## Risks And Guardrails
 
