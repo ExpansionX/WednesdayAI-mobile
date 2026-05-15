@@ -232,12 +232,18 @@ export class NodeClient {
     const secretKey = hexToBytes(identity.secretKeyHex);
     const publicKeyBytes = hexToBytes(identity.publicKeyHex);
 
+    const storedDeviceAuth = await StorageService.getOpenClawDeviceAuth(
+      identity.deviceId,
+      this.getDeviceTokenStorageScope(),
+      'node',
+    );
+    const storedNodeDeviceAuth = storedDeviceAuth?.role === 'node' ? storedDeviceAuth : null;
     const signedAt = Date.now();
-    const token = this.config?.token ?? '';
+    const token = storedNodeDeviceAuth?.token ?? this.config?.token ?? '';
     const clientId = getRuntimeClientId();
     const clientMode = 'node';
     const role = 'node';
-    const scopes: string[] = [];
+    const scopes = Array.isArray(storedNodeDeviceAuth?.scopes) ? storedNodeDeviceAuth.scopes : [];
     const platform = getRuntimePlatform();
     const deviceFamily = getRuntimeDeviceFamily();
 
@@ -283,7 +289,7 @@ export class NodeClient {
         nonce,
       },
       auth: {
-        token: this.config?.token,
+        token: token || undefined,
       },
     };
 

@@ -23,6 +23,7 @@ jest.mock('./storage', () => ({
     setIdentity: jest.fn(() => Promise.resolve()),
     clearIdentity: jest.fn(() => Promise.resolve()),
     setDeviceToken: jest.fn(() => Promise.resolve()),
+    getOpenClawDeviceAuth: jest.fn(() => Promise.resolve(null)),
     setOpenClawDeviceAuth: jest.fn(() => Promise.resolve()),
   },
 }));
@@ -62,6 +63,7 @@ describe('NodeClient', () => {
   }
 
   beforeEach(() => {
+    jest.clearAllMocks();
     client = new NodeClient();
   });
 
@@ -250,6 +252,79 @@ describe('NodeClient', () => {
     }, {
       gatewayUrl: 'ws://localhost:18789',
     });
+  });
+
+  it('reconnects node mode with stored OpenClaw device auth instead of bootstrap token', async () => {
+    const { StorageService } = jest.requireMock('./storage') as {
+      StorageService: { getOpenClawDeviceAuth: jest.Mock };
+    };
+    const nacl = jest.requireMock('tweetnacl') as {
+      sign: { detached: jest.Mock };
+    };
+    const textDecoder = new TextDecoder();
+    StorageService.getOpenClawDeviceAuth.mockResolvedValueOnce({
+      token: 'stored-node-token',
+      role: 'node',
+      scopes: [],
+      issuedAtMs: 123,
+    });
+    client.configure({ url: 'ws://localhost:18789', token: 'bootstrap-token' });
+    client.connect();
+
+    const ws = (client as any).ws as MockWebSocket;
+    ws.onopen?.();
+    ws.onmessage?.({
+      data: JSON.stringify({
+        type: 'event',
+        event: 'connect.challenge',
+        payload: { nonce: 'b'.repeat(64), ts: Date.now() },
+      }),
+    });
+    await flushUntil(() => ws.send.mock.calls.length > 0);
+
+    expect(StorageService.getOpenClawDeviceAuth).toHaveBeenCalledWith('a'.repeat(64), {
+      gatewayUrl: 'ws://localhost:18789',
+    }, 'node');
+    const connectFrame = JSON.parse(ws.send.mock.calls[0][0]);
+    expect(connectFrame.params.auth.token).toBe('stored-node-token');
+    const signedPayload = textDecoder.decode(nacl.sign.detached.mock.calls[0][0]);
+    expect(signedPayload).toContain('|stored-node-token|');
+    expect(signedPayload).not.toContain('bootstrap-token');
+  });
+
+  it('ignores roleless legacy device auth for node reconnects', async () => {
+    const { StorageService } = jest.requireMock('./storage') as {
+      StorageService: { getOpenClawDeviceAuth: jest.Mock };
+    };
+    const nacl = jest.requireMock('tweetnacl') as {
+      sign: { detached: jest.Mock };
+    };
+    const textDecoder = new TextDecoder();
+    StorageService.getOpenClawDeviceAuth.mockResolvedValueOnce({
+      token: 'legacy-roleless-token',
+      role: null,
+      scopes: null,
+      issuedAtMs: null,
+    });
+    client.configure({ url: 'ws://localhost:18789', token: 'bootstrap-token' });
+    client.connect();
+
+    const ws = (client as any).ws as MockWebSocket;
+    ws.onopen?.();
+    ws.onmessage?.({
+      data: JSON.stringify({
+        type: 'event',
+        event: 'connect.challenge',
+        payload: { nonce: 'b'.repeat(64), ts: Date.now() },
+      }),
+    });
+    await flushUntil(() => ws.send.mock.calls.length > 0);
+
+    const connectFrame = JSON.parse(ws.send.mock.calls[0][0]);
+    expect(connectFrame.params.auth.token).toBe('bootstrap-token');
+    const signedPayload = textDecoder.decode(nacl.sign.detached.mock.calls[0][0]);
+    expect(signedPayload).toContain('|bootstrap-token|');
+    expect(signedPayload).not.toContain('legacy-roleless-token');
   });
 
   it('rejects pending requests on error response', () => {
