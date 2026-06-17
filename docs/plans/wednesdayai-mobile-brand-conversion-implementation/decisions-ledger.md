@@ -16,3 +16,10 @@ The executor appends dated rows here when a task requires a choice not already l
 | D9 | review | Treat `docs/setup/identity-surface-inventory.md` as a read-only sibling for task 000 rather than listing it in task `files:`. | The confirmation-points document is a create-only boundary artifact based on the already-read setup inventories. Listing those docs in task `files:` would allow accidental edits before implementation begins. |
 | D10 | review | Make task 005 classify every changed file via `git diff --name-only`. | Re-review found the closeout scan was stale after task 003 and task 004 gained more files. The revised command scans the actual diff file list so new touched files cannot be skipped. |
 | D11 | review | Add `buildGatewayDefaultName` coverage to task 004. | Re-review found it also consumes `GatewayBackendKind`; the revised task requires an explicit WednesdayAI assertion for relay default naming. |
+
+## Task Verification Log
+
+| task | command | result |
+|------|---------|--------|
+| 000 | `test -f docs/setup/brand-conversion-first-slice-confirmation-points.md` | exit 0 |
+| 000 | `rg -n "WednesdayAI Mobile\|WednesdayAI\|com\\.expansionx\\.clawket\|@p697/clawket\|clawket pair\|YouMind disposition\|not chosen" docs/setup/brand-conversion-first-slice-confirmation-points.md` | matched the naming rule, unchanged confirmation-bound values, and unchosen surfaces |
