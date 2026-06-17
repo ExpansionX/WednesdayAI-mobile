@@ -2,7 +2,7 @@
 id: "002"
 phase: 1
 title: Create the ordered WednesdayAI Mobile roadmap
-status: ready
+status: passed
 depends_on: ["001"]
 parallel: false
 conflicts_with: []
