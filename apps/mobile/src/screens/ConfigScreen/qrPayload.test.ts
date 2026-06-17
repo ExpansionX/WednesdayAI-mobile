@@ -96,6 +96,23 @@ describe('parseQRPayload', () => {
       expect(result?.password).toBe('legacy_password');
       expect(result?.relay?.displayName).toBe('My Legacy Gateway');
     });
+
+    it('preserves an explicit WednesdayAI backend identity on OpenClaw-compatible relay payloads', () => {
+      const payload = JSON.stringify({
+        version: 1,
+        kind: 'clawket_pair',
+        backendKind: 'wednesdayai',
+        server: 'https://relay.example.com',
+        gatewayId: 'ocg_wednesdayai',
+        accessCode: 'wednesday_access_code',
+        token: 'wednesday_token',
+      });
+      const result = parseQRPayload(payload);
+      expect(result?.backendKind).toBe('wednesdayai');
+      expect(result?.transportKind).toBe('relay');
+      expect(result?.mode).toBe('relay');
+      expect(result?.token).toBe('wednesday_token');
+    });
   });
 
   describe('Hermes local v1 payload', () => {
@@ -232,6 +249,23 @@ describe('parseQRPayload', () => {
       expect(result?.backendKind).toBe('openclaw');
       expect(result?.transportKind).toBe('relay');
       expect(result?.relay?.gatewayId).toBe('ocg_xx');
+    });
+
+    it('preserves WednesdayAI backend identity in url=<direct> relay configs', () => {
+      const raw = 'openclaw://connect?url=wss://relay.example.com/ws&token=t&mode=relay&backendKind=wednesdayai&serverUrl=https://relay.example.com&gatewayId=ocg_wai';
+      const result = parseQRPayload(raw);
+      expect(result?.backendKind).toBe('wednesdayai');
+      expect(result?.transportKind).toBe('relay');
+      expect(result?.relay?.gatewayId).toBe('ocg_wai');
+    });
+
+    it('preserves WednesdayAI backend identity in host relay configs', () => {
+      const raw = 'openclaw://connect?host=192.168.1.10&port=18789&token=t&mode=relay&backend=wednesdayai&serverUrl=https://relay.example.com&gatewayId=ocg_wai';
+      const result = parseQRPayload(raw);
+      expect(result?.url).toBe('ws://192.168.1.10:18789');
+      expect(result?.backendKind).toBe('wednesdayai');
+      expect(result?.transportKind).toBe('relay');
+      expect(result?.relay?.gatewayId).toBe('ocg_wai');
     });
   });
 

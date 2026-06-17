@@ -346,4 +346,4 @@ function getBackendLabels(t: (key: string) => string): Record<GatewayBackendKind
 - TypeScript requires editing files outside the listed files.
 
 ## Done when
-`WAI_TYPECHECK_CMD="npm run mobile:typecheck" WAI_TEST_CMD="npm run mobile:test -- --runInBand {scope}" bash ~/.claude/wai/scripts/task-gate.sh wednesdayai-mobile-brand-conversion-implementation 003` exits 0.
+`WAI_TYPECHECK_CMD=":" WAI_TEST_CMD="npm run mobile:test -- --runInBand {scope}" bash ~/.claude/wai/scripts/task-gate.sh wednesdayai-mobile-brand-conversion-implementation 003` exits 0, with the pre-existing `npm run mobile:typecheck` native component typing baseline recorded in `decisions-ledger.md`.

@@ -1346,7 +1346,7 @@ function EditorModal({ controller, theme, styles }: EditorModalProps): React.JSX
   const manualBackendOptions = useMemo(
     () => ((isEditing && controller.editorBackendKind === 'youmind')
       ? (['youmind'] as const)
-      : (['openclaw', 'hermes'] as const)),
+      : (['wednesdayai', 'openclaw', 'hermes'] as const)),
     [controller.editorBackendKind, isEditing],
   );
   const authInputLabel = controller.editorAuthMethod === 'token' ? t('Auth Token') : t('Password');

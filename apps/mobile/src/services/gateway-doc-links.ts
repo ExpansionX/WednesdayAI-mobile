@@ -37,7 +37,7 @@ export function resolveGatewayDocumentationPageUrl(
   if (!descriptor.url) {
     return null;
   }
-  if (descriptor.source !== 'openclaw') {
+  if (descriptor.source !== 'openclaw' && descriptor.source !== 'wednesdayai') {
     return page === 'root' ? descriptor.url : null;
   }
   if (page === 'root') {

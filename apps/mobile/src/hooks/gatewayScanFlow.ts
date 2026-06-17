@@ -113,13 +113,14 @@ export async function claimRelayPairing(
       accessCode: payload.relay!.accessCode!,
     });
     const relayUrl = claimed.relayUrl.trim();
+    const backendKind = resolveGatewayBackendKind(payload);
     return {
       url: relayUrl,
-      backendKind: 'openclaw',
+      backendKind,
       transportKind: 'relay',
       token: payload.token,
       password: payload.password,
-      mode: 'relay',
+      mode: toLegacyGatewayMode({ backendKind, transportKind: 'relay' }),
       relay: {
         serverUrl: payload.relay!.serverUrl,
         gatewayId: claimed.gatewayId,

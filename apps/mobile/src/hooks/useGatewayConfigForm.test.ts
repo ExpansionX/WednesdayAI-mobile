@@ -243,6 +243,115 @@ describe('useGatewayConfigForm', () => {
     expect(onSaved).toHaveBeenCalled();
   });
 
+  it('keeps WednesdayAI manual connections on the OpenClaw-compatible auth path', async () => {
+    const onSaved = jest.fn();
+    const gateway = {
+      disconnect: jest.fn(),
+      configure: jest.fn(),
+      connect: jest.fn(),
+      getDeviceIdentity: jest.fn().mockResolvedValue({ deviceId: 'device-1' }),
+    } as any;
+
+    const { result } = renderHook(() =>
+      useGatewayConfigForm({
+        gateway,
+        initialConfig: null,
+        debugMode: false,
+        onSaved,
+        onReset: jest.fn(),
+      }),
+    );
+
+    await act(async () => {
+      result.current.openCreateEditor('manual');
+    });
+
+    await act(async () => {
+      result.current.setEditorBackendKind('wednesdayai');
+      result.current.setEditorUrl('ws://192.168.1.21:18789');
+      result.current.setEditorToken('wednesday-token');
+      result.current.setEditorName('WednesdayAI LAN');
+    });
+
+    expect(result.current.editorRequiresDirectAuth).toBe(true);
+
+    await act(async () => {
+      await result.current.saveEditor();
+    });
+
+    const lastCall = (StorageService.setGatewayConfigsState as jest.Mock).mock.calls.at(-1)?.[0];
+    expect(lastCall.configs[0]).toMatchObject({
+      name: 'WednesdayAI LAN',
+      backendKind: 'wednesdayai',
+      transportKind: 'custom',
+      mode: 'custom',
+      url: 'ws://192.168.1.21:18789',
+      token: 'wednesday-token',
+      password: undefined,
+      relay: undefined,
+      hermes: undefined,
+    });
+    expect(onSaved).toHaveBeenCalled();
+  });
+
+  it('preserves WednesdayAI auth credentials when editing an existing config', async () => {
+    (StorageService.getGatewayConfigsState as jest.Mock).mockResolvedValue({
+      activeId: 'cfg_wednesdayai',
+      configs: [{
+        id: 'cfg_wednesdayai',
+        name: 'WednesdayAI Gateway',
+        backendKind: 'wednesdayai',
+        transportKind: 'custom',
+        mode: 'custom',
+        url: 'ws://192.168.1.21:18789',
+        token: 'existing-token',
+        createdAt: 2,
+        updatedAt: 2,
+      }],
+    });
+
+    const gateway = {
+      disconnect: jest.fn(),
+      configure: jest.fn(),
+      connect: jest.fn(),
+      getDeviceIdentity: jest.fn().mockResolvedValue({ deviceId: 'device-1' }),
+    } as any;
+
+    const { result } = renderHook(() =>
+      useGatewayConfigForm({
+        gateway,
+        initialConfig: null,
+        debugMode: false,
+        onSaved: jest.fn(),
+        onReset: jest.fn(),
+      }),
+    );
+
+    await waitFor(() => {
+      expect(result.current.configs.length).toBe(1);
+    });
+
+    await act(async () => {
+      result.current.openEditEditor('cfg_wednesdayai');
+    });
+
+    expect(result.current.editorBackendKind).toBe('wednesdayai');
+    expect(result.current.editorRequiresDirectAuth).toBe(true);
+    expect(result.current.editorToken).toBe('existing-token');
+
+    await act(async () => {
+      await result.current.saveEditor();
+    });
+
+    const lastCall = (StorageService.setGatewayConfigsState as jest.Mock).mock.calls.at(-1)?.[0];
+    expect(lastCall.configs[0]).toMatchObject({
+      id: 'cfg_wednesdayai',
+      backendKind: 'wednesdayai',
+      token: 'existing-token',
+      password: undefined,
+    });
+  });
+
   it('prefers token auth method when opening an editor with both credentials', async () => {
     (StorageService.getGatewayConfigsState as jest.Mock).mockResolvedValue({
       activeId: null,

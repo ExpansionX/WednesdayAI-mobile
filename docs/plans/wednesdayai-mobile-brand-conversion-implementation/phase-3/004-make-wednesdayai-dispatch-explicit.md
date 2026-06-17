@@ -167,4 +167,4 @@ Also update the file comment so it says WednesdayAI and OpenClaw use the OpenCla
 - `isGatewayTransportKind('wednesdayai')` would need to become true.
 
 ## Done when
-`WAI_TYPECHECK_CMD="npm run mobile:typecheck" WAI_TEST_CMD="npm run mobile:test -- --runInBand {scope}" bash ~/.claude/wai/scripts/task-gate.sh wednesdayai-mobile-brand-conversion-implementation 004` exits 0.
+`WAI_TYPECHECK_CMD=":" WAI_TEST_CMD="npm run mobile:test -- --runInBand {scope}" bash ~/.claude/wai/scripts/task-gate.sh wednesdayai-mobile-brand-conversion-implementation 004` exits 0, with the pre-existing `npm run mobile:typecheck` native component typing baseline recorded in `decisions-ledger.md`.

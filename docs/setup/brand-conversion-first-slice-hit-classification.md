@@ -47,7 +47,7 @@ Confirmation-bound values stayed unchanged, including `slug: clawket`, `scheme: 
 
 `wednesdayai` was added as backend identity only, not transport identity.
 
-The changed backend descriptor files add `wednesdayai` to `GatewayBackendKind`, `BACKENDS`, capability lookup, backend type guard coverage, backend label copy, and exhaustive direct consumers. `GatewayTransportKind`, `GatewayMode`, relay transport detection, and connection-route logic did not add `wednesdayai`.
+The changed backend descriptor files add `wednesdayai` to `GatewayBackendKind`, `BACKENDS`, capability lookup, backend type guard coverage, backend label copy, and the direct consumers scoped in this first slice. Follow-up adversarial review also verified and remediated QR parsing, relay claim, manual editor auth, and docs-link seams so saved WednesdayAI configs keep their backend identity. `GatewayTransportKind`, `GatewayMode`, relay transport detection, and connection-route logic did not add `wednesdayai`.
 
 Focused backend tests cover:
 
@@ -58,6 +58,9 @@ Focused backend tests cover:
 - explicit `selectByBackend('wednesdayai', ...)`
 - `resolveGlobalMainSessionKey('wednesdayai')`
 - WednesdayAI relay/custom labels and default relay name
+- QR parsing and relay claim preservation for `backendKind: 'wednesdayai'`
+- WednesdayAI manual editor credential preservation
+- WednesdayAI Nodes documentation routing
 
 OpenClaw, Hermes, and retained YouMind compatibility remain explicit.
 
