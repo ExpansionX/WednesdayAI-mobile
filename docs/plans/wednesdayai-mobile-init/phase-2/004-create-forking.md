@@ -2,7 +2,7 @@
 id: "004"
 phase: 2
 title: Document the forkable repository model
-status: ready
+status: passed
 depends_on: ["003"]
 parallel: false
 conflicts_with: []
