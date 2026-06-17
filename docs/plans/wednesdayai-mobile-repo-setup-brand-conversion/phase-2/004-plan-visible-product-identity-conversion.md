@@ -2,7 +2,7 @@
 id: "004"
 phase: 2
 title: Plan visible product identity conversion
-status: ready
+status: passed
 depends_on: ["002"]
 parallel: false
 conflicts_with: []
