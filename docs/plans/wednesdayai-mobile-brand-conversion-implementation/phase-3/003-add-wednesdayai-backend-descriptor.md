@@ -10,22 +10,27 @@ files:
   - apps/mobile/src/types/index.ts
   - apps/mobile/src/services/gateway-backends.ts
   - apps/mobile/src/services/gateway-backends.test.ts
+  - apps/mobile/src/bootstrap/useAppBootstrap.ts
+  - apps/mobile/src/screens/ConfigScreen/ConfigScreenLayout.tsx
+  - apps/mobile/src/i18n/locales/en/config.json
+  - apps/mobile/src/i18n/locales/zh-Hans/config.json
+  - apps/mobile/src/i18n/locales/ja/config.json
+  - apps/mobile/src/i18n/locales/ko/config.json
+  - apps/mobile/src/i18n/locales/de/config.json
+  - apps/mobile/src/i18n/locales/es/config.json
 irreversible: false
 scope_test: "apps/mobile/src/services/gateway-backends.test.ts"
 allowed_change: edit
-covers_criteria: [SC6, SC7, SC8]
+covers_criteria: [SC4, SC6, SC8]
 ---
 ## Failing test (write first)
 In `apps/mobile/src/services/gateway-backends.test.ts`, update the focused backend tests before implementation:
 
 ```ts
 expect(resolveGatewayBackendKind({ backendKind: 'wednesdayai' } as any)).toBe('wednesdayai');
-expect(selectByBackend('wednesdayai', { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('W');
-expect(selectByBackend('wednesdayai', { openclaw: 'A', hermes: 'B' })).toBe('A');
 expect(getGatewayBackendDescriptor('wednesdayai').kind).toBe('wednesdayai');
 expect(getGatewayBackendDescriptor('wednesdayai').label).toBe('WednesdayAI');
 expect(isGatewayBackendKind('wednesdayai')).toBe(true);
-expect(isGatewayTransportKind('wednesdayai')).toBe(false);
 ```
 
 Run `npm run mobile:test -- --runInBand apps/mobile/src/services/gateway-backends.test.ts` and confirm it fails before implementation because `wednesdayai` is not yet a backend kind.
@@ -56,6 +61,7 @@ const WEDNESDAYAI_CAPABILITIES: GatewayBackendCapabilities = {
 
 const HERMES_CAPABILITIES: GatewayBackendCapabilities = {
 ```
+Record in the decisions ledger that this is the first-slice OpenClaw-compatible baseline from `docs/architecture/wednesdayai-backend-descriptor-plan.md`; later capability differences require evidence-backed follow-up tasks.
 
 - **File:** `apps/mobile/src/services/gateway-backends.ts`
 - **Anchor:** `BACKENDS` object.
@@ -98,36 +104,122 @@ export function isGatewayBackendKind(value: unknown): value is GatewayBackendKin
 }
 ```
 
-- **File:** `apps/mobile/src/services/gateway-backends.ts`
-- **Anchor:** `selectByBackend` signature and branch selection.
+- **File:** `apps/mobile/src/bootstrap/useAppBootstrap.ts`
+- **Anchor:** imports from `../types`.
 - **Before:**
 ```ts
-export function selectByBackend<T>(
-  input: GatewayLike | GatewayBackendKind | null | undefined,
-  options: { openclaw: T; hermes: T; youmind?: T },
-): T {
-  const kind = typeof input === 'string' && isGatewayBackendKind(input)
-    ? input
-    : resolveGatewayBackendKind(input as GatewayLike | null | undefined);
-  if (kind === 'hermes') return options.hermes;
-  if (kind === 'youmind') return options.youmind ?? options.openclaw;
-  return options.openclaw;
+import { AccentColorId, ChatAppearanceSettings, GatewayConfig, SpeechRecognitionLanguage, ThemeMode } from '../types';
+```
+- **After:**
+```ts
+import { AccentColorId, ChatAppearanceSettings, GatewayBackendKind, GatewayConfig, SpeechRecognitionLanguage, ThemeMode } from '../types';
+```
+
+- **File:** `apps/mobile/src/bootstrap/useAppBootstrap.ts`
+- **Anchor:** `buildAgentPreview` parameter type.
+- **Before:**
+```ts
+  backendKind: 'openclaw' | 'hermes' | 'youmind',
+```
+- **After:**
+```ts
+  backendKind: GatewayBackendKind,
+```
+
+- **File:** `apps/mobile/src/screens/ConfigScreen/ConfigScreenLayout.tsx`
+- **Anchor:** `getBackendLabels`.
+- **Before:**
+```ts
+function getBackendLabels(t: (key: string) => string): Record<GatewayBackendKind, string> {
+  return {
+    openclaw: t('OpenClaw'),
+    hermes: t('Hermes'),
+    youmind: t('YouMind'),
+  };
 }
 ```
 - **After:**
 ```ts
-export function selectByBackend<T>(
-  input: GatewayLike | GatewayBackendKind | null | undefined,
-  options: { wednesdayai?: T; openclaw: T; hermes: T; youmind?: T },
-): T {
-  const kind = typeof input === 'string' && isGatewayBackendKind(input)
-    ? input
-    : resolveGatewayBackendKind(input as GatewayLike | null | undefined);
-  if (kind === 'wednesdayai') return options.wednesdayai ?? options.openclaw;
-  if (kind === 'hermes') return options.hermes;
-  if (kind === 'youmind') return options.youmind ?? options.openclaw;
-  return options.openclaw;
+function getBackendLabels(t: (key: string) => string): Record<GatewayBackendKind, string> {
+  return {
+    wednesdayai: t('WednesdayAI'),
+    openclaw: t('OpenClaw'),
+    hermes: t('Hermes'),
+    youmind: t('YouMind'),
+  };
 }
+```
+
+- **File:** `apps/mobile/src/i18n/locales/en/config.json`
+- **Anchor:** near the existing `"OpenClaw": "OpenClaw",` entry.
+- **Before:**
+```json
+  "OpenClaw": "OpenClaw",
+```
+- **After:**
+```json
+  "WednesdayAI": "WednesdayAI",
+  "OpenClaw": "OpenClaw",
+```
+
+- **File:** `apps/mobile/src/i18n/locales/zh-Hans/config.json`
+- **Anchor:** near the existing `"OpenClaw": "OpenClaw",` entry.
+- **Before:**
+```json
+  "OpenClaw": "OpenClaw",
+```
+- **After:**
+```json
+  "WednesdayAI": "WednesdayAI",
+  "OpenClaw": "OpenClaw",
+```
+
+- **File:** `apps/mobile/src/i18n/locales/ja/config.json`
+- **Anchor:** near the existing `"OpenClaw": "OpenClaw",` entry.
+- **Before:**
+```json
+  "OpenClaw": "OpenClaw",
+```
+- **After:**
+```json
+  "WednesdayAI": "WednesdayAI",
+  "OpenClaw": "OpenClaw",
+```
+
+- **File:** `apps/mobile/src/i18n/locales/ko/config.json`
+- **Anchor:** near the existing `"OpenClaw": "OpenClaw",` entry.
+- **Before:**
+```json
+  "OpenClaw": "OpenClaw",
+```
+- **After:**
+```json
+  "WednesdayAI": "WednesdayAI",
+  "OpenClaw": "OpenClaw",
+```
+
+- **File:** `apps/mobile/src/i18n/locales/de/config.json`
+- **Anchor:** near the existing `"OpenClaw": "OpenClaw",` entry.
+- **Before:**
+```json
+  "OpenClaw": "OpenClaw",
+```
+- **After:**
+```json
+  "WednesdayAI": "WednesdayAI",
+  "OpenClaw": "OpenClaw",
+```
+
+- **File:** `apps/mobile/src/i18n/locales/es/config.json`
+- **Anchor:** near the existing `"OpenClaw": "OpenClaw",` entry.
+- **Before:**
+```json
+  "OpenClaw": "OpenClaw",
+```
+- **After:**
+```json
+  "WednesdayAI": "WednesdayAI",
+  "OpenClaw": "OpenClaw",
 ```
 
 - **File:** `apps/mobile/src/services/gateway-backends.test.ts`
@@ -149,33 +241,6 @@ export function selectByBackend<T>(
 ```
 
 - **File:** `apps/mobile/src/services/gateway-backends.test.ts`
-- **Anchor:** `selectByBackend` describe block, after the Hermes config test.
-- **Before:**
-```ts
-    it('returns the hermes branch for hermes config', () => {
-      expect(selectByBackend({ backendKind: 'hermes' } as any, { openclaw: 'A', hermes: 'B' })).toBe('B');
-    });
-
-    it('accepts a bare backend kind string', () => {
-```
-- **After:**
-```ts
-    it('returns the hermes branch for hermes config', () => {
-      expect(selectByBackend({ backendKind: 'hermes' } as any, { openclaw: 'A', hermes: 'B' })).toBe('B');
-    });
-
-    it('returns the explicit WednesdayAI branch when provided', () => {
-      expect(selectByBackend('wednesdayai', { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('W');
-    });
-
-    it('falls back to the OpenClaw-compatible branch for WednesdayAI until callers opt in', () => {
-      expect(selectByBackend('wednesdayai', { openclaw: 'A', hermes: 'B' })).toBe('A');
-    });
-
-    it('accepts a bare backend kind string', () => {
-```
-
-- **File:** `apps/mobile/src/services/gateway-backends.test.ts`
 - **Anchor:** `getGatewayBackendCapabilities` describe block, after the OpenClaw non-regression guard.
 - **Before:** the OpenClaw capability test ends with:
 ```ts
@@ -189,7 +254,7 @@ export function selectByBackend<T>(
       expect(caps.openClawConfigScreens).toBe(true);
     });
 
-    it('gives WednesdayAI the OpenClaw-compatible baseline for the first descriptor slice', () => {
+    it('gives WednesdayAI the evidence-backed OpenClaw-compatible baseline for the first descriptor slice', () => {
       const caps = getGatewayBackendCapabilities('wednesdayai');
       expect(caps.consoleCron).toBe(true);
       expect(caps.consoleCronCreate).toBe(true);
@@ -268,15 +333,17 @@ export function selectByBackend<T>(
 
 ## Allowed moves
 - Write the failing test assertions first, then make the minimal type/registry/helper changes above.
-- Keep `GatewayTransportKind` and `GatewayMode` text unchanged.
+- Keep `GatewayTransportKind`, `GatewayMode`, saved-config defaulting, and relay transport detection unchanged.
 - Keep OpenClaw, Hermes, and YouMind descriptor entries present.
-- Do not change saved-config defaulting, relay transport detection, gateway protocol, UI screens, storage migrations, or external repositories.
+- Add only the six `WednesdayAI` config locale entries required by `getBackendLabels`.
+- Do not change `selectByBackend` in this task; task 004 owns explicit dispatch call-site migration.
+- Do not change gateway protocol, storage migrations, connection routes, or external repositories.
 
 ## STOP triggers
 - Adding `wednesdayai` to `GatewayTransportKind`, `GatewayMode`, relay detection, or connection-route logic would be required.
 - Any existing OpenClaw, Hermes, or YouMind compatibility test fails and the fix would require behaviour beyond this descriptor slice.
 - The implementation would require screen-level `backendKind === 'wednesdayai'` conditionals.
-- TypeScript requires editing files outside the three listed files.
+- TypeScript requires editing files outside the listed files.
 
 ## Done when
 `WAI_TYPECHECK_CMD="npm run mobile:typecheck" WAI_TEST_CMD="npm run mobile:test -- --runInBand {scope}" bash ~/.claude/wai/scripts/task-gate.sh wednesdayai-mobile-brand-conversion-implementation 003` exits 0.

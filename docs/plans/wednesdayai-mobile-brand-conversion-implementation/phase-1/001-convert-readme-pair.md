@@ -3,7 +3,7 @@ id: "001"
 phase: 1
 title: Convert paired README product framing
 status: ready
-depends_on: []
+depends_on: ["000"]
 parallel: false
 conflicts_with: []
 files:
@@ -238,6 +238,7 @@ WednesdayAI Mobile 的公共仓库默认就可以 clone 下来自行运行，不
 - Edit only the exact README anchors listed above.
 - Keep `@p697/clawket`, `clawket pair`, `CLAWKET_REGISTRY_URL`, relay examples, proprietary module path, asset filenames, and App Store URL unchanged.
 - Keep OpenClaw, Hermes, and YouMind names where they describe compatibility, setup, pairing, or heritage.
+- Follow the naming rule from task 000: README/repository docs use `WednesdayAI Mobile`.
 - Do not edit package metadata, app config, source code, release files, or external repositories.
 
 ## STOP triggers

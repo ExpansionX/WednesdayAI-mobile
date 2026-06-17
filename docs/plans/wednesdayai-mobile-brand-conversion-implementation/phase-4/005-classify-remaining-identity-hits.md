@@ -1,9 +1,9 @@
 ---
-id: "004"
+id: "005"
 phase: 4
 title: Classify remaining identity hits
 status: ready
-depends_on: ["003"]
+depends_on: ["004"]
 parallel: false
 conflicts_with: []
 files:
@@ -59,6 +59,7 @@ rg -n "GatewayTransportKind|GatewayMode|isGatewayTransportKind|wednesdayai" apps
 
 The report must state:
 
+- Task 000 recorded confirmation-bound surfaces before edits began.
 - `README.md` and `README.zh-CN.md` changed together.
 - `apps/mobile/app.json` changed only `expo.name` and permission copy; confirmation-bound IDs stayed unchanged.
 - `wednesdayai` was added as backend identity only, not transport identity.
@@ -83,4 +84,4 @@ The report must state:
 - `git diff --name-only` contains only files inside this repository.
 
 ## Done when
-`WAI_TYPECHECK_CMD=":" WAI_TEST_CMD=":" bash ~/.claude/wai/scripts/task-gate.sh wednesdayai-mobile-brand-conversion-implementation 004` exits 0 after the manual verification checks above are recorded in `docs/plans/wednesdayai-mobile-brand-conversion-implementation/decisions-ledger.md`.
+`WAI_TYPECHECK_CMD=":" WAI_TEST_CMD=":" bash ~/.claude/wai/scripts/task-gate.sh wednesdayai-mobile-brand-conversion-implementation 005` exits 0 after the manual verification checks above are recorded in `docs/plans/wednesdayai-mobile-brand-conversion-implementation/decisions-ledger.md`.
