@@ -59,7 +59,12 @@ The mobile app should render stable primitives. The WednesdayAI system should ow
 Use WednesdayAI naming and `wednesdayai` code identifiers where appropriate. Use Australian English,
 direct tone, and no upstream disparagement.
 
-Keep OpenClaw heritage attribution where legally or ethically required. Suggested wording:
+Keep OpenClaw heritage attribution where legally or ethically required, and make the downstream
+relationship explicit. Suggested wording for a fork of WednesdayAI Mobile:
+
+> YourApp is a fork of WednesdayAI Mobile. WednesdayAI is a Hard fork of OpenClaw at v2026.3.2.
+
+Suggested wording for official WednesdayAI Mobile docs:
 
 > WednesdayAI is a Hard fork of OpenClaw at v2026.3.2.
 

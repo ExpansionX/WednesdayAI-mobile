@@ -95,10 +95,14 @@ disparagement.
 
 ## Industry guidance
 
-- Does well: platform-native controls, accessibility, privacy-sensitive permissions, transparent
-  agent state, user control, interruptible voice turns, and text fallback.
+- Does well: Apple Human Interface Guidelines for native controls, discoverability,
+  privacy-sensitive permissions, and Siri/App Intents direction where appropriate; Material Design
+  for Android navigation, accessibility, component behaviour, and adaptive UI; responsible-agent
+  guidance for transparency, reliability, safety, privacy, accountability, inclusiveness, and
+  human-centred oversight.
 - Borrow: iOS and Android native interaction patterns, visible autonomy, consent before sensitive
-  actions, privacy boundaries, and recoverable multimodal flows.
+  actions, clear display of what the agent can access, what it is waiting on, what it changed, how to
+  stop it, undo/cancel where possible, privacy boundaries, and recoverable multimodal flows.
 - Avoid/reference-only: avoid platform-hostile UI, hidden autonomy, and engagement-seeking companion
   patterns.
 - Order: applies to every user-facing phase.

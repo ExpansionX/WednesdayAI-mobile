@@ -30,6 +30,10 @@ strategy in the new repository before the first product conversion commit.
 - Confirm default branch and branch protection.
 - Confirm licence and attribution files.
 - Confirm `README.md`, `VISION.md`, `ROADMAP.md`, `SETUP.md`, and `FORKING.md` are present.
+- Confirm `docs/architecture/backend-transport.md`,
+  `docs/architecture/mobile-extension-contract.md`,
+  `docs/architecture/core-app-extraction.md`, and
+  `docs/architecture/reference-systems.md` are imported with the repository seed.
 - Confirm docs links point to WednesdayAI destinations.
 - Confirm CI names and workflow badges use WednesdayAI Mobile.
 - Confirm issue templates and PR templates do not retain stale Clawket-only wording.

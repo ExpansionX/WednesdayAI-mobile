@@ -146,7 +146,7 @@ After the core loop is stable, polish the mobile experience:
 | opcode | Project/session browser, background-agent timelines, checkpoints, MCP/plugin management, usage analytics. | Do not centre developer dashboards over everyday voice UX. | Use after direct management basics. |
 | Claudia | Source-backed memory review, relationship/context surfaces, commitment tracking patterns. | Avoid companion dark patterns or opaque emotional hooks. | Use for memory/context review surfaces. |
 | NanoClaw | Forkable base philosophy, skill-installed capabilities, isolation/security patterns. | Do not make every fork capability core-owned. | Use for fork and extension guidance. |
-| Industry guidance | Platform-native iOS/Android controls, transparent agent state, privacy boundaries, user control, interruptible voice turns, text fallback. | Do not imitate platform-hostile or engagement-seeking patterns. | Applies to every user-facing phase. |
+| Industry guidance | Apple HIG controls and privacy-sensitive permissions, Siri/App Intents direction where appropriate, Material Design navigation/accessibility/component behaviour on Android, transparent agent state, visible autonomy, privacy/security/transparency/accountability/inclusiveness, interruptible voice turns, undo/cancel, and text fallback. | Do not imitate platform-hostile UI, hidden autonomy, opaque access, or engagement-seeking companion patterns. | Applies to every user-facing phase. |
 
 ## Immediate next action
 

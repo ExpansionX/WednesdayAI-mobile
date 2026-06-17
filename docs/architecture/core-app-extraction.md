@@ -44,6 +44,8 @@ Before deletion or archival, preserve useful knowledge:
 - iOS signing, App Store metadata, RevenueCat/store setup, and release validation;
 - macOS dev, build, archive, export, signing, and entitlements knowledge;
 - Mac Catalyst feature gating for QR scanning, camera capture, file picking, and device identity;
+- `apps/shared/OpenClawKit`, including `OpenClawProtocol`, `OpenClawKit`, and `OpenClawChatUI`
+  protocol/chat UI packaging, as reference material only;
 - any shared protocol, node, or gateway ideas not already documented elsewhere.
 
 Preservation can be done by copying notes into `WednesdayAI-mobile` docs, creating a reference
