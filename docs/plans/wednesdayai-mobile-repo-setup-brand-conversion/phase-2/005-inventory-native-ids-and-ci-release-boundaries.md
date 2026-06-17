@@ -2,7 +2,7 @@
 id: "005"
 phase: 2
 title: Inventory native IDs and CI release boundaries
-status: ready
+status: passed
 depends_on: ["002"]
 parallel: false
 conflicts_with: []
