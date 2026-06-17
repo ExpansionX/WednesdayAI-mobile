@@ -1,6 +1,6 @@
 ---
 doc_type: spec
-status: active
+status: shipped
 workstream: wednesdayai-mobile-repo-setup-brand-conversion
 change_kind: docs
 ---
@@ -8,7 +8,7 @@ change_kind: docs
 # WednesdayAI Mobile Repository Setup and Brand Conversion
 
 **Date:** 2026-06-17
-**Status:** active design settled by `/wai:spec`
+**Status:** shipped
 **Author:** David Rudduck (via agent)
 
 ## Intent (what / why)
