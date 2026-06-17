@@ -2,7 +2,7 @@
 id: "006"
 phase: 3
 title: Document plugin and skill mobile affordances
-status: ready
+status: passed
 depends_on: ["005"]
 parallel: false
 conflicts_with: []
