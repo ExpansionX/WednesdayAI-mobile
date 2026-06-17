@@ -222,7 +222,7 @@ WednesdayAI Mobile 的公共仓库默认就可以 clone 下来自行运行，不
 - 如果 analytics、support、legal 等值为空，App 会自动隐藏或禁用对应集成
 - 如果 RevenueCat 未配置，App 会跳过订阅计费并默认解锁 Pro
 
-完整的分发边界说明请阅读 [SELF_HOSTING_MODEL.md](./SELF_HOSTING_MODEL.md)。
+当前自托管和分发边界说明请阅读 [docs/self-hosting.md](./docs/self-hosting.md)。
 
 ### 自托管文档
 

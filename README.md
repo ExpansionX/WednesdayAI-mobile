@@ -224,7 +224,7 @@ Key defaults for self-hosters:
 - If analytics, support, or legal links are unset, the app disables or hides those integrations
 - If RevenueCat is unset, the app skips subscription billing and defaults to unlocked Pro access
 
-For the full distribution model, read [SELF_HOSTING_MODEL.md](./SELF_HOSTING_MODEL.md).
+For the current self-hosting and distribution boundaries, read [docs/self-hosting.md](./docs/self-hosting.md).
 
 ### Self-Hosting Docs
 

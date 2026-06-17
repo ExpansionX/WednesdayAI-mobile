@@ -1,11 +1,14 @@
 # iOS App Store Release Checklist
 
-This document tracks the local Xcode release process and App Store Connect items needed to ship Clawket with RevenueCat-powered subscriptions.
+This document tracks the local Xcode release process and App Store Connect items needed to ship WednesdayAI Mobile with the currently retained Clawket-era release infrastructure.
 
 ## Current App Identifiers
 
-- App name: `Clawket`
-- Bundle ID: `com.p697.clawket`
+- App display name: `WednesdayAI`
+- Current checked-in bundle ID: `com.expansionx.clawket`
+- Expo slug: `clawket`
+- URL scheme: `clawket`
+- Expo owner: `p697`
 - Apple Team ID: keep local to the release environment
 - App Store Connect app ID: keep local to the release environment
 - RevenueCat entitlement: `Clawket Pro`
@@ -17,6 +20,8 @@ This document tracks the local Xcode release process and App Store Connect items
 - App Store products:
   - `com.p697.clawket.pro.monthly`
   - `com.p697.clawket.pro.yearly`
+
+The first WednesdayAI Mobile brand-conversion slice updates visible app identity only. It does not choose final App Store metadata, RevenueCat identifiers, subscription names, Expo owner/project, URL scheme, or public package naming. Keep those values unchanged unless a later scoped migration explicitly changes them.
 
 ## 1. App Store Connect Checklist
 
@@ -68,7 +73,7 @@ This document tracks the local Xcode release process and App Store Connect items
 - [ ] `EXPO_PUBLIC_UNLOCK_PRO` is not set for TestFlight / production
 - [ ] `ios/.xcode.env` still contains the generated env-source block for `.env` and `.env.local`
 - [ ] Xcode is signed into the Apple Developer account that owns the app
-- [ ] The correct team is selected for the `Clawket` target
+- [ ] The correct team is selected for the current native app target
 - [ ] A valid iOS Distribution or Apple Distribution signing identity is available on this Mac
 
 ### When Adding A New Mobile Environment Variable

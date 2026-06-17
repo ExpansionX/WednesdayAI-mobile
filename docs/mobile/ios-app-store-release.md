@@ -1,11 +1,14 @@
 # iOS App Store Release Checklist
 
-This document tracks the local Xcode release process and App Store Connect items needed to ship Clawket with RevenueCat-powered subscriptions and lifetime access.
+This document tracks the local Xcode release process and App Store Connect items needed to ship WednesdayAI Mobile with the currently retained Clawket-era release infrastructure.
 
 ## Current App Identifiers
 
-- App name: `Clawket`
-- Bundle ID: `com.p697.clawket`
+- App display name: `WednesdayAI`
+- Current checked-in bundle ID: `com.expansionx.clawket`
+- Expo slug: `clawket`
+- URL scheme: `clawket`
+- Expo owner: `p697`
 - Apple Team ID: keep local to the release environment
 - App Store Connect app ID: keep local to the release environment
 - RevenueCat entitlement: `Clawket Pro`
@@ -19,6 +22,8 @@ This document tracks the local Xcode release process and App Store Connect items
   - `com.p697.clawket.pro.monthly`
   - `com.p697.clawket.pro.yearly`
   - `com.p697.clawket.pro.lifetime`
+
+The first WednesdayAI Mobile brand-conversion slice updates visible app identity only. It does not choose final App Store metadata, RevenueCat identifiers, subscription names, Expo owner/project, URL scheme, or public package naming. Keep those values unchanged unless a later scoped migration explicitly changes them.
 
 ## 1. App Store Connect Checklist
 
@@ -70,13 +75,14 @@ This document tracks the local Xcode release process and App Store Connect items
 ## 3. Local Build Environment Checklist
 
 - [ ] Start from `.env.example` for local env shape
+- [ ] `npm run mobile:config:check:ios` passes
 - [ ] `.env.local` or local shell environment contains `EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY`
 - [ ] `.env.local` or local shell environment contains `EXPO_PUBLIC_REVENUECAT_PRO_ENTITLEMENT_ID=Clawket Pro`
 - [ ] `.env.local` or local shell environment contains `EXPO_PUBLIC_REVENUECAT_PRO_OFFERING_ID=default`
 - [ ] `EXPO_PUBLIC_REVENUECAT_TEST_API_KEY` is not set for TestFlight / production
 - [ ] `EXPO_PUBLIC_UNLOCK_PRO` is not set for TestFlight / production
 - [ ] Xcode is signed into the Apple Developer account that owns the app
-- [ ] The correct team is selected for the `Clawket` target
+- [ ] The correct team is selected for the current native app target
 - [ ] A valid iOS Distribution or Apple Distribution signing identity is available on this Mac
 
 ## 4. Pre-Build Commands

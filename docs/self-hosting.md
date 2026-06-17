@@ -1,14 +1,16 @@
-# Self-Hosting Clawket
+# Self-Hosting WednesdayAI Mobile
 
-This guide is for operators who clone the public repository and want to run Clawket on infrastructure they control.
+This guide is for operators who clone the public repository and want to run WednesdayAI Mobile on infrastructure they control.
+
+WednesdayAI Mobile is a hard fork of Clawket. During the first brand-conversion slice, the app display name is `WednesdayAI`, while current package names, bridge commands, relay defaults, Expo slug/scheme/owner, and native IDs remain unchanged until a scoped migration changes them.
 
 ## What You Need
 
 - Node.js and npm
-- an OpenClaw host that the bridge can control
+- a WednesdayAI or OpenClaw-compatible host that the bridge can control
 - Xcode / Expo tooling only if you want to build the mobile app yourself
 
-Cloudflare is optional. Clawket supports both:
+Cloudflare is optional. WednesdayAI Mobile currently supports both:
 
 - a relay-backed mode using `relay-registry` and `relay-worker`
 - a direct mode using LAN IP, Tailscale IP, or another custom gateway URL
@@ -17,7 +19,7 @@ Cloudflare is optional. Clawket supports both:
 
 ```bash
 git clone <your-fork-or-clone-url>
-cd clawket
+cd WednesdayAI-mobile
 npm install
 ```
 
@@ -25,7 +27,7 @@ npm install
 
 ### Option A: Direct local or Tailscale pairing
 
-If you do not want to deploy relay infrastructure, you can pair directly against your OpenClaw gateway.
+If you do not want to deploy relay infrastructure, you can pair directly against a WednesdayAI or OpenClaw-compatible gateway.
 
 Auto-detect a LAN pairing URL:
 
@@ -105,7 +107,7 @@ If you are building the mobile app yourself, copy `apps/mobile/.env.example` to 
 Examples:
 
 - support/legal links for your own fork
-- docs link for your own OpenClaw docs
+- docs link for your own WednesdayAI or OpenClaw-compatible docs
 - other optional integrations only if you operate those services yourself
 
 If you leave those values empty, the app hides or disables those integrations.
@@ -120,7 +122,7 @@ npm run mobile:config:check:ios
 
 Direct Xcode `Build` / `Archive` flows read `apps/mobile/.env.local` through `apps/mobile/ios/.xcode.env`, so iOS bundle-time `EXPO_PUBLIC_*` values stay aligned with the local Expo config.
 
-Private-service configuration and related self-hosting defaults are documented in [SELF_HOSTING_MODEL.md](../SELF_HOSTING_MODEL.md).
+This first brand-conversion slice intentionally does not choose final public relay domains, public package names, or store metadata. Keep any private-service configuration in local environment files or private deployment settings.
 
 When you add a new mobile env variable:
 

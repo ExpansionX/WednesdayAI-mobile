@@ -1,6 +1,6 @@
 # Google Play Closed Testing Checklist
 
-This document is the practical Android release checklist for shipping Clawket to Google Play closed testing with RevenueCat subscriptions enabled.
+This document is the practical Android release checklist for shipping WednesdayAI Mobile to Google Play closed testing with the currently retained Clawket-era RevenueCat configuration.
 
 Use it together with `docs/android-build.md`.
 
@@ -117,7 +117,7 @@ Keep both files private:
 
 In Play Console, do these steps:
 
-1. Create or open the app with package name `com.p697.clawket`.
+1. Create or open the app with the current checked-in package name `com.expansionx.clawket`.
 2. Complete organization, payments profile, and app access basics if they are still incomplete.
 3. Fill the app listing enough to allow testing distribution.
 4. Create a closed testing track.
@@ -151,9 +151,9 @@ After creating them:
 
 In RevenueCat:
 
-1. Open the existing Clawket project.
+1. Open the existing Clawket-era RevenueCat project.
 2. Open the Android app inside that project, or add one if only iOS exists today.
-3. Set the Android package name to `com.p697.clawket`.
+3. Set the Android package name to `com.expansionx.clawket`.
 4. Confirm the entitlement is still `Clawket Pro`.
 5. In the `default` offering, map:
    - `$rc_monthly` -> Android monthly product

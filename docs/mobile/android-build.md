@@ -216,7 +216,7 @@ INSTALL_FAILED_UPDATE_INCOMPATIBLE
 When that happens:
 
 ```bash
-adb uninstall com.p697.clawket
+adb uninstall com.expansionx.clawket
 adb install android/app/build/outputs/apk/release/app-release.apk
 ```
 
@@ -298,7 +298,7 @@ Cause:
 Fix:
 
 ```bash
-adb uninstall com.p697.clawket
+adb uninstall com.expansionx.clawket
 adb install android/app/build/outputs/apk/release/app-release.apk
 ```
 
