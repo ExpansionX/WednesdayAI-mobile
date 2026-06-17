@@ -26,3 +26,7 @@ The executor appends dated rows here when a task requires a choice not already l
 | 001 | `git diff --name-only -- README.md README.zh-CN.md` | printed exactly `README.md` and `README.zh-CN.md` |
 | 001 | `rg -n "WednesdayAI Mobile\|hard fork\|OpenClaw\|Hermes\|@p697/clawket\|clawket pair\|CLAWKET_REGISTRY_URL" README.md README.zh-CN.md` | matched new product framing and retained package, command, registry, OpenClaw, and Hermes references |
 | 001 | `rg -n "Clawket\|OpenClaw\|Hermes\|YouMind" README.md README.zh-CN.md` | remaining hits classified as hard-fork attribution, OpenClaw/Hermes compatibility/setup, or current package/command/default boundary; no YouMind hits |
+| 002 | `node -e "const app=require('./apps/mobile/app.json').expo; if (app.name !== 'WednesdayAI') process.exit(1); if (app.slug !== 'clawket') process.exit(2); if (app.ios.bundleIdentifier !== 'com.expansionx.clawket') process.exit(3); if (app.android.package !== 'com.expansionx.clawket') process.exit(4); if (app.scheme !== 'clawket') process.exit(5); if (app.owner !== 'p697') process.exit(6);"` | exit 0 |
+| 002 | `rg -n "Allow Clawket\|\"name\": \"Clawket\"" apps/mobile/app.json` | no matches |
+| 002 | `rg -n "com\\.expansionx\\.clawket\|\"slug\": \"clawket\"\|\"scheme\": \"clawket\"\|\"owner\": \"p697\"\|972e845f-da81-44db-a908-24be4ca80288" apps/mobile/app.json` | matched unchanged native IDs, slug, scheme, owner, app group, and EAS project ID |
+| 002 | `npm run mobile:config:check` | exit 0; public config check reported PostHog disabled and RevenueCat disabled |

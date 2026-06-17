@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Clawket",
+    "name": "WednesdayAI",
     "slug": "clawket",
     "version": "2.1.0",
     "orientation": "portrait",
@@ -17,9 +17,9 @@
       "jsEngine": "jsc",
       "bundleIdentifier": "com.expansionx.clawket",
       "infoPlist": {
-        "NSCameraUsageDescription": "Allow Clawket to use your camera to scan QR codes and take photos to send to AI.",
-        "NSPhotoLibraryAddUsageDescription": "Allow Clawket to save stats posters to your photo library.",
-        "NSSpeechRecognitionUsageDescription": "Allow Clawket to transcribe your speech into chat messages.",
+        "NSCameraUsageDescription": "Allow WednesdayAI to use your camera to scan QR codes and take photos to send to AI.",
+        "NSPhotoLibraryAddUsageDescription": "Allow WednesdayAI to save stats posters to your photo library.",
+        "NSSpeechRecognitionUsageDescription": "Allow WednesdayAI to transcribe your speech into chat messages.",
         "ITSAppUsesNonExemptEncryption": false,
         "CFBundleAllowMixedLocalizations": true,
         "CFBundleLocalizations": [
@@ -62,14 +62,14 @@
       [
         "expo-location",
         {
-          "locationAlwaysAndWhenInUsePermission": "Allow Clawket to access your location so your AI agent can know where you are."
+          "locationAlwaysAndWhenInUsePermission": "Allow WednesdayAI to access your location so your AI agent can know where you are."
         }
       ],
       [
         "expo-media-library",
         {
-          "photosPermission": "Allow Clawket to save stats posters to your photo library.",
-          "savePhotosPermission": "Allow Clawket to save stats posters to your photo library."
+          "photosPermission": "Allow WednesdayAI to save stats posters to your photo library.",
+          "savePhotosPermission": "Allow WednesdayAI to save stats posters to your photo library."
         }
       ],
       "@react-native-community/datetimepicker",
