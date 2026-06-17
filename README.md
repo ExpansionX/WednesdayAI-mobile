@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="./assets/clawket-hero.png" alt="Clawket" />
+  <img src="./assets/clawket-hero.png" alt="WednesdayAI Mobile" />
 </p>
 
-# Clawket
+# WednesdayAI Mobile
 
 [![npm version](https://img.shields.io/npm/v/@p697/clawket)](https://www.npmjs.com/package/@p697/clawket)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
@@ -10,11 +10,11 @@
 
 [中文说明](./README.zh-CN.md)
 
-Clawket is an open-source mobile app for managing your AI agents on the go. It currently supports [OpenClaw](https://github.com/openclaw/openclaw) and [Hermes](https://github.com/NousResearch/hermes-agent), and is available on iOS and Android.
+WednesdayAI Mobile is an open-source mobile app for managing WednesdayAI and compatible AI-agent backends on the go. This repository is a hard fork of Clawket, preserving OpenClaw heritage while making WednesdayAI Mobile the primary product direction. It currently supports [OpenClaw](https://github.com/openclaw/openclaw) and [Hermes](https://github.com/NousResearch/hermes-agent), and is available on iOS and Android.
 
 <p align="center">
   <a href="https://apps.apple.com/app/id6759597015">
-    <img src="./assets/clawket-app-store.png" alt="Scan to download Clawket on the App Store" width="180" />
+    <img src="./assets/clawket-app-store.png" alt="Scan to open the WednesdayAI Mobile App Store page" width="180" />
   </a>
 </p>
 <p align="center">
@@ -23,7 +23,7 @@ Clawket is an open-source mobile app for managing your AI agents on the go. It c
 
 ## Key Features
 
-- **📱 Mobile control for OpenClaw** — Chat, manage agents, configure models, schedule cron jobs, and monitor sessions — all from your phone
+- **📱 Mobile control for WednesdayAI and compatible backends** — Chat, manage agents, configure models, schedule cron jobs, and monitor sessions — all from your phone
 - **🔒 Secure by default** — Token-based authentication + TLS encryption for both relay and direct connections
 - **🌐 Flexible connectivity** — Connect via cloud relay, local network, or Tailscale — no port forwarding needed
 - **🖥️ Full remote console** — Manage agents, channels, skills, files, devices, and logs without touching a terminal
@@ -44,7 +44,7 @@ Clawket is an open-source mobile app for managing your AI agents on the go. It c
 └──────────────────┘                                  └──────────────┘
 ```
 
-Clawket supports two connection paths:
+WednesdayAI Mobile currently inherits Clawket's two connection paths:
 
 - **Relay mode** — Use `relay-registry` + `relay-worker` for a cloud-backed connection with automatic pairing.
 - **Direct mode** — Connect directly via LAN IP, Tailscale IP, or any custom gateway URL — no relay infrastructure needed.
@@ -53,7 +53,7 @@ Clawket supports two connection paths:
 
 1. Run `clawket pair` on your Mac/PC — the bridge auto-detects which local backends are available and prints one or more time-limited QR codes.
 2. Run `clawket pair --local` if you want direct local pairing instead of relay-backed pairing.
-3. Scan the QR with the Clawket mobile app to trust that machine.
+3. Scan the QR with the WednesdayAI Mobile app to trust that machine.
 4. In relay mode, the registry verifies the pairing and the relay worker carries real-time WebSocket traffic between your phone and the bridge.
 5. In direct mode, the app connects straight to your backend bridge over LAN, Tailscale, or another direct URL — no relay needed.
 6. After the first pairing, reconnection is automatic.
@@ -62,7 +62,7 @@ Current pairing behavior:
 
 - If the machine only has OpenClaw, `clawket pair` and `clawket pair --local` behave the same as before.
 - If the machine only has Hermes, `clawket pair` and `clawket pair --local` generate a Hermes local bridge QR.
-- If the machine has both OpenClaw and Hermes, Clawket prints one QR per backend and clearly labels them.
+- If the machine has both OpenClaw and Hermes, the bridge prints one QR per backend and clearly labels them.
 
 ## Workspace Layout
 
@@ -213,7 +213,7 @@ Choose the prerequisites that match what you want to do:
 
 ## Self-Hosting
 
-Clawket is designed so the public repository can be cloned and run without depending on an official hosted backend. You can use either a relay-backed setup that you operate yourself, or a pure local/direct setup over LAN, Tailscale, or another custom gateway URL.
+WednesdayAI Mobile is designed so the public repository can be cloned and run without depending on an official hosted backend. During the hard-fork transition, the repository intentionally keeps current Clawket package names, commands, and relay defaults until a scoped compatibility migration changes them. You can use either a relay-backed setup that you operate yourself, or a pure local/direct setup over LAN, Tailscale, or another custom gateway URL.
 
 Key defaults for self-hosters:
 

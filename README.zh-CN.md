@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="./assets/clawket-hero.png" alt="Clawket" />
+  <img src="./assets/clawket-hero.png" alt="WednesdayAI Mobile" />
 </p>
 
-# Clawket
+# WednesdayAI Mobile
 
 [![npm version](https://img.shields.io/npm/v/@p697/clawket)](https://www.npmjs.com/package/@p697/clawket)
 [![License: AGPL-3.0](https://img.shields.io/badge/License-AGPL--3.0-blue.svg)](LICENSE)
@@ -10,11 +10,11 @@
 
 [English README](./README.md)
 
-Clawket 是一个开源的移动端应用，用来随时随地管理你的 AI Agent。目前同时支持 [OpenClaw](https://github.com/openclaw/openclaw) 和 [Hermes](https://github.com/NousResearch/hermes-agent)，支持 iOS 和 Android。
+WednesdayAI Mobile 是一个开源的移动端应用，用来随时随地管理 WednesdayAI 以及兼容的 AI Agent 后端。本仓库是 Clawket 的 hard fork，保留 OpenClaw 传承，同时将 WednesdayAI Mobile 作为主要产品方向。目前同时支持 [OpenClaw](https://github.com/openclaw/openclaw) 和 [Hermes](https://github.com/NousResearch/hermes-agent)，支持 iOS 和 Android。
 
 <p align="center">
   <a href="https://apps.apple.com/app/id6759597015">
-    <img src="./assets/clawket-app-store.png" alt="扫码前往 Clawket App Store 下载页" width="180" />
+    <img src="./assets/clawket-app-store.png" alt="扫码打开 WednesdayAI Mobile App Store 页面" width="180" />
   </a>
 </p>
 <p align="center">
@@ -23,7 +23,7 @@ Clawket 是一个开源的移动端应用，用来随时随地管理你的 AI Ag
 
 ## 核心特性
 
-- **📱 OpenClaw 移动端** — 聊天、管理 Agent、配置模型、设置定时任务、监控 Session，全部在手机上完成
+- **📱 WednesdayAI 与兼容后端的移动控制台** — 聊天、管理 Agent、配置模型、设置定时任务、监控 Session，全部在手机上完成
 - **🔒 默认安全** — Token 认证 + TLS 加密传输，Relay 和直连模式均支持
 - **🌐 灵活连接** — 支持云端 Relay、局域网直连、Tailscale，无需端口转发
 - **🖥️ 完整远程控制台** — 管理 Agent、Channel、Skill、文件、设备、日志，不用碰终端
@@ -44,7 +44,7 @@ Clawket 是一个开源的移动端应用，用来随时随地管理你的 AI Ag
 └──────────────────┘                                  └──────────────┘
 ```
 
-Clawket 支持两种连接方式：
+WednesdayAI Mobile 当前继承 Clawket 的两种连接方式：
 
 - **Relay 模式** — 使用 `relay-registry` + `relay-worker`，适合云端转发和自动配对。
 - **直连模式** — 通过局域网 IP、Tailscale IP 或自定义 gateway URL 直连，不需要部署 relay 基础设施。
@@ -53,7 +53,7 @@ Clawket 支持两种连接方式：
 
 1. 在你的 Mac/PC 上运行 `clawket pair`，Bridge 会自动检测本机可用的后端，并输出一个或多个限时二维码。
 2. 如果你想走本地直连而不是 Relay，可以运行 `clawket pair --local`。
-3. 用 Clawket App 扫描二维码，信任该设备。
+3. 用 WednesdayAI Mobile App 扫描二维码，信任该设备。
 4. Relay 模式下，Registry 校验配对，Relay Worker 在手机和 Bridge 之间实时转发 WebSocket 流量。
 5. 直连模式下，App 通过局域网、Tailscale 或其他直连地址连接到本地 bridge，不需要 Relay。
 6. 首次配对后，后续重连自动完成。
@@ -62,7 +62,7 @@ Clawket 支持两种连接方式：
 
 - 如果机器上只有 OpenClaw，`clawket pair` 和 `clawket pair --local` 的行为与之前一致。
 - 如果机器上只有 Hermes，`clawket pair` 和 `clawket pair --local` 会生成 Hermes 本地 bridge 的二维码。
-- 如果机器上同时有 OpenClaw 和 Hermes，Clawket 会分别输出两个二维码，并明确标注对应后端。
+- 如果机器上同时有 OpenClaw 和 Hermes，bridge 会分别输出两个二维码，并明确标注对应后端。
 
 ## 仓库结构
 
@@ -211,7 +211,7 @@ npm run mobile:config:check
 
 ## 自托管
 
-Clawket 的公共仓库默认就可以 clone 下来自行运行，不依赖官方托管后端。你既可以使用自己运营的 Relay 模式，也可以直接使用 LAN、Tailscale 或自定义 URL 的直连模式。
+WednesdayAI Mobile 的公共仓库默认就可以 clone 下来自行运行，不依赖官方托管后端。在 hard-fork 过渡期间，仓库会有意保留当前 Clawket 包名、命令和 Relay 默认值，直到后续通过范围明确的兼容性迁移来调整。你既可以使用自己运营的 Relay 模式，也可以直接使用 LAN、Tailscale 或自定义 URL 的直连模式。
 
 自托管关键默认行为：
 

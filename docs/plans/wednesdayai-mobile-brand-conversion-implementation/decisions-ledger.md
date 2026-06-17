@@ -23,3 +23,6 @@ The executor appends dated rows here when a task requires a choice not already l
 |------|---------|--------|
 | 000 | `test -f docs/setup/brand-conversion-first-slice-confirmation-points.md` | exit 0 |
 | 000 | `rg -n "WednesdayAI Mobile\|WednesdayAI\|com\\.expansionx\\.clawket\|@p697/clawket\|clawket pair\|YouMind disposition\|not chosen" docs/setup/brand-conversion-first-slice-confirmation-points.md` | matched the naming rule, unchanged confirmation-bound values, and unchosen surfaces |
+| 001 | `git diff --name-only -- README.md README.zh-CN.md` | printed exactly `README.md` and `README.zh-CN.md` |
+| 001 | `rg -n "WednesdayAI Mobile\|hard fork\|OpenClaw\|Hermes\|@p697/clawket\|clawket pair\|CLAWKET_REGISTRY_URL" README.md README.zh-CN.md` | matched new product framing and retained package, command, registry, OpenClaw, and Hermes references |
+| 001 | `rg -n "Clawket\|OpenClaw\|Hermes\|YouMind" README.md README.zh-CN.md` | remaining hits classified as hard-fork attribution, OpenClaw/Hermes compatibility/setup, or current package/command/default boundary; no YouMind hits |
