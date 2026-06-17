@@ -74,6 +74,10 @@ const OPENCLAW_CAPABILITIES: GatewayBackendCapabilities = {
   openClawConfigScreens: true,
 };
 
+const WEDNESDAYAI_CAPABILITIES: GatewayBackendCapabilities = {
+  ...OPENCLAW_CAPABILITIES,
+};
+
 const HERMES_CAPABILITIES: GatewayBackendCapabilities = {
   consoleRoot: true,
   gatewayConnection: true,
@@ -131,6 +135,11 @@ const YOUMIND_CAPABILITIES: GatewayBackendCapabilities = {
 };
 
 const BACKENDS: Record<GatewayBackendKind, GatewayBackendDescriptor> = {
+  wednesdayai: {
+    kind: 'wednesdayai',
+    label: 'WednesdayAI',
+    capabilities: WEDNESDAYAI_CAPABILITIES,
+  },
   openclaw: {
     kind: 'openclaw',
     label: 'OpenClaw',
@@ -159,7 +168,7 @@ export function isGatewayTransportKind(value: unknown): value is GatewayTranspor
 }
 
 export function isGatewayBackendKind(value: unknown): value is GatewayBackendKind {
-  return value === 'openclaw' || value === 'hermes' || value === 'youmind';
+  return value === 'wednesdayai' || value === 'openclaw' || value === 'hermes' || value === 'youmind';
 }
 
 export function resolveGatewayBackendKind(value: GatewayLike | null | undefined): GatewayBackendKind {

@@ -20,6 +20,7 @@ describe('gateway-backends', () => {
     });
 
     it('honors explicit backendKind field when set', () => {
+      expect(resolveGatewayBackendKind({ backendKind: 'wednesdayai' } as any)).toBe('wednesdayai');
       expect(resolveGatewayBackendKind({ backendKind: 'hermes' } as any)).toBe('hermes');
       expect(resolveGatewayBackendKind({ backendKind: 'openclaw' } as any)).toBe('openclaw');
     });
@@ -132,6 +133,24 @@ describe('gateway-backends', () => {
       expect(caps.openClawConfigScreens).toBe(true);
     });
 
+    it('gives WednesdayAI the evidence-backed OpenClaw-compatible baseline for the first descriptor slice', () => {
+      const caps = getGatewayBackendCapabilities('wednesdayai');
+      expect(caps.consoleCron).toBe(true);
+      expect(caps.consoleCronCreate).toBe(true);
+      expect(caps.consoleChannels).toBe(true);
+      expect(caps.consoleNodes).toBe(true);
+      expect(caps.consoleTools).toBe(true);
+      expect(caps.consoleAgentDetail).toBe(true);
+      expect(caps.consoleAgentSessionsBoard).toBe(true);
+      expect(caps.consoleHeartbeat).toBe(true);
+      expect(caps.consoleDiscover).toBe(true);
+      expect(caps.consoleClawHub).toBe(true);
+      expect(caps.modelSelection).toBe(true);
+      expect(caps.configRead).toBe(true);
+      expect(caps.configWrite).toBe(true);
+      expect(caps.openClawConfigScreens).toBe(true);
+    });
+
     it('disables console-cron-create for Hermes phase 1 while leaving consoleCron enabled for viewing', () => {
       const caps = getGatewayBackendCapabilities('hermes');
       expect(caps.consoleCron).toBe(true);
@@ -161,15 +180,19 @@ describe('gateway-backends', () => {
     });
 
     it('returns the matching descriptor for a string kind', () => {
+      expect(getGatewayBackendDescriptor('wednesdayai').kind).toBe('wednesdayai');
+      expect(getGatewayBackendDescriptor('wednesdayai').label).toBe('WednesdayAI');
       expect(getGatewayBackendDescriptor('hermes').kind).toBe('hermes');
       expect(getGatewayBackendDescriptor('openclaw').kind).toBe('openclaw');
     });
   });
 
   describe('type guards', () => {
-    it('isGatewayBackendKind accepts only the two known backends', () => {
+    it('isGatewayBackendKind accepts each known backend identity', () => {
+      expect(isGatewayBackendKind('wednesdayai')).toBe(true);
       expect(isGatewayBackendKind('openclaw')).toBe(true);
       expect(isGatewayBackendKind('hermes')).toBe(true);
+      expect(isGatewayBackendKind('youmind')).toBe(true);
       expect(isGatewayBackendKind('other')).toBe(false);
       expect(isGatewayBackendKind(undefined)).toBe(false);
     });
@@ -180,6 +203,7 @@ describe('gateway-backends', () => {
       expect(isGatewayTransportKind('tailscale')).toBe(true);
       expect(isGatewayTransportKind('cloudflare')).toBe(true);
       expect(isGatewayTransportKind('custom')).toBe(true);
+      expect(isGatewayTransportKind('wednesdayai')).toBe(false);
       expect(isGatewayTransportKind('hermes')).toBe(false);
       expect(isGatewayTransportKind('unknown')).toBe(false);
     });

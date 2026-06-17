@@ -16,6 +16,8 @@ The executor appends dated rows here when a task requires a choice not already l
 | D9 | review | Treat `docs/setup/identity-surface-inventory.md` as a read-only sibling for task 000 rather than listing it in task `files:`. | The confirmation-points document is a create-only boundary artifact based on the already-read setup inventories. Listing those docs in task `files:` would allow accidental edits before implementation begins. |
 | D10 | review | Make task 005 classify every changed file via `git diff --name-only`. | Re-review found the closeout scan was stale after task 003 and task 004 gained more files. The revised command scans the actual diff file list so new touched files cannot be skipped. |
 | D11 | review | Add `buildGatewayDefaultName` coverage to task 004. | Re-review found it also consumes `GatewayBackendKind`; the revised task requires an explicit WednesdayAI assertion for relay default naming. |
+| D12 | 003 | Use OpenClaw capabilities as the first-slice WednesdayAI backend baseline. | `docs/architecture/wednesdayai-backend-descriptor-plan.md` scoped the minimal `wednesdayai` descriptor as OpenClaw-compatible until later evidence-backed capability differences are planned. |
+| D13 | 003 | Do not broaden this task to fix the existing mobile typecheck baseline. | `npm run mobile:typecheck` fails at pre-task commit `e06659b` with existing `WebView`, `BlurView`, and `CameraView` JSX/nativeEvent typing errors outside task 003's file list. The focused backend descriptor test passes after this task. |
 
 ## Task Verification Log
 
@@ -30,3 +32,8 @@ The executor appends dated rows here when a task requires a choice not already l
 | 002 | `rg -n "Allow Clawket\|\"name\": \"Clawket\"" apps/mobile/app.json` | no matches |
 | 002 | `rg -n "com\\.expansionx\\.clawket\|\"slug\": \"clawket\"\|\"scheme\": \"clawket\"\|\"owner\": \"p697\"\|972e845f-da81-44db-a908-24be4ca80288" apps/mobile/app.json` | matched unchanged native IDs, slug, scheme, owner, app group, and EAS project ID |
 | 002 | `npm run mobile:config:check` | exit 0; public config check reported PostHog disabled and RevenueCat disabled |
+| 003 | `npm run mobile:test -- --runInBand apps/mobile/src/services/gateway-backends.test.ts` before `npm ci` | exit 127 because `jest` was not installed in the worktree |
+| 003 | `npm ci` | exit 0; installed workspace dependencies without package metadata changes |
+| 003 | `npm run mobile:test -- --runInBand apps/mobile/src/services/gateway-backends.test.ts` | exit 0; 29 tests passed |
+| 003 | `for f in apps/mobile/src/i18n/locales/{en,zh-Hans,ja,ko,de,es}/config.json; do node -e "..."; done` | exit 0; all six `config.json` locale files include `WednesdayAI` |
+| 003 | `npm run mobile:typecheck` | exit 2 with existing native component typing errors; repeated at pre-task commit `e06659b` with the same `WebView`, `BlurView`, `CameraView`, and `WebViewMessageEvent.nativeEvent` baseline failures |

@@ -98,6 +98,7 @@ function getSpeechRecognitionLanguageOptions(
 
 function getBackendLabels(t: (key: string) => string): Record<GatewayBackendKind, string> {
   return {
+    wednesdayai: t('WednesdayAI'),
     openclaw: t('OpenClaw'),
     hermes: t('Hermes'),
     youmind: t('YouMind'),

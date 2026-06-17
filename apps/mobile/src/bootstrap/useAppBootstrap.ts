@@ -5,7 +5,7 @@ import { resolveGatewayCacheScopeId } from '../services/gateway-cache-scope';
 import { NodeClient } from '../services/node-client';
 import { LastOpenedSessionSnapshot, StorageService } from '../services/storage';
 import { DEFAULT_NODE_CAPABILITY_TOGGLES, NodeCapabilityToggles } from '../services/node-capabilities';
-import { AccentColorId, ChatAppearanceSettings, GatewayConfig, SpeechRecognitionLanguage, ThemeMode } from '../types';
+import { AccentColorId, ChatAppearanceSettings, GatewayBackendKind, GatewayConfig, SpeechRecognitionLanguage, ThemeMode } from '../types';
 import { AccentScale, defaultAccentId } from '../theme';
 import { DEFAULT_CHAT_APPEARANCE } from '../features/chat-appearance/defaults';
 import {
@@ -25,7 +25,7 @@ type Props = {
 
 function buildAgentPreview(
   agentId: string,
-  backendKind: 'openclaw' | 'hermes' | 'youmind',
+  backendKind: GatewayBackendKind,
   identity?: {
     agentName?: string;
     agentEmoji?: string;
