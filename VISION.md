@@ -38,8 +38,8 @@ device capability product.
 ## Voice-first, text-secondary
 
 The long-term interaction model is voice-first. Push-to-talk, wake mode where platform rules allow
-it, interruption, cancel, spoken summaries, visible listening state, and recoverable transcripts
-belong at the centre of the experience.
+it, interruption, cancel, live activity, spoken summaries, visible listening state, and recoverable
+transcripts belong at the centre of the experience.
 
 Text chat remains a fallback and precision surface. It should be excellent, but it should not be
 the only organising metaphor.

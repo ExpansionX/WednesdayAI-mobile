@@ -1,7 +1,7 @@
 ---
 workstream: wednesdayai-mobile-init
 title: WednesdayAI Mobile Init
-status: planning
+status: executed
 owner: david
 rescued_branches: []
 contradictions: []
@@ -20,5 +20,9 @@ plugin/skill-projected mobile affordances.
 
 ## State
 
-Spec settled. Next: `/wai:precheck wednesdayai-mobile-init`, then
-`/wai:decompose wednesdayai-mobile-init`.
+Spec, precheck, decomposition, and docs-only execution are complete on branch
+`codex/wednesdayai-mobile-init`.
+
+Next: set up `ExpansionX/WednesdayAI-mobile` from Clawket and begin product/brand conversion to
+WednesdayAI. Do not rerun `/wai:precheck` or `/wai:decompose` unless the spec is deliberately
+changed and refrozen.

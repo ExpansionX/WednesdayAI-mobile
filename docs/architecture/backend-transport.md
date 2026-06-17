@@ -21,6 +21,16 @@ The primary backend identity is `wednesdayai`.
 Compatibility descriptors may exist for OpenClaw-derived behaviour where they help users migrate,
 debug, or interoperate. They should be explicit descriptors, not hidden assumptions in screen code.
 
+Existing Clawket backend identities need an explicit disposition before implementation begins:
+
+- `openclaw` remains a compatibility descriptor for OpenClaw-derived protocol behaviour.
+- `hermes` remains a compatibility descriptor for Hermes-managed systems during migration; it must
+  stay a backend identity, not a transport mode.
+- `youmind` is retained only if a future task deliberately keeps that compatibility surface; if not,
+  remove it through a scoped migration rather than leaving screen-level fallbacks.
+- `wednesdayai` becomes the first-class product identity and default descriptor for WednesdayAI
+  systems.
+
 Backend descriptors should define:
 
 - product label;
@@ -142,5 +152,7 @@ When implementation begins, verify:
 - `local`, `relay`, `tailscale`, `cloudflare`, and `custom` remain transport identities;
 - direct management exposes status, doctor, logs, reset, and service lifecycle where supported;
 - OpenClaw-derived protocol compatibility is documented in descriptors or adapters;
+- retained `hermes` and `youmind` behaviour is either modelled as explicit compatibility descriptors
+  or removed through a documented migration;
 - auth, token, and relay compatibility paths do not log secrets;
 - no screen introduces a new backend-specific branch when a capability check or helper should own it.

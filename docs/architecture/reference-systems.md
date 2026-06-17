@@ -33,9 +33,10 @@ disparagement.
 ## WednesdayAI-core
 
 - Does well: brand, gateway/runtime contracts, plugin/skill architecture, lean-core philosophy,
-  workspace lanes, provider runtime, wake/nudge concepts, and active-run recovery semantics.
+  workspace lanes, provider runtime, wake/nudge concepts, active-run recovery semantics, and
+  `apps/shared/OpenClawKit` protocol/chat UI packaging.
 - Borrow: brand language, `wednesdayai` identity, gateway contracts, plugin/skill extension model,
-  and direct-management semantics.
+  direct-management semantics, and shared protocol/UI ideas that survive the move out of core.
 - Avoid/reference-only: old `WednesdayAI-core/apps/android`, `apps/ios`, `apps/macos`, and
   `apps/shared` are not the future app base.
 - Order: drives backend identity, extension contracts, and core app extraction guidance.

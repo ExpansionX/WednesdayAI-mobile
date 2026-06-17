@@ -77,12 +77,13 @@ the permanent user-facing centre.
 Put voice ahead of text-only polish:
 
 1. Push-to-talk.
-2. Visible listening state.
-3. Interrupt and cancel.
-4. Spoken summaries.
-5. Transcript repair.
-6. Confirmation before state-changing actions.
-7. Text fallback for precision and accessibility.
+2. Wake mode where platform rules allow it.
+3. Live activity and visible listening state.
+4. Interrupt and cancel.
+5. Spoken summaries.
+6. Transcript repair.
+7. Confirmation before state-changing actions.
+8. Text fallback for precision and accessibility.
 
 The app should always show connected system, active run, pending approvals, current microphone
 state, and whether an action is local, remote, or relayed.
@@ -138,7 +139,7 @@ After the core loop is stable, polish the mobile experience:
 |--------|--------|------------------------|------------|
 | Clawket | Expo/RN app shell, iOS/Android/macOS release scripts, capability registry, QR pairing, Console surfaces, speech, node/camera services. | Preserve as source, not brand identity. | First implementation base. |
 | Upstream OpenClaw Android/iOS/macOS | Reconnect/session recovery, onboarding, diagnostics, native node capability direction, voice/screen/canvas ideas. | Do not replace the Clawket base with upstream apps. | Cherry-pick after repository setup. |
-| WednesdayAI-core | Brand, gateway/runtime contracts, plugin/skill architecture, workspace lanes, provider runtime, wake/nudge, active-run recovery semantics. | Do not move app churn back into core. | Drives backend identity and extension contracts. |
+| WednesdayAI-core | Brand, gateway/runtime contracts, plugin/skill architecture, workspace lanes, provider runtime, wake/nudge, active-run recovery semantics, and `apps/shared/OpenClawKit` protocol/chat UI reference points. | Do not move app churn back into core or make `apps/shared` the new app base. | Drives backend identity, extension contracts, and shared-protocol preservation. |
 | Saturday apps | App-surface separation, gateway/client provider abstraction, voice package direction, independent mobile lifecycle. | Do not collapse Saturday consumer product assumptions into WednesdayAI Mobile. | Use for repo and provider-boundary design. |
 | Hermes Desktop | First-run setup, runtime probes, persistent logs, live tool output, file browser, settings, updates, same agent/config/sessions promise. | Do not copy desktop-first layout directly to mobile. | Use for setup, diagnostics, and continuity. |
 | ArgentOS | Mobile-node model, wake/voice tests, gateway discovery, keychain/session tests, screen/camera capability tests, release automation. | Do not force Swift-only assumptions into Expo/RN. | Use for native capability and testing shape. |
