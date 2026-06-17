@@ -2,7 +2,7 @@
 id: "005"
 phase: 3
 title: Document backend and transport architecture
-status: ready
+status: passed
 depends_on: ["001"]
 parallel: false
 conflicts_with: []
