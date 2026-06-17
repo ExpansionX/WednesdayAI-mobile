@@ -189,8 +189,8 @@ export function ConfigScreenLayout({ insets, tabBarHeight, controller }: Props):
   const appVersion = Application.nativeApplicationVersion?.trim() || APP_PACKAGE_VERSION;
   const appBuildVersion = Application.nativeBuildVersion?.trim() || null;
   const appVersionLabel = appBuildVersion
-    ? t('Clawket {{version}} (Build {{build}})', { version: appVersion, build: appBuildVersion })
-    : t('Clawket {{version}}', { version: appVersion });
+    ? t('WednesdayAI {{version}} (Build {{build}})', { version: appVersion, build: appBuildVersion })
+    : t('WednesdayAI {{version}}', { version: appVersion });
   const appUserId = snapshot?.originalAppUserId?.trim() || null;
   const [revenueCatDiagnostics, setRevenueCatDiagnostics] = useState<RevenueCatDiagnostics>(() => getRevenueCatRuntimeDiagnostics());
   const [postHogDiagnostics, setPostHogDiagnostics] = useState<PostHogDiagnostics | null>(null);
@@ -452,8 +452,8 @@ export function ConfigScreenLayout({ insets, tabBarHeight, controller }: Props):
 
     try {
       await Share.share({
-        title: t('Share Clawket'),
-        message: t('Try Clawket: {{url}}', { url: shareUrl }),
+        title: t('Share WednesdayAI'),
+        message: t('Try WednesdayAI: {{url}}', { url: shareUrl }),
         url: shareUrl,
       });
     } catch {
@@ -829,7 +829,7 @@ export function ConfigScreenLayout({ insets, tabBarHeight, controller }: Props):
               <Share2 size={17} strokeWidth={2.2} color="#2F6BFF" />
             </RowIcon>
             <View style={styles.supportRowText}>
-              <Text style={styles.rowLabel}>{t('Share Clawket with Friends')}</Text>
+              <Text style={styles.rowLabel}>{t('Share WednesdayAI with Friends')}</Text>
             </View>
             <ChevronRight size={16} color={theme.colors.textSubtle} strokeWidth={2} />
           </Pressable>
@@ -850,7 +850,7 @@ export function ConfigScreenLayout({ insets, tabBarHeight, controller }: Props):
                   <Star size={17} strokeWidth={2.1} color="#D79A00" />
                 </RowIcon>
                 <View style={styles.supportRowText}>
-                  <Text style={styles.rowLabel}>{t('Rate Clawket')}</Text>
+                  <Text style={styles.rowLabel}>{t('Rate WednesdayAI')}</Text>
                 </View>
                 <ChevronRight size={16} color={theme.colors.textSubtle} strokeWidth={2} />
               </Pressable>
@@ -1639,7 +1639,7 @@ function EditorModal({ controller, theme, styles }: EditorModalProps): React.JSX
             </Text>
           </Pressable>
 
-          {!isEditing && controller.editorBackendKind === 'openclaw' ? <ConnectionHelpManual activeMode="custom" /> : null}
+          {!isEditing && controller.editorRequiresDirectAuth ? <ConnectionHelpManual activeMode="custom" /> : null}
         </ScrollView>
       )}
     </ModalSheet>

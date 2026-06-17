@@ -39,7 +39,7 @@ type EditorQuickStart = 'default' | 'local' | 'youmind';
 const YOUMIND_DEFAULT_URL = 'https://youmind.com';
 
 function getCreateEditorBackendKind(): GatewayBackendKind {
-  return 'openclaw';
+  return 'wednesdayai';
 }
 
 function getCreateEditorTransportKind(): GatewayTransportKind {

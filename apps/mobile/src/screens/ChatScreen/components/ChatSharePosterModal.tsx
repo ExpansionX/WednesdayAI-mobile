@@ -285,7 +285,7 @@ export function ChatSharePosterModal({
       </View>
 
       {/* Branding */}
-      <Text style={s.branding}>{`\u{1F43E} ${brandingLabel} \u{00D7} Clawket \u{1F43E}`}</Text>
+      <Text style={s.branding}>{`\u{1F43E} ${brandingLabel} x ${t('WednesdayAI')} \u{1F43E}`}</Text>
     </>
   );
 

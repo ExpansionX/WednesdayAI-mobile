@@ -1,5 +1,7 @@
 # Public Repo and Self-Hosting
 
+This file is retained as legacy planning/source material from the Clawket fork history. For current WednesdayAI Mobile self-hosting guidance, use `docs/self-hosting.md`.
+
 This file explains what the public Clawket repository is for, what it includes, and what it does not include.
 
 ## What the Public Repo Includes

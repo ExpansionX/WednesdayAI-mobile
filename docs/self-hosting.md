@@ -4,6 +4,8 @@ This guide is for operators who clone the public repository and want to run Wedn
 
 WednesdayAI Mobile is a hard fork of Clawket. During the first brand-conversion slice, the app display name is `WednesdayAI`, while current package names, bridge commands, relay defaults, Expo slug/scheme/owner, and native IDs remain unchanged until a scoped migration changes them.
 
+This is the maintained audience-facing self-hosting guide. The root `SELF_HOSTING_MODEL.md` file is retained as legacy planning/source material from the Clawket fork history.
+
 ## What You Need
 
 - Node.js and npm

@@ -52,7 +52,7 @@ describe('useGatewayConfigForm', () => {
     consoleErrorSpy.mockRestore();
   });
 
-  it('forces new manual connections to start as OpenClaw custom transport', async () => {
+  it('forces new manual connections to start as WednesdayAI custom transport', async () => {
     const gateway = {
       disconnect: jest.fn(),
       configure: jest.fn(),
@@ -76,8 +76,9 @@ describe('useGatewayConfigForm', () => {
 
     expect(result.current.editorVisible).toBe(true);
     expect(result.current.editingConfigId).toBeNull();
-    expect(result.current.editorBackendKind).toBe('openclaw');
+    expect(result.current.editorBackendKind).toBe('wednesdayai');
     expect(result.current.editorTransportKind).toBe('custom');
+    expect(result.current.editorRequiresDirectAuth).toBe(true);
   });
 
   it('saves Hermes manual connections as custom direct connections without separate auth fields', async () => {

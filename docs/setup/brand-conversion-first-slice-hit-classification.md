@@ -4,6 +4,11 @@
 
 This report classifies identity-related hits from the first WednesdayAI Mobile behaviour-changing slice. It covers tasks 000-004: pre-edit confirmation points, paired README framing, app config display and permission copy, the minimal `wednesdayai` backend descriptor, and explicit backend dispatch.
 
+Post-execution adversarial reviews also required two follow-up classifications:
+
+- ID-free visible app shell strings and the new manual connection default are part of the safe visible identity slice and were converted to WednesdayAI.
+- The documentation refresh requested after execution is retained as source-backed user/admin/developer documentation, not as a production identifier migration.
+
 Task 000 recorded confirmation-bound surfaces before implementation edits began.
 
 ## Commands run
@@ -43,6 +48,15 @@ Remaining README Clawket hits are classified as hard-fork attribution, current p
 
 Confirmation-bound values stayed unchanged, including `slug: clawket`, `scheme: clawket`, `owner: p697`, iOS bundle ID `com.expansionx.clawket`, Android package `com.expansionx.clawket`, share extension bundle ID, app group `group.com.expansionx.clawket`, Apple team, asset paths, and EAS project ID `972e845f-da81-44db-a908-24be4ca80288`.
 
+Round-2 review found the first pass under-scoped app-visible identity by limiting it to native config and permission copy. The following ID-free app surfaces are now WednesdayAI as well:
+
+- Settings version label.
+- Settings share/rate action labels and share payload text.
+- Chat share poster app branding.
+- New manual connection editor default backend identity.
+
+These changes do not pick a final bundle ID, package ID, app group, Expo slug/scheme/owner, store listing ID, public CLI name, npm scope, relay domain, or billing product name.
+
 ## Backend descriptor check
 
 `wednesdayai` was added as backend identity only, not transport identity.
@@ -72,14 +86,30 @@ OpenClaw, Hermes, and retained YouMind compatibility remain explicit.
 - App display name and OS permission copy now use `WednesdayAI`.
 - Backend identity now includes `wednesdayai`.
 - Explicit dispatch call sites now include deliberate `wednesdayai` branches.
-- All six mobile config locale files include `WednesdayAI`.
+- All six mobile config locale files include `WednesdayAI` backend and app-shell keys. All six chat locale files include the poster branding product label.
 
 ### Compatibility or attribution
 
 - `OpenClaw` remains for inherited backend compatibility, OpenClaw-specific config screens, OpenClaw protocol docs, OpenClaw release/permission surfaces, and hard-fork heritage.
 - `Hermes` remains for Hermes backend compatibility, Hermes-specific bridge/model/cron handling, and Hermes documentation.
-- `Clawket` remains where it describes hard-fork source/history, current bridge/package/command compatibility, current UI copy not included in this first slice, or preserved setup flows.
+- `Clawket` remains where it describes hard-fork source/history, current bridge/package/command compatibility, Clawket Pro billing/product entitlement copy, OpenClaw-specific help/setup flows, or retained release-boundary values.
 - `YouMind` remains in the existing backend support matrix and saved-account flows; this slice does not decide YouMind disposition.
+
+### Documentation follow-up retained after review
+
+The documentation refresh added or aligned user/admin/developer guidance after execution at the user's request. These docs are retained because they describe current compatibility and release boundaries without changing production identifiers:
+
+- `docs/self-hosting.md`
+- `docs/mobile/android-build.md`
+- `docs/mobile/ios-app-store-release.md`
+- `docs/mobile/release-checklist.md`
+- `apps/mobile/docs/android-build.md`
+- `apps/mobile/docs/android-onboarding.md`
+- `apps/mobile/docs/ios-app-store-release.md`
+- `apps/mobile/docs/release-checklist.md`
+- `docs/architecture/wednesdayai-backend-descriptor-plan.md`
+
+The root `SELF_HOSTING_MODEL.md` remains legacy planning/source material. `docs/self-hosting.md` is the maintained audience-facing self-hosting guide.
 
 ### Current package, command, path, persisted data, or release boundary
 
