@@ -2,7 +2,7 @@
 id: "003"
 phase: 2
 title: Document the Clawket hard-fork setup
-status: ready
+status: passed
 depends_on: ["001"]
 parallel: false
 conflicts_with: []
