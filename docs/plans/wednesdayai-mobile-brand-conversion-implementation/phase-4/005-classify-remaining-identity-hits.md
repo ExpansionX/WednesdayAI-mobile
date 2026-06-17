@@ -53,9 +53,11 @@ The report must include the exact commands and summarized results for:
 
 ```bash
 git diff --name-only
-rg -n "Clawket|OpenClaw|Hermes|YouMind|clawket|openclaw|hermes|youmind" README.md README.zh-CN.md apps/mobile/app.json apps/mobile/src/types/index.ts apps/mobile/src/services/gateway-backends.ts apps/mobile/src/services/gateway-backends.test.ts
-rg -n "GatewayTransportKind|GatewayMode|isGatewayTransportKind|wednesdayai" apps/mobile/src/types/index.ts apps/mobile/src/services/gateway-backends.ts apps/mobile/src/services/gateway-backends.test.ts
+git diff --name-only | tr '\n' '\0' | xargs -0 rg -n "Clawket|OpenClaw|Hermes|YouMind|clawket|openclaw|hermes|youmind"
+git diff --name-only | tr '\n' '\0' | xargs -0 rg -n "GatewayTransportKind|GatewayMode|isGatewayTransportKind|wednesdayai"
 ```
+
+The `rg` scans must cover every implementation file changed by tasks 000-004, including README files, `apps/mobile/app.json`, backend type/descriptor/test files, `useAppBootstrap`, `ConfigScreenLayout`, all six touched config locale files, and every explicit-dispatch call site.
 
 The report must state:
 

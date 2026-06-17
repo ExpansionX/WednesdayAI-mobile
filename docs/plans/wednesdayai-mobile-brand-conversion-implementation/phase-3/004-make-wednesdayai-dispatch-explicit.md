@@ -35,6 +35,12 @@ Also add assertions for existing helpers that consume backend identity:
 expect(resolveGlobalMainSessionKey('wednesdayai')).toBeNull();
 expect(getGatewayModeLabel({ backendKind: 'wednesdayai', transportKind: 'relay' } as any)).toBe('Remote');
 expect(getGatewayModeLabel({ backendKind: 'wednesdayai', transportKind: 'custom' } as any)).toBe('Custom');
+expect(buildGatewayDefaultName({
+  backendKind: 'wednesdayai',
+  transportKind: 'relay',
+  url: 'wss://relay.example.com/ws',
+  index: 1,
+})).toBe('Relay (relay.example.com)');
 ```
 
 Run `npm run mobile:test -- --runInBand apps/mobile/src/services/gateway-backends.test.ts` before implementation and confirm the new WednesdayAI dispatch assertion fails until `selectByBackend` and call sites require/provide a `wednesdayai` branch.
@@ -143,9 +149,9 @@ Also update the file comment so it says WednesdayAI and OpenClaw use the OpenCla
 - **After:** add `wednesdayai: OpenClawConsoleMenuScreen` and update the adjacent comment to say the first slice routes WednesdayAI through the OpenClaw-compatible menu explicitly.
 
 - **File:** `apps/mobile/src/services/gateway-backends.test.ts`
-- **Anchor:** existing `selectByBackend`, `resolveGlobalMainSessionKey`, and `getGatewayModeLabel` describe blocks.
+- **Anchor:** import block plus existing `selectByBackend`, `resolveGlobalMainSessionKey`, `getGatewayModeLabel`, and `buildGatewayDefaultName` coverage.
 - **Before:** tests cover OpenClaw and Hermes only.
-- **After:** add explicit tests for WednesdayAI branch selection, WednesdayAI global-main-session behaviour, and WednesdayAI transport labels as listed in `## Failing test`.
+- **After:** add `buildGatewayDefaultName` to the import list, then add explicit tests for WednesdayAI branch selection, WednesdayAI global-main-session behaviour, WednesdayAI transport labels, and WednesdayAI default-name behaviour as listed in `## Failing test`.
 
 ## Allowed moves
 - Only add explicit WednesdayAI branches to existing backend dispatch helpers/call sites.
