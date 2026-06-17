@@ -16,12 +16,10 @@ This document tracks the local Xcode release process and App Store Connect items
 - RevenueCat packages:
   - `$rc_monthly`
   - `$rc_annual`
-  - `$rc_lifetime`
 - App Store subscription group: `Clawket Pro`
 - App Store products:
   - `com.p697.clawket.pro.monthly`
   - `com.p697.clawket.pro.yearly`
-  - `com.p697.clawket.pro.lifetime`
 
 The first WednesdayAI Mobile brand-conversion slice updates visible app identity only. It does not choose final App Store metadata, RevenueCat identifiers, subscription names, Expo owner/project, URL scheme, or public package naming. Keep those values unchanged unless a later scoped migration explicitly changes them.
 
@@ -43,18 +41,11 @@ The first WednesdayAI Mobile brand-conversion slice updates visible app identity
 - [ ] Both have a review screenshot
 - [ ] Both are attached to the app version that will be submitted for review
 
-### Non-consumable products
-
-- [ ] `Clawket Pro Lifetime` is configured as a `Non-Consumable`
-- [ ] `Clawket Pro Lifetime` pricing is configured
-- [ ] `Clawket Pro Lifetime` has required localizations
-- [ ] `Clawket Pro Lifetime` has a review screenshot
-- [ ] `Clawket Pro Lifetime` is attached to the app version that will be submitted for review
-
 ### App metadata
 
 - [ ] App privacy answers are complete
 - [ ] Age rating is complete
+- [ ] Export compliance is configured in `Info.plist` via `ITSAppUsesNonExemptEncryption = NO`
 - [ ] Sign-in / demo / review notes are complete if needed
 - [ ] Support URL is valid
 - [ ] Marketing URL is valid if you use one
@@ -68,22 +59,33 @@ The first WednesdayAI Mobile brand-conversion slice updates visible app identity
 - [ ] `default` offering uses:
   - [ ] `$rc_monthly` -> `com.p697.clawket.pro.monthly`
   - [ ] `$rc_annual` -> `com.p697.clawket.pro.yearly`
-  - [ ] `$rc_lifetime` -> `com.p697.clawket.pro.lifetime`
-- [ ] `Clawket Pro` entitlement is attached to all three products
+- [ ] `Clawket Pro` entitlement is attached to both products
 - [ ] No app build is using `EXPO_PUBLIC_REVENUECAT_TEST_API_KEY`
 
 ## 3. Local Build Environment Checklist
 
 - [ ] Start from `.env.example` for local env shape
-- [ ] `npm run mobile:config:check:ios` passes
+- [ ] `npm run mobile:config:check:ios` passes from the repository root
 - [ ] `.env.local` or local shell environment contains `EXPO_PUBLIC_REVENUECAT_APPLE_API_KEY`
 - [ ] `.env.local` or local shell environment contains `EXPO_PUBLIC_REVENUECAT_PRO_ENTITLEMENT_ID=Clawket Pro`
 - [ ] `.env.local` or local shell environment contains `EXPO_PUBLIC_REVENUECAT_PRO_OFFERING_ID=default`
 - [ ] `EXPO_PUBLIC_REVENUECAT_TEST_API_KEY` is not set for TestFlight / production
 - [ ] `EXPO_PUBLIC_UNLOCK_PRO` is not set for TestFlight / production
+- [ ] `ios/.xcode.env` still contains the generated env-source block for `.env` and `.env.local`
 - [ ] Xcode is signed into the Apple Developer account that owns the app
 - [ ] The correct team is selected for the current native app target
 - [ ] A valid iOS Distribution or Apple Distribution signing identity is available on this Mac
+
+### When Adding A New Mobile Environment Variable
+
+Use this checklist in the same PR:
+
+- [ ] Add the key to `apps/mobile/.env.example`
+- [ ] If React Native client code reads it, use the `EXPO_PUBLIC_*` prefix
+- [ ] Wire it through `src/config/public.ts` or another shared config module
+- [ ] Update `scripts/check-public-config.mjs` if release validation should enforce it
+- [ ] Update this release checklist if the new variable is required for TestFlight or App Store builds
+- [ ] Re-run `npm run mobile:config:check:ios` before archiving from the repository root
 
 ## 4. Pre-Build Commands
 
@@ -155,12 +157,10 @@ Before submitting to App Review, verify on a TestFlight or store-distribution bu
 - [ ] Free user sees the Pro paywall at the correct gated entry points
 - [ ] Monthly purchase succeeds
 - [ ] Yearly purchase succeeds
-- [ ] Lifetime purchase succeeds
 - [ ] Restore purchases succeeds after reinstall
 - [ ] Membership card shows the correct plan type
 - [ ] Existing Pro user sees the read-only paywall state
 - [ ] Debug-only RevenueCat App User ID is hidden unless Debug Mode is enabled
-- [ ] Paywall shows the correct CTA and legal note when `Lifetime` is selected
 
 ## 10. Known Expected Warning Before Review
 
@@ -169,7 +169,7 @@ RevenueCat may show warnings like:
 - product status is `READY_TO_SUBMIT`
 - offering packages point at products that are not yet approved
 
-This is expected before App Review. These warnings should disappear after the subscription and lifetime products are submitted with the app version and approved by Apple.
+This is expected before App Review. These warnings should disappear after the subscription products are submitted with the app version and approved by Apple.
 
 ## 11. Recommended Release Order
 
@@ -179,7 +179,7 @@ This is expected before App Review. These warnings should disappear after the su
 4. Archive locally in Xcode
 5. Upload to TestFlight from Xcode Organizer
 6. Confirm the build appears in App Store Connect / TestFlight
-7. Re-run monthly / yearly / lifetime / restore validation
+7. Re-run monthly / yearly / restore validation
 8. Archive and upload the final review build locally from Xcode
-9. Attach both subscription products and the lifetime product to the app version
+9. Attach both subscription products to the app version
 10. Submit the app version for review

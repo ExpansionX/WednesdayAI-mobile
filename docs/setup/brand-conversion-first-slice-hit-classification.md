@@ -107,11 +107,16 @@ The documentation refresh added or aligned user/admin/developer guidance after e
 - `docs/self-hosting.md`
 - `docs/mobile/android-build.md`
 - `docs/mobile/ios-app-store-release.md`
-- `docs/mobile/release-checklist.md`
+- `docs/mobile/macos-app-store-submission.md`
+- `docs/mobile/macos-catalyst-plan.md`
+- `docs/mobile/macos-dev.md`
 - `apps/mobile/docs/android-build.md`
 - `apps/mobile/docs/android-onboarding.md`
 - `apps/mobile/docs/ios-app-store-release.md`
-- `apps/mobile/docs/release-checklist.md`
+- `apps/mobile/docs/google-play-closed-testing.md`
+- `apps/mobile/docs/macos-app-store-submission.md`
+- `apps/mobile/docs/macos-catalyst-plan.md`
+- `apps/mobile/docs/macos-dev.md`
 - `docs/architecture/wednesdayai-backend-descriptor-plan.md`
 
 The root `SELF_HOSTING_MODEL.md` remains legacy planning/source material. `docs/self-hosting.md` is the maintained audience-facing self-hosting guide.
