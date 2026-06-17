@@ -2,7 +2,7 @@
 id: "007"
 phase: 3
 title: Document core app extraction guidance
-status: ready
+status: passed
 depends_on: ["003","004"]
 parallel: false
 conflicts_with: []
