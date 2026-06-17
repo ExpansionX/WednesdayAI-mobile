@@ -2,7 +2,7 @@
 id: "001"
 phase: 1
 title: Record repository import and PR state
-status: ready
+status: passed
 depends_on: []
 parallel: false
 conflicts_with: []
