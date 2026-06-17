@@ -2,7 +2,7 @@
 id: "008"
 phase: 4
 title: Document reference-system cherry-picks
-status: ready
+status: passed
 depends_on: ["002","005","006","007"]
 parallel: false
 conflicts_with: []
