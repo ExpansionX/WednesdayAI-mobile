@@ -1,11 +1,12 @@
 ---
 workstream: wednesdayai-mobile-repo-setup-brand-conversion
 title: WednesdayAI Mobile Repository Setup and Brand Conversion
-status: planned
+status: shipped
 owner: david
 rescued_branches: []
 contradictions: []
 staging_pointers:
+  - docs/plans/wednesdayai-mobile-repo-setup-brand-conversion
   - docs/superpowers/specs/2026-06-17-wednesdayai-mobile-repo-setup-brand-conversion.md
 updated: 2026-06-17
 ---
@@ -18,6 +19,6 @@ This workstream follows the completed `wednesdayai-mobile-init` docs and prepare
 
 ## State
 
-Spec is active and ready for WAI precheck/decomposition.
+Workstream executed and closed. The completed artifacts record import state, identity surfaces, metadata/package naming boundaries, visible product identity boundaries, native ID and release boundaries, and the minimal `wednesdayai` backend descriptor plan.
 
-Do not execute broad brand conversion or choose final production bundle/application identifiers until the inventory and confirmation points are recorded.
+Do not execute broad brand conversion or choose final production bundle/application identifiers until the recorded confirmation points are approved.

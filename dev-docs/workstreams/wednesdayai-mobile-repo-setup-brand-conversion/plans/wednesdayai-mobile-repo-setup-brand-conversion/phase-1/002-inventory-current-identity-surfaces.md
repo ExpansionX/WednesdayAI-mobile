@@ -2,7 +2,7 @@
 id: "002"
 phase: 1
 title: Inventory current identity surfaces
-status: ready
+status: passed
 depends_on: ["001"]
 parallel: false
 conflicts_with: []

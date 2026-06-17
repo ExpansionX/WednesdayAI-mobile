@@ -2,7 +2,7 @@
 id: "006"
 phase: 3
 title: Plan the minimal WednesdayAI backend descriptor
-status: ready
+status: passed
 depends_on: ["002","003","004","005"]
 parallel: false
 conflicts_with: []
