@@ -2,7 +2,7 @@
 id: "001"
 phase: 1
 title: Create the WednesdayAI Mobile vision
-status: ready
+status: passed
 depends_on: []
 parallel: false
 conflicts_with: []
