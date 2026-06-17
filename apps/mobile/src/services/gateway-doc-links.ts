@@ -4,7 +4,7 @@ import { selectByBackend } from './gateway-backends';
 
 export type GatewayDocumentationDescriptor = {
   url: string | null;
-  source: 'openclaw' | 'hermes';
+  source: 'wednesdayai' | 'openclaw' | 'hermes';
 };
 
 const HERMES_DOCUMENTATION_URL = 'https://hermes-agent.nousresearch.com/docs/getting-started/quickstart';
@@ -14,6 +14,10 @@ export function resolveGatewayDocumentationDescriptor(
   config: GatewayConfig | null | undefined,
 ): GatewayDocumentationDescriptor {
   return selectByBackend<GatewayDocumentationDescriptor>(config, {
+    wednesdayai: {
+      url: publicAppLinks.docsUrl,
+      source: 'wednesdayai',
+    },
     openclaw: {
       url: publicAppLinks.docsUrl,
       source: 'openclaw',

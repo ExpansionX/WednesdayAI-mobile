@@ -2,6 +2,7 @@ import {
   getGatewayBackendCapabilities,
   getGatewayBackendDescriptor,
   getGatewayModeLabel,
+  buildGatewayDefaultName,
   isGatewayBackendKind,
   isGatewayTransportKind,
   resolveGatewayBackendKind,
@@ -64,30 +65,35 @@ describe('gateway-backends', () => {
 
   describe('selectByBackend', () => {
     it('returns the openclaw branch for openclaw config', () => {
-      expect(selectByBackend({ backendKind: 'openclaw' } as any, { openclaw: 'A', hermes: 'B' })).toBe('A');
+      expect(selectByBackend({ backendKind: 'openclaw' } as any, { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('A');
     });
 
     it('returns the hermes branch for hermes config', () => {
-      expect(selectByBackend({ backendKind: 'hermes' } as any, { openclaw: 'A', hermes: 'B' })).toBe('B');
+      expect(selectByBackend({ backendKind: 'hermes' } as any, { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('B');
+    });
+
+    it('returns the explicit wednesdayai branch for WednesdayAI config', () => {
+      expect(selectByBackend('wednesdayai', { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('W');
     });
 
     it('accepts a bare backend kind string', () => {
-      expect(selectByBackend('openclaw', { openclaw: 1, hermes: 2 })).toBe(1);
-      expect(selectByBackend('hermes', { openclaw: 1, hermes: 2 })).toBe(2);
+      expect(selectByBackend('openclaw', { wednesdayai: 0, openclaw: 1, hermes: 2 })).toBe(1);
+      expect(selectByBackend('hermes', { wednesdayai: 0, openclaw: 1, hermes: 2 })).toBe(2);
     });
 
     it('defaults to the openclaw branch for null/undefined so OpenClaw rendering is preserved', () => {
-      expect(selectByBackend(null, { openclaw: 'legacy', hermes: 'new' })).toBe('legacy');
-      expect(selectByBackend(undefined, { openclaw: 'legacy', hermes: 'new' })).toBe('legacy');
+      expect(selectByBackend(null, { wednesdayai: 'wednesday', openclaw: 'legacy', hermes: 'new' })).toBe('legacy');
+      expect(selectByBackend(undefined, { wednesdayai: 'wednesday', openclaw: 'legacy', hermes: 'new' })).toBe('legacy');
     });
 
     it('treats unknown string inputs as openclaw', () => {
-      expect(selectByBackend('totally-unknown' as any, { openclaw: 'A', hermes: 'B' })).toBe('A');
+      expect(selectByBackend('totally-unknown' as any, { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('A');
     });
   });
 
   describe('resolveGlobalMainSessionKey', () => {
-    it('returns null for openclaw so per-agent main sessions are preserved', () => {
+    it('returns null for WednesdayAI and OpenClaw so per-agent main sessions are preserved', () => {
+      expect(resolveGlobalMainSessionKey('wednesdayai')).toBeNull();
       expect(resolveGlobalMainSessionKey('openclaw')).toBeNull();
       expect(resolveGlobalMainSessionKey(null)).toBeNull();
       expect(resolveGlobalMainSessionKey({ backendKind: 'openclaw' } as any)).toBeNull();
@@ -108,9 +114,25 @@ describe('gateway-backends', () => {
       expect(getGatewayModeLabel({ backendKind: 'openclaw', transportKind: 'custom' } as any)).toBe('Custom');
     });
 
+    it('keeps explicit transport labels for WednesdayAI configs', () => {
+      expect(getGatewayModeLabel({ backendKind: 'wednesdayai', transportKind: 'relay' } as any)).toBe('Remote');
+      expect(getGatewayModeLabel({ backendKind: 'wednesdayai', transportKind: 'custom' } as any)).toBe('Custom');
+    });
+
     it('keeps the backend label for Hermes irrespective of transport', () => {
       expect(getGatewayModeLabel({ backendKind: 'hermes', transportKind: 'relay' } as any)).toBe('Hermes');
       expect(getGatewayModeLabel({ backendKind: 'hermes', transportKind: 'local' } as any)).toBe('Hermes');
+    });
+  });
+
+  describe('buildGatewayDefaultName', () => {
+    it('uses transport naming for WednesdayAI relay configs', () => {
+      expect(buildGatewayDefaultName({
+        backendKind: 'wednesdayai',
+        transportKind: 'relay',
+        url: 'wss://relay.example.com/ws',
+        index: 1,
+      })).toBe('Relay (relay.example.com)');
     });
   });
 

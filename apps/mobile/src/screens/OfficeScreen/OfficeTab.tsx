@@ -161,11 +161,16 @@ function resolveOfficeInteractionConfig(
     !capabilities.consoleNodes ? 'node_devices' : null,
   ].filter((value): value is string => Boolean(value));
 
-  // Office characters and desk labels that only make sense for OpenClaw
-  // (sub-agents, cron, per-channel desks) are hidden on Hermes. Using
-  // selectByBackend keeps the OpenClaw branch ("show everything") as the
-  // default, preserving existing Office UX for OpenClaw users.
+  // Office characters and desk labels that only make sense for the
+  // OpenClaw-compatible route (sub-agents, cron, per-channel desks) are
+  // hidden on Hermes. WednesdayAI keeps that OpenClaw-compatible route
+  // explicit for this first slice.
   return selectByBackend<OfficeInteractionConfig>(backendKind, {
+    wednesdayai: {
+      disabledCharacterIds: [],
+      hiddenDeskLabelIds: [],
+      disabledPropActions,
+    },
     openclaw: {
       disabledCharacterIds: [],
       hiddenDeskLabelIds: [],

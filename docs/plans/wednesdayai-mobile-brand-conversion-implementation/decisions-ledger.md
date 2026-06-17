@@ -18,6 +18,7 @@ The executor appends dated rows here when a task requires a choice not already l
 | D11 | review | Add `buildGatewayDefaultName` coverage to task 004. | Re-review found it also consumes `GatewayBackendKind`; the revised task requires an explicit WednesdayAI assertion for relay default naming. |
 | D12 | 003 | Use OpenClaw capabilities as the first-slice WednesdayAI backend baseline. | `docs/architecture/wednesdayai-backend-descriptor-plan.md` scoped the minimal `wednesdayai` descriptor as OpenClaw-compatible until later evidence-backed capability differences are planned. |
 | D13 | 003 | Do not broaden this task to fix the existing mobile typecheck baseline. | `npm run mobile:typecheck` fails at pre-task commit `e06659b` with existing `WebView`, `BlurView`, and `CameraView` JSX/nativeEvent typing errors outside task 003's file list. The focused backend descriptor test passes after this task. |
+| D14 | 004 | Route WednesdayAI through OpenClaw-compatible dispatch branches explicitly for this first slice. | Task 004 required deliberate `wednesdayai` branches instead of implicit OpenClaw fallback; the values match the descriptor baseline from task 003 while keeping backend identity separate from transport identity. |
 
 ## Task Verification Log
 
@@ -37,3 +38,7 @@ The executor appends dated rows here when a task requires a choice not already l
 | 003 | `npm run mobile:test -- --runInBand apps/mobile/src/services/gateway-backends.test.ts` | exit 0; 29 tests passed |
 | 003 | `for f in apps/mobile/src/i18n/locales/{en,zh-Hans,ja,ko,de,es}/config.json; do node -e "..."; done` | exit 0; all six `config.json` locale files include `WednesdayAI` |
 | 003 | `npm run mobile:typecheck` | exit 2 with existing native component typing errors; repeated at pre-task commit `e06659b` with the same `WebView`, `BlurView`, `CameraView`, and `WebViewMessageEvent.nativeEvent` baseline failures |
+| 004 | `npm run mobile:test -- --runInBand apps/mobile/src/services/gateway-backends.test.ts` after adding failing assertions | exit 1; `selectByBackend('wednesdayai', ...)` returned `A` instead of expected `W` |
+| 004 | `npm run mobile:test -- --runInBand apps/mobile/src/services/gateway-backends.test.ts` after implementation | exit 0; 32 tests passed |
+| 004 | `rg -n "selectByBackend" apps/mobile/src` | only task-owned selector call sites remained and each implementation call site was updated with an explicit `wednesdayai` branch |
+| 004 | `rg -n "GatewayTransportKind\|GatewayMode\|isGatewayTransportKind\|wednesdayai" ...task-004-files...` | reviewed; `wednesdayai` appears as backend identity/dispatch/test coverage only and `isGatewayTransportKind('wednesdayai')` remains false |

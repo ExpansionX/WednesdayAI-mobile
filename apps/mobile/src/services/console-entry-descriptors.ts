@@ -21,6 +21,7 @@ export function buildConsoleLibraryEntryDescriptors(params: {
   const { backendKind, tConsole, tCommon } = params;
 
   const docsDescription = selectByBackend<string>(backendKind, {
+    wednesdayai: tConsole('Documentation'),
     openclaw: tConsole('OpenClaw protocol docs'),
     hermes: tConsole('Open Hermes project documentation'),
   });
