@@ -19,6 +19,7 @@ The executor appends dated rows here when a task requires a choice not already l
 | D12 | 003 | Use OpenClaw capabilities as the first-slice WednesdayAI backend baseline. | `docs/architecture/wednesdayai-backend-descriptor-plan.md` scoped the minimal `wednesdayai` descriptor as OpenClaw-compatible until later evidence-backed capability differences are planned. |
 | D13 | 003 | Do not broaden this task to fix the existing mobile typecheck baseline. | `npm run mobile:typecheck` fails at pre-task commit `e06659b` with existing `WebView`, `BlurView`, and `CameraView` JSX/nativeEvent typing errors outside task 003's file list. The focused backend descriptor test passes after this task. |
 | D14 | 004 | Route WednesdayAI through OpenClaw-compatible dispatch branches explicitly for this first slice. | Task 004 required deliberate `wednesdayai` branches instead of implicit OpenClaw fallback; the values match the descriptor baseline from task 003 while keeping backend identity separate from transport identity. |
+| D15 | 005 | Use execution-commit range scans in addition to the exact clean-worktree task commands. | WAI execution committed tasks 000-004 before task 005, so the exact `git diff --name-only` worktree command returned no implementation files. The report records that result and uses `git diff --name-only aec8afc..HEAD` with the same scan patterns to classify every changed implementation file. |
 
 ## Task Verification Log
 
@@ -42,3 +43,7 @@ The executor appends dated rows here when a task requires a choice not already l
 | 004 | `npm run mobile:test -- --runInBand apps/mobile/src/services/gateway-backends.test.ts` after implementation | exit 0; 32 tests passed |
 | 004 | `rg -n "selectByBackend" apps/mobile/src` | only task-owned selector call sites remained and each implementation call site was updated with an explicit `wednesdayai` branch |
 | 004 | `rg -n "GatewayTransportKind\|GatewayMode\|isGatewayTransportKind\|wednesdayai" ...task-004-files...` | reviewed; `wednesdayai` appears as backend identity/dispatch/test coverage only and `isGatewayTransportKind('wednesdayai')` remains false |
+| 005 | `test -f docs/setup/brand-conversion-first-slice-hit-classification.md` | exit 0 |
+| 005 | `rg -n "README paired-change check\|App config safe-copy check\|Backend descriptor check\|Pending confirmation\|External repository boundary" docs/setup/brand-conversion-first-slice-hit-classification.md` | matched all required report sections |
+| 005 | `git diff --name-only` | no output because task 005 report was still untracked before staging; `git status --short` showed only `?? docs/setup/brand-conversion-first-slice-hit-classification.md` |
+| 005 | `git diff --name-only aec8afc..HEAD` and paired `rg` scans | covered all files changed by tasks 000-004; external repository path scan returned no matches |
