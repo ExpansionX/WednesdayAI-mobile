@@ -2,7 +2,7 @@
 id: "002"
 phase: 2
 title: Update mobile app visible identity copy
-status: ready
+status: passed
 depends_on: ["001"]
 parallel: false
 conflicts_with: []

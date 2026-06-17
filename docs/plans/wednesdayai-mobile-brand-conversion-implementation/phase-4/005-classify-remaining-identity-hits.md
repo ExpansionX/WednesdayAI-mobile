@@ -2,7 +2,7 @@
 id: "005"
 phase: 4
 title: Classify remaining identity hits
-status: ready
+status: passed
 depends_on: ["004"]
 parallel: false
 conflicts_with: []

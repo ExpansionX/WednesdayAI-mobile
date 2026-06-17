@@ -2,7 +2,7 @@
 id: "000"
 phase: 0
 title: Confirm first-slice boundaries before edits
-status: ready
+status: passed
 depends_on: []
 parallel: false
 conflicts_with: []

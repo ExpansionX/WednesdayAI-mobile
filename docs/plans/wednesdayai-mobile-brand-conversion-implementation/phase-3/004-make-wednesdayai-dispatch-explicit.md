@@ -2,7 +2,7 @@
 id: "004"
 phase: 3
 title: Make WednesdayAI backend dispatch explicit
-status: ready
+status: passed
 depends_on: ["003"]
 parallel: false
 conflicts_with: []

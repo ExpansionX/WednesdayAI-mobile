@@ -2,7 +2,7 @@
 id: "001"
 phase: 1
 title: Convert paired README product framing
-status: ready
+status: passed
 depends_on: ["000"]
 parallel: false
 conflicts_with: []
