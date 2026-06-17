@@ -1,6 +1,6 @@
 # macOS App Store Submission
 
-This document describes the remaining steps to submit the Mac Catalyst version of Clawket to the Mac App Store without changing the existing iOS shipping path.
+This document describes the remaining steps to submit the Mac Catalyst version of WednesdayAI Mobile to the Mac App Store without changing the existing iOS shipping path.
 
 ## Current State
 
@@ -38,10 +38,10 @@ security find-identity -v -p codesigning
 
 In App Store Connect:
 
-1. Open the existing Clawket app.
+1. Open the existing WednesdayAI Mobile app.
 2. Click `Add Platform`.
 3. Add `macOS`.
-4. Keep the same bundle ID: `com.p697.clawket`.
+4. Keep the same bundle ID as the current checked-in iOS app: `com.expansionx.clawket`.
 5. Fill in macOS-specific metadata:
    - description
    - promotional text
@@ -187,7 +187,7 @@ npm run build:macos
 The next external action is:
 
 1. Install or make available an `Apple Distribution` certificate for your Apple Developer team.
-2. Add the `macOS` platform in App Store Connect for `com.p697.clawket`.
+2. Add the `macOS` platform in App Store Connect for `com.expansionx.clawket`.
 3. Run:
 
 ```bash

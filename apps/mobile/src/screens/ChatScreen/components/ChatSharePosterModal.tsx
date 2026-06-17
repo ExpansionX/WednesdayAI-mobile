@@ -188,6 +188,10 @@ export function ChatSharePosterModal({
 
   const displayText = sanitizeDisplayText(messageText).trim();
   const brandingLabel = shareProductLabel?.trim() || 'OpenClaw';
+  const productBrandingLabel = t('WednesdayAI');
+  const posterBrandingLabel = brandingLabel === productBrandingLabel
+    ? productBrandingLabel
+    : `${brandingLabel} x ${productBrandingLabel}`;
   const formattedTime = timestampMs
     ? new Date(timestampMs).toLocaleString(locale, {
         month: 'short', day: 'numeric', year: 'numeric',
@@ -285,7 +289,7 @@ export function ChatSharePosterModal({
       </View>
 
       {/* Branding */}
-      <Text style={s.branding}>{`\u{1F43E} ${brandingLabel} x ${t('WednesdayAI')} \u{1F43E}`}</Text>
+      <Text style={s.branding}>{`\u{1F43E} ${posterBrandingLabel} \u{1F43E}`}</Text>
     </>
   );
 

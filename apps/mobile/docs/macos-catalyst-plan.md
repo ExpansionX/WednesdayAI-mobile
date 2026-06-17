@@ -4,7 +4,7 @@ Updated: 2026-03-15
 
 ## Conclusion
 
-Clawket should target `Mac Catalyst` first.
+WednesdayAI Mobile should target `Mac Catalyst` first.
 
 Reason:
 
@@ -197,7 +197,7 @@ Tasks:
 
 ### Phase 2: UX polish for Mac
 
-Goal: keep the app looking like Clawket, but avoid obviously mobile-only behavior.
+Goal: keep the app looking like WednesdayAI Mobile, but avoid obviously mobile-only behavior.
 
 Tasks:
 

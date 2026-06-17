@@ -46,7 +46,7 @@ import { shouldShowWecomSupportEntry } from '../../utils/mainlandChina';
 import { openExternalUrl } from '../../utils/openExternalUrl';
 import { isMacCatalyst } from '../../utils/platform';
 import { APP_PACKAGE_VERSION } from '../../constants/app-version';
-import { CLAWKET_GITHUB_REPO_URL } from '../../config/app-links';
+import { WEDNESDAYAI_MOBILE_GITHUB_REPO_URL } from '../../config/app-links';
 import { buildSupportEmailUrl, publicAppLinks } from '../../config/public';
 import { AppIconVariant, getCurrentAppIconAsync, isAppIconChangeSupportedAsync, setCurrentAppIconAsync } from '../../services/app-icon';
 import { getGatewayBackendCapabilities, getGatewayModeLabel, resolveGatewayBackendKind } from '../../services/gateway-backends';
@@ -899,7 +899,7 @@ export function ConfigScreenLayout({ insets, tabBarHeight, controller }: Props):
         <View style={styles.card}>
           <Pressable
             onPress={() => {
-              void handleOpenExternalUrl(CLAWKET_GITHUB_REPO_URL);
+              void handleOpenExternalUrl(WEDNESDAYAI_MOBILE_GITHUB_REPO_URL);
             }}
             style={({ pressed }) => [styles.row, styles.feedbackRow, pressed && styles.rowPressed]}
           >

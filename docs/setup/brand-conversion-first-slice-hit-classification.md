@@ -8,6 +8,7 @@ Post-execution adversarial reviews also required two follow-up classifications:
 
 - ID-free visible app shell strings and the new manual connection default are part of the safe visible identity slice and were converted to WednesdayAI.
 - The documentation refresh requested after execution is retained as source-backed user/admin/developer documentation, not as a production identifier migration.
+- Round-3 review converted the in-app GitHub repository destination, fixed a WednesdayAI main-session regression, removed duplicated WednesdayAI poster branding, and aligned stale macOS submission bundle-ID guidance with the current checked-in native ID.
 
 Task 000 recorded confirmation-bound surfaces before implementation edits began.
 
@@ -54,6 +55,7 @@ Round-2 review found the first pass under-scoped app-visible identity by limitin
 - Settings share/rate action labels and share payload text.
 - Chat share poster app branding.
 - New manual connection editor default backend identity.
+- Settings and release-announcement GitHub links now point to the WednesdayAI Mobile repository.
 
 These changes do not pick a final bundle ID, package ID, app group, Expo slug/scheme/owner, store listing ID, public CLI name, npm scope, relay domain, or billing product name.
 
@@ -75,6 +77,7 @@ Focused backend tests cover:
 - QR parsing and relay claim preservation for `backendKind: 'wednesdayai'`
 - WednesdayAI manual editor credential preservation
 - WednesdayAI Nodes documentation routing
+- WednesdayAI per-agent session preservation through the same global-main-session helper used by OpenClaw, Hermes, and YouMind.
 
 OpenClaw, Hermes, and retained YouMind compatibility remain explicit.
 
@@ -87,6 +90,8 @@ OpenClaw, Hermes, and retained YouMind compatibility remain explicit.
 - Backend identity now includes `wednesdayai`.
 - Explicit dispatch call sites now include deliberate `wednesdayai` branches.
 - All six mobile config locale files include `WednesdayAI` backend and app-shell keys. All six chat locale files include the poster branding product label.
+- App GitHub links now resolve to `https://github.com/ExpansionX/WednesdayAI-mobile`.
+- Mac Catalyst submission guidance now names the current checked-in iOS bundle ID `com.expansionx.clawket` instead of the stale `com.p697.clawket`.
 
 ### Compatibility or attribution
 
@@ -115,6 +120,7 @@ The root `SELF_HOSTING_MODEL.md` remains legacy planning/source material. `docs/
 
 - `@p697/clawket`, `clawket pair`, `CLAWKET_REGISTRY_URL`, bridge scripts, relay examples, storage keys such as `clawket.*`, package/workspace names, asset filenames, native IDs, app groups, owner/project identifiers, and store/listing references remain current compatibility or release-boundary values.
 - App Store, Android Play, local module, and storage references retain existing identifiers unless a later human-confirmed migration changes them.
+- Billing product identifiers such as `com.p697.clawket.pro.*` remain retained Clawket-era commerce identifiers until a scoped billing migration changes them.
 
 ### Pending confirmation
 

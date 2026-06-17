@@ -2,7 +2,7 @@
 
 Use this document on a fresh machine before trying to build a local APK or a Google Play `.aab`.
 
-This is the shortest reliable path to a working Android release environment for Clawket.
+This is the shortest reliable path to a working Android release environment for WednesdayAI Mobile with the currently retained Clawket-era package and signing boundaries.
 
 ## What Must Exist Outside Git
 

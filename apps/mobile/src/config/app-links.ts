@@ -1,1 +1,1 @@
-export const CLAWKET_GITHUB_REPO_URL = 'https://github.com/p697/clawket';
+export const WEDNESDAYAI_MOBILE_GITHUB_REPO_URL = 'https://github.com/ExpansionX/WednesdayAI-mobile';
