@@ -47,3 +47,36 @@ The executor appends dated rows here when a task requires a choice not already l
 | 005 | `rg -n "README paired-change check\|App config safe-copy check\|Backend descriptor check\|Pending confirmation\|External repository boundary" docs/setup/brand-conversion-first-slice-hit-classification.md` | matched all required report sections |
 | 005 | `git diff --name-only` | no output because task 005 report was still untracked before staging; `git status --short` showed only `?? docs/setup/brand-conversion-first-slice-hit-classification.md` |
 | 005 | `git diff --name-only aec8afc..HEAD` and paired `rg` scans | covered all files changed by tasks 000-004; external repository path scan returned no matches |
+
+## Reachability gate
+
+### CALL-PATH TRACE
+
+Production entry points touched by this slice:
+
+- Expo/app config: `apps/mobile/app.json` is the production Expo config read by Expo native/build tooling. The slice changes only `expo.name` and OS permission copy there while leaving `slug`, native IDs, scheme, owner, app group, asset paths, and EAS project ID unchanged.
+- Backend descriptor path: saved gateway config and UI dispatch call through the central backend descriptor helpers in `apps/mobile/src/services/gateway-backends.ts`.
+
+Actual merged code path evidence:
+
+- `apps/mobile/src/types/index.ts:33` defines `GatewayBackendKind = 'wednesdayai' | 'openclaw' | 'hermes' | 'youmind'`.
+- `apps/mobile/src/services/gateway-backends.ts:137` declares `BACKENDS: Record<GatewayBackendKind, GatewayBackendDescriptor>`, and `apps/mobile/src/services/gateway-backends.ts:138` adds the `wednesdayai` descriptor.
+- `apps/mobile/src/services/gateway-backends.ts:170` keeps backend identity in `isGatewayBackendKind`, while `apps/mobile/src/services/gateway-backends.ts:162` keeps transport identity in `isGatewayTransportKind`; `wednesdayai` is absent from the transport guard.
+- `apps/mobile/src/services/gateway-backends.ts:226` requires `selectByBackend` callers to provide `wednesdayai`, and `apps/mobile/src/services/gateway-backends.ts:233` returns the explicit WednesdayAI branch.
+- Real production consumers call this seam: `apps/mobile/src/screens/ConsoleScreen/ConsoleMenuScreen.tsx:1032`, `apps/mobile/src/screens/ConsoleScreen/HermesAwareCronScreens.tsx:50`, `apps/mobile/src/screens/ConsoleScreen/ModelsScreen.tsx:89`, `apps/mobile/src/screens/OfficeScreen/OfficeTab.tsx:168`, `apps/mobile/src/screens/ChatScreen/hooks/chatSyncPolicy.ts:44`, `apps/mobile/src/services/storage.ts:115`, `apps/mobile/src/services/gateway-doc-links.ts:16`, and `apps/mobile/src/services/console-entry-descriptors.ts:23`.
+
+### REAL-SEAM TEST
+
+`npm run mobile:test -- --runInBand apps/mobile/src/services/gateway-backends.test.ts` drives the exported backend descriptor seam used by production consumers, not a private helper bypass. It passed with 32 tests after task 004.
+
+Covered behaviours include `resolveGatewayBackendKind`, `getGatewayBackendDescriptor`, `getGatewayBackendCapabilities`, `isGatewayBackendKind`, `isGatewayTransportKind`, `selectByBackend`, `resolveGlobalMainSessionKey`, `getGatewayModeLabel`, and `buildGatewayDefaultName`.
+
+### INCIDENT-SYMPTOM ASSERTION
+
+The workstream symptom was product/brand conversion without broad Clawket replacement or identifier migration. Assertions and evidence now map to that symptom:
+
+- README pair changed together and frames the repo as `WednesdayAI Mobile` first while preserving Clawket hard-fork source/history and OpenClaw heritage.
+- App config display and permission copy use `WednesdayAI`; native IDs and release-bound values remain unchanged.
+- `wednesdayai` is recognized as a backend identity through the central descriptor and explicit dispatch path.
+- `isGatewayTransportKind('wednesdayai')` remains false, proving backend identity stayed separate from transport identity.
+- Remaining Clawket/OpenClaw/Hermes/YouMind hits were classified in `docs/setup/brand-conversion-first-slice-hit-classification.md`.
