@@ -1,13 +1,11 @@
 ---
 workstream: wednesdayai-mobile-brand-conversion-implementation
 title: WednesdayAI Mobile Brand Conversion Implementation
-status: implemented
+status: shipped
 owner: david
 rescued_branches: []
 contradictions: []
-staging_pointers:
-  - docs/plans/wednesdayai-mobile-brand-conversion-implementation
-  - docs/superpowers/specs/2026-06-17-wednesdayai-mobile-brand-conversion-implementation.md
+staging_pointers: []
 updated: 2026-06-18
 ---
 
@@ -31,6 +29,6 @@ Implemented scope:
 
 Post-review remediation expanded the original task files only where review found real regressions or stale guidance: QR/config backend preservation, WednesdayAI chat/session recovery copy, documentation command correctness, Hermes relay pairing copy, and current release checklist alignment. Those divergences are retained because they prevent user/admin/developer docs from contradicting the implemented product behavior.
 
-Current execution evidence lives in `docs/plans/wednesdayai-mobile-brand-conversion-implementation/` and `docs/setup/brand-conversion-first-slice-hit-classification.md`.
+Current execution evidence lives in `dev-docs/workstreams/wednesdayai-mobile-brand-conversion-implementation/plans/wednesdayai-mobile-brand-conversion-implementation/` and `docs/setup/brand-conversion-first-slice-hit-classification.md`.
 
 Do not choose final native identifiers, public package names, relay domains, store metadata, or YouMind disposition in this workstream without explicit human confirmation.
