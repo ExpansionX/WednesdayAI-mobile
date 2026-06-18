@@ -74,6 +74,10 @@ const OPENCLAW_CAPABILITIES: GatewayBackendCapabilities = {
   openClawConfigScreens: true,
 };
 
+const WEDNESDAYAI_CAPABILITIES: GatewayBackendCapabilities = {
+  ...OPENCLAW_CAPABILITIES,
+};
+
 const HERMES_CAPABILITIES: GatewayBackendCapabilities = {
   consoleRoot: true,
   gatewayConnection: true,
@@ -131,6 +135,11 @@ const YOUMIND_CAPABILITIES: GatewayBackendCapabilities = {
 };
 
 const BACKENDS: Record<GatewayBackendKind, GatewayBackendDescriptor> = {
+  wednesdayai: {
+    kind: 'wednesdayai',
+    label: 'WednesdayAI',
+    capabilities: WEDNESDAYAI_CAPABILITIES,
+  },
   openclaw: {
     kind: 'openclaw',
     label: 'OpenClaw',
@@ -159,7 +168,7 @@ export function isGatewayTransportKind(value: unknown): value is GatewayTranspor
 }
 
 export function isGatewayBackendKind(value: unknown): value is GatewayBackendKind {
-  return value === 'openclaw' || value === 'hermes' || value === 'youmind';
+  return value === 'wednesdayai' || value === 'openclaw' || value === 'hermes' || value === 'youmind';
 }
 
 export function resolveGatewayBackendKind(value: GatewayLike | null | undefined): GatewayBackendKind {
@@ -196,6 +205,7 @@ export function getGatewayThinkingLevels(
   input: GatewayLike | GatewayBackendKind | null | undefined,
 ): ThinkingLevel[] {
   return selectByBackend<ThinkingLevel[]>(input, {
+    wednesdayai: [...THINKING_LEVELS],
     openclaw: [...THINKING_LEVELS],
     hermes: [...HERMES_THINKING_LEVELS],
   });
@@ -210,17 +220,17 @@ export function getGatewayThinkingLevels(
  * `if (backend === 'hermes')` checks (see Backend Architecture Rule #3 in
  * apps/mobile/CLAUDE.md), and guarantees every call site lists both branches.
  *
- * For OpenClaw callers the behavior is identical to the previous ternary:
- * when the resolved backend is not `'hermes'` the helper returns the
- * `openclaw` branch, preserving existing render paths.
+ * For OpenClaw callers the behavior is identical to the previous ternary,
+ * while WednesdayAI callers must choose their branch explicitly.
  */
 export function selectByBackend<T>(
   input: GatewayLike | GatewayBackendKind | null | undefined,
-  options: { openclaw: T; hermes: T; youmind?: T },
+  options: { wednesdayai: T; openclaw: T; hermes: T; youmind?: T },
 ): T {
   const kind = typeof input === 'string' && isGatewayBackendKind(input)
     ? input
     : resolveGatewayBackendKind(input as GatewayLike | null | undefined);
+  if (kind === 'wednesdayai') return options.wednesdayai;
   if (kind === 'hermes') return options.hermes;
   if (kind === 'youmind') return options.youmind ?? options.openclaw;
   return options.openclaw;
@@ -241,6 +251,7 @@ export function resolveGlobalMainSessionKey(
   input: GatewayLike | GatewayBackendKind | null | undefined,
 ): string | null {
   return selectByBackend<string | null>(input, {
+    wednesdayai: null,
     openclaw: null,
     hermes: 'main',
     youmind: 'main',

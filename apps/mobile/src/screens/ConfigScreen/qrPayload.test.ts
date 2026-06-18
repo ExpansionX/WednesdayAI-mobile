@@ -96,6 +96,38 @@ describe('parseQRPayload', () => {
       expect(result?.password).toBe('legacy_password');
       expect(result?.relay?.displayName).toBe('My Legacy Gateway');
     });
+
+    it('preserves an explicit WednesdayAI backend identity on OpenClaw-compatible relay payloads', () => {
+      const payload = JSON.stringify({
+        version: 1,
+        kind: 'clawket_pair',
+        backendKind: 'wednesdayai',
+        server: 'https://relay.example.com',
+        gatewayId: 'ocg_wednesdayai',
+        accessCode: 'wednesday_access_code',
+        token: 'wednesday_token',
+      });
+      const result = parseQRPayload(payload);
+      expect(result?.backendKind).toBe('wednesdayai');
+      expect(result?.transportKind).toBe('relay');
+      expect(result?.mode).toBe('relay');
+      expect(result?.token).toBe('wednesday_token');
+    });
+
+    it('preserves compact b backend alias on OpenClaw-compatible relay payloads', () => {
+      const payload = JSON.stringify({
+        v: 2,
+        k: 'cp',
+        b: 'wednesdayai',
+        s: 'https://relay.example.com',
+        g: 'ocg_wednesdayai',
+        a: 'wednesday_access_code',
+      });
+      const result = parseQRPayload(payload);
+      expect(result?.backendKind).toBe('wednesdayai');
+      expect(result?.transportKind).toBe('relay');
+      expect(result?.mode).toBe('relay');
+    });
   });
 
   describe('Hermes local v1 payload', () => {
@@ -213,6 +245,32 @@ describe('parseQRPayload', () => {
       expect(result?.url).toBe('ws://10.0.0.5:18789');
       expect(result?.password).toBe('pw');
     });
+
+    it('preserves compact b backend alias on direct url payloads', () => {
+      const payload = JSON.stringify({
+        url: 'wss://relay.example.com/ws',
+        token: 'direct_token',
+        mode: 'relay',
+        b: 'wednesdayai',
+      });
+      const result = parseQRPayload(payload);
+      expect(result?.backendKind).toBe('wednesdayai');
+      expect(result?.transportKind).toBe('relay');
+      expect(result?.mode).toBe('relay');
+    });
+
+    it('preserves compact b backend alias on host payloads', () => {
+      const payload = JSON.stringify({
+        host: '192.168.1.50',
+        token: 'legacy_direct_token',
+        mode: 'relay',
+        b: 'wednesdayai',
+      });
+      const result = parseQRPayload(payload);
+      expect(result?.backendKind).toBe('wednesdayai');
+      expect(result?.transportKind).toBe('relay');
+      expect(result?.mode).toBe('relay');
+    });
   });
 
   describe('legacy openclaw:// URL scheme', () => {
@@ -232,6 +290,23 @@ describe('parseQRPayload', () => {
       expect(result?.backendKind).toBe('openclaw');
       expect(result?.transportKind).toBe('relay');
       expect(result?.relay?.gatewayId).toBe('ocg_xx');
+    });
+
+    it('preserves WednesdayAI backend identity in url=<direct> relay configs', () => {
+      const raw = 'openclaw://connect?url=wss://relay.example.com/ws&token=t&mode=relay&backendKind=wednesdayai&serverUrl=https://relay.example.com&gatewayId=ocg_wai';
+      const result = parseQRPayload(raw);
+      expect(result?.backendKind).toBe('wednesdayai');
+      expect(result?.transportKind).toBe('relay');
+      expect(result?.relay?.gatewayId).toBe('ocg_wai');
+    });
+
+    it('preserves WednesdayAI backend identity in host relay configs', () => {
+      const raw = 'openclaw://connect?host=192.168.1.10&port=18789&token=t&mode=relay&backend=wednesdayai&serverUrl=https://relay.example.com&gatewayId=ocg_wai';
+      const result = parseQRPayload(raw);
+      expect(result?.url).toBe('ws://192.168.1.10:18789');
+      expect(result?.backendKind).toBe('wednesdayai');
+      expect(result?.transportKind).toBe('relay');
+      expect(result?.relay?.gatewayId).toBe('ocg_wai');
     });
   });
 

@@ -87,6 +87,15 @@ export function ModelsScreen(): React.JSX.Element {
   // free of screen-level `backend === 'hermes'` checks — all backend
   // decisions flow through `src/services/gateway-backends.ts`.
   return selectByBackend(config, {
+    wednesdayai: (
+      <ModelsView
+        gateway={gateway}
+        topInset={0}
+        onBack={() => navigation.goBack()}
+        modelConfig={modelConfig}
+        hideHeader
+      />
+    ),
     openclaw: (
       <ModelsView
         gateway={gateway}

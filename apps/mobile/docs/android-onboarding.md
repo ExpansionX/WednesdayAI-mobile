@@ -2,7 +2,7 @@
 
 Use this document on a fresh machine before trying to build a local APK or a Google Play `.aab`.
 
-This is the shortest reliable path to a working Android release environment for Clawket.
+This is the shortest reliable path to a working Android release environment for WednesdayAI Mobile with the currently retained Clawket-era package and signing boundaries.
 
 ## What Must Exist Outside Git
 
@@ -204,12 +204,12 @@ Fix:
 
 Cause:
 
-- phone still has another signed build of `com.p697.clawket`
+- phone still has another signed build of `com.expansionx.clawket`
 
 Fix:
 
 ```bash
-adb uninstall com.p697.clawket
+adb uninstall com.expansionx.clawket
 adb install -r android/app/build/outputs/apk/release/app-release.apk
 ```
 
@@ -224,6 +224,6 @@ Before uploading to Google Play:
 3. upload keystore is loaded
 4. privacy policy URL is set
 5. contact email is set
-6. package is `com.p697.clawket`
+6. package is `com.expansionx.clawket`
 7. current artifact is a new `versionCode`
 8. upload the latest file from `android/app/build/outputs/bundle/release/app-release.aab`

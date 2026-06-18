@@ -1,15 +1,15 @@
 # macOS App Store Submission
 
-This document describes the remaining steps to submit the Mac Catalyst version of Clawket to the Mac App Store without changing the existing iOS shipping path.
+This document describes the remaining steps to submit the Mac Catalyst version of WednesdayAI Mobile to the Mac App Store without changing the existing iOS shipping path.
 
 ## Current State
 
 The repository now has a dedicated Mac Catalyst submission chain:
 
 ```bash
-npm run build:macos
-npm run archive:macos
-npm run export:macos
+npm run mobile:build:macos
+npm run mobile:archive:macos
+npm run mobile:export:macos
 ```
 
 Important boundaries:
@@ -38,10 +38,10 @@ security find-identity -v -p codesigning
 
 In App Store Connect:
 
-1. Open the existing Clawket app.
+1. Open the existing WednesdayAI Mobile app.
 2. Click `Add Platform`.
 3. Add `macOS`.
-4. Keep the same bundle ID: `com.p697.clawket`.
+4. Keep the same bundle ID as the current checked-in iOS app: `com.expansionx.clawket`.
 5. Fill in macOS-specific metadata:
    - description
    - promotional text
@@ -91,8 +91,8 @@ The scripts already support those variables.
 Use this first to verify the Mac pipeline itself:
 
 ```bash
-npm run build:macos
-npm run archive:macos
+npm run mobile:build:macos
+npm run mobile:archive:macos
 ```
 
 This does not require distribution signing.
@@ -104,7 +104,7 @@ Once `Apple Distribution` exists on the machine:
 ```bash
 MACOS_ALLOW_SIGNING=1 \
 MACOS_ALLOW_PROVISIONING_UPDATES=1 \
-npm run archive:macos
+npm run mobile:archive:macos
 ```
 
 If you are using an App Store Connect API key, add:
@@ -115,7 +115,7 @@ APP_STORE_CONNECT_API_KEY_ID="XXXX" \
 APP_STORE_CONNECT_API_ISSUER_ID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" \
 MACOS_ALLOW_SIGNING=1 \
 MACOS_ALLOW_PROVISIONING_UPDATES=1 \
-npm run archive:macos
+npm run mobile:archive:macos
 ```
 
 Expected artifact:
@@ -130,7 +130,7 @@ After a signed archive exists:
 
 ```bash
 MACOS_ALLOW_PROVISIONING_UPDATES=1 \
-npm run export:macos
+npm run mobile:export:macos
 ```
 
 Or with API-key auth:
@@ -140,7 +140,7 @@ APP_STORE_CONNECT_API_KEY_PATH="/absolute/path/to/AuthKey_XXXX.p8" \
 APP_STORE_CONNECT_API_KEY_ID="XXXX" \
 APP_STORE_CONNECT_API_ISSUER_ID="XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX" \
 MACOS_ALLOW_PROVISIONING_UPDATES=1 \
-npm run export:macos
+npm run mobile:export:macos
 ```
 
 The export uses:
@@ -179,7 +179,7 @@ Mac Catalyst still depends on a local `expo-modules-core` patch in `node_modules
 The scripts automatically reapply it after `npm install`, but this is not a clean upstream fix. If the Expo or React Native dependency graph changes, revalidate:
 
 ```bash
-npm run build:macos
+npm run mobile:build:macos
 ```
 
 ## Recommended Next Action
@@ -187,20 +187,20 @@ npm run build:macos
 The next external action is:
 
 1. Install or make available an `Apple Distribution` certificate for your Apple Developer team.
-2. Add the `macOS` platform in App Store Connect for `com.p697.clawket`.
+2. Add the `macOS` platform in App Store Connect for `com.expansionx.clawket`.
 3. Run:
 
 ```bash
 MACOS_ALLOW_SIGNING=1 \
 MACOS_ALLOW_PROVISIONING_UPDATES=1 \
-npm run archive:macos
+npm run mobile:archive:macos
 ```
 
 4. If the archive succeeds, run:
 
 ```bash
 MACOS_ALLOW_PROVISIONING_UPDATES=1 \
-npm run export:macos
+npm run mobile:export:macos
 ```
 
 5. If export/upload fails, use the exact Xcode or App Store Connect error as the next debugging input.

@@ -1024,12 +1024,13 @@ function OpenClawConsoleMenuScreen(): React.JSX.Element {
 // Thin dispatcher: route to the backend-specific ConsoleMenu implementation.
 // Backend branching lives in a single helper (`selectByBackend`) so we never
 // spread `if (backend === 'hermes')` across screen files (see Backend
-// Architecture Rule #3 in apps/mobile/CLAUDE.md). For OpenClaw configs this
-// resolves to `OpenClawConsoleMenuScreen`, preserving the existing render
-// path exactly.
+// Architecture Rule #3 in apps/mobile/CLAUDE.md). For this first slice,
+// WednesdayAI routes through the OpenClaw-compatible menu explicitly,
+// preserving the existing OpenClaw render path.
 export function ConsoleMenuScreen(): React.JSX.Element {
   const { config } = useAppContext();
   const Component = selectByBackend(config, {
+    wednesdayai: OpenClawConsoleMenuScreen,
     openclaw: OpenClawConsoleMenuScreen,
     hermes: HermesConsoleMenuScreen,
     youmind: YouMindConsoleMenuScreen,

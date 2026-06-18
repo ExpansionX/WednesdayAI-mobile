@@ -3,21 +3,35 @@
 ## Current anchors
 
 - `docs/architecture/backend-transport.md` is the governing architecture document: backend identity and transport identity are separate, and `wednesdayai` is the primary backend identity, not a transport.
-- Current backend identity type: `GatewayBackendKind = 'openclaw' | 'hermes' | 'youmind'` in `apps/mobile/src/types/index.ts:33`.
+- Current backend identity type: `GatewayBackendKind = 'wednesdayai' | 'openclaw' | 'hermes' | 'youmind'` in `apps/mobile/src/types/index.ts:33`.
 - Current transport identity type: `GatewayTransportKind = 'local' | 'tailscale' | 'cloudflare' | 'custom' | 'relay'` in `apps/mobile/src/types/index.ts:34`.
 - Current legacy mode type: `GatewayMode = GatewayTransportKind | 'hermes'` in `apps/mobile/src/types/index.ts:35`.
-- Current central capability anchors: `OPENCLAW_CAPABILITIES`, `HERMES_CAPABILITIES`, `YOUMIND_CAPABILITIES`, and `BACKENDS` in `apps/mobile/src/services/gateway-backends.ts:49-147`.
-- Current backend helpers: `isGatewayBackendKind`, `resolveGatewayBackendKind`, and `selectByBackend` in `apps/mobile/src/services/gateway-backends.ts:161-223`.
+- Current central capability anchors: `OPENCLAW_CAPABILITIES`, `WEDNESDAYAI_CAPABILITIES`, `HERMES_CAPABILITIES`, `YOUMIND_CAPABILITIES`, and `BACKENDS` in `apps/mobile/src/services/gateway-backends.ts`.
+- Current backend helpers: `isGatewayBackendKind`, `resolveGatewayBackendKind`, and `selectByBackend` in `apps/mobile/src/services/gateway-backends.ts`.
+
+## Implemented first slice
+
+The first behaviour-changing slice has implemented the minimal `wednesdayai` backend descriptor and explicit dispatch coverage. The current implementation:
+
+- treats `wednesdayai` as backend identity only;
+- keeps `GatewayTransportKind` unchanged as `local | tailscale | cloudflare | custom | relay`;
+- gives `wednesdayai` the deliberate OpenClaw-compatible capability baseline until real gateway differences are planned;
+- keeps OpenClaw, Hermes, and retained YouMind as explicit compatibility descriptors;
+- preserves explicit `wednesdayai` identity through QR parsing, relay claim, saved manual configs, and docs routing;
+- does not default unknown saved configs to `wednesdayai`;
+- does not choose final native IDs, npm scope, CLI command, Expo owner/project, relay domains, or YouMind disposition.
+
+Future backend work should build on this state rather than re-adding `wednesdayai` as if it were still only planned.
 
 ## Backend identities
 
-- Add `wednesdayai` to `GatewayBackendKind` as the primary product backend identity.
+- Keep `wednesdayai` in `GatewayBackendKind` as the primary product backend identity.
 - Keep `openclaw` as an explicit OpenClaw-derived compatibility backend descriptor.
 - Keep `hermes` as an explicit Hermes compatibility backend descriptor.
 - Keep or remove `youmind` only through the scoped disposition below.
 - Do not infer WednesdayAI from OpenClaw labels in UI code. The backend registry should name it directly.
 
-Target backend identity set for the future code task:
+Current backend identity set:
 
 ```ts
 type GatewayBackendKind = 'wednesdayai' | 'openclaw' | 'hermes' | 'youmind';
@@ -34,7 +48,7 @@ type GatewayBackendKind = 'wednesdayai' | 'openclaw' | 'hermes' | 'youmind';
 
 ## Minimal descriptor
 
-The first implementation task should add a minimal WednesdayAI descriptor to the existing registry before UI wiring:
+The first implementation slice added a minimal WednesdayAI descriptor to the existing registry before broader UI wiring:
 
 ```ts
 const WEDNESDAYAI_CAPABILITIES: GatewayBackendCapabilities = {
@@ -80,9 +94,9 @@ The exact capability values should be evidence-backed. If WednesdayAI currently 
 - `selectByBackend` should require or provide a WednesdayAI branch so callers make product behaviour explicit.
 - Backend operation helpers should own backend-specific request semantics for status, doctor, logs, reset, service lifecycle, models/providers, skills/plugins, agents/runs, approvals, files, and unsupported-action messaging.
 
-## Tests for the future code task
+## Tests
 
-Future code work should include focused tests for:
+The first implementation slice includes focused tests for the central descriptor and explicit backend dispatch paths. Future backend work should preserve and extend coverage for:
 
 - descriptor lookup for `wednesdayai`, `openclaw`, `hermes`, and retained `youmind`;
 - `isGatewayBackendKind('wednesdayai')`;
