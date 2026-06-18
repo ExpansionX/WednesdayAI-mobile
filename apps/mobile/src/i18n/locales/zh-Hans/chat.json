@@ -383,5 +383,5 @@
   "Open Add Connection and choose Use YouMind to pick an existing account or sign in with another one.": "打开 Add Connection，然后选择 Use YouMind，以选择已有账号或登录另一个账号。",
   "Manage YouMind accounts": "管理 YouMind 账号",
   "Sign out": "退出登录",
-  "🐾 {{brand}} x {{product}} 🐾": "🐾 {{brand}} × {{product}} 🐾"
+  "Poster branding label: {{label}}": "🐾 {{label}} 🐾"
 }
