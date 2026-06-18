@@ -253,7 +253,7 @@ INSTALL_FAILED_UPDATE_INCOMPATIBLE
 When that happens:
 
 ```bash
-adb uninstall com.p697.clawket
+adb uninstall com.expansionx.clawket
 adb install android/app/build/outputs/apk/release/app-release.apk
 ```
 
@@ -402,7 +402,7 @@ For the first Play upload with EAS, let Expo manage Android credentials unless y
 
 Before uploading the first closed-test build, verify:
 
-1. Package name stays `com.p697.clawket`.
+1. Current checked-in Android package stays `com.expansionx.clawket`.
 2. Version code increases for every uploaded build.
 3. Release signing uses the same upload key across future Play uploads.
 4. `npm run config:check:android` passes before the build.
@@ -416,11 +416,11 @@ Before uploading the first closed-test build, verify:
 
 ## Android Subscription Readiness
 
-Clawket already uses RevenueCat and the same paywall code path on Android, but Google Play still needs its own billing-side setup and validation.
+WednesdayAI Mobile currently retains the Clawket-era RevenueCat and paywall configuration on Android, but Google Play still needs its own billing-side setup and validation.
 
 Before starting Play closed testing, verify:
 
-1. A Google Play app exists for `com.p697.clawket`.
+1. A Google Play app exists for `com.expansionx.clawket`.
 2. Payments profile, tax, and merchant setup are complete in Play Console.
 3. Google Play subscription products are created for the Android app.
 4. Those products are attached to the same RevenueCat entitlement used on iOS.
@@ -492,7 +492,7 @@ Cause:
 Fix:
 
 ```bash
-adb uninstall com.p697.clawket
+adb uninstall com.expansionx.clawket
 adb install android/app/build/outputs/apk/release/app-release.apk
 ```
 

@@ -1,23 +1,28 @@
-# Self-Hosting Clawket
+# Self-Hosting WednesdayAI Mobile
 
-This guide is for operators who clone the public repository and want to run Clawket on infrastructure they control.
+This guide is for operators who clone the public repository and want to run WednesdayAI Mobile on infrastructure they control.
+
+WednesdayAI Mobile is a hard fork of Clawket. During the first brand-conversion slice, the app display name is `WednesdayAI`, while current package names, bridge commands, relay defaults, Expo slug/scheme/owner, and native IDs remain unchanged until a scoped migration changes them.
+
+This is the maintained audience-facing self-hosting guide. The root `SELF_HOSTING_MODEL.md` file is retained as legacy planning/source material from the Clawket fork history.
 
 ## What You Need
 
 - Node.js and npm
-- an OpenClaw host that the bridge can control
+- a WednesdayAI or OpenClaw-compatible host that the bridge can control
 - Xcode / Expo tooling only if you want to build the mobile app yourself
 
-Cloudflare is optional. Clawket supports both:
+Cloudflare is optional. WednesdayAI Mobile currently supports these connection paths:
 
-- a relay-backed mode using `relay-registry` and `relay-worker`
+- an OpenClaw-compatible relay-backed mode using `relay-registry` and `relay-worker`
+- a Hermes relay-backed mode using `hermes-relay-registry` and `hermes-relay-worker`
 - a direct mode using LAN IP, Tailscale IP, or another custom gateway URL
 
 ## 1. Install Dependencies
 
 ```bash
 git clone <your-fork-or-clone-url>
-cd clawket
+cd WednesdayAI-mobile
 npm install
 ```
 
@@ -25,7 +30,7 @@ npm install
 
 ### Option A: Direct local or Tailscale pairing
 
-If you do not want to deploy relay infrastructure, you can pair directly against your OpenClaw gateway.
+If you do not want to deploy relay infrastructure, you can pair directly against a WednesdayAI or OpenClaw-compatible gateway.
 
 Auto-detect a LAN pairing URL:
 
@@ -41,11 +46,11 @@ npm run bridge:pair -- --local --url ws://100.x.x.x:18789
 
 The mobile app can import or scan that QR payload and connect directly.
 
-### Option B: Relay-backed pairing with Cloudflare
+### Option B: OpenClaw-compatible relay pairing with Cloudflare
 
-If you want a relay-backed path, prepare and deploy the registry and relay workers in your own Cloudflare account.
+If you want an OpenClaw-compatible relay-backed path, prepare and deploy the registry and relay workers in your own Cloudflare account.
 
-## 3. Prepare Cloudflare Worker Config
+## 3. Prepare OpenClaw-compatible Relay Worker Config
 
 Copy the open-source-safe templates into local overrides:
 
@@ -65,7 +70,7 @@ Then fill in your own:
 
 Tracked `wrangler.toml` files should stay generic.
 
-## 4. Run or Deploy Relay Infrastructure
+## 4. Run or Deploy OpenClaw-compatible Relay Infrastructure
 
 Local development:
 
@@ -82,7 +87,7 @@ npm run relay:deploy:registry
 npm run relay:deploy:worker
 ```
 
-## 5. Pair the Bridge Against Your Registry
+## 5. Pair the Bridge Against Your OpenClaw-compatible Registry
 
 From the repo root:
 
@@ -98,6 +103,48 @@ CLAWKET_REGISTRY_URL=https://registry.example.com npm run bridge:pair
 
 The public-source CLI does not assume a hosted registry.
 
+### Option C: Hermes Relay pairing with Cloudflare
+
+Hermes Relay uses isolated workers, KV, and Durable Objects. Do not point Hermes local configs at the OpenClaw registry or relay.
+
+Copy the Hermes worker templates into local overrides:
+
+```bash
+cp apps/hermes-relay-registry/wrangler.local.example.toml apps/hermes-relay-registry/wrangler.local.toml
+cp apps/hermes-relay-worker/wrangler.local.example.toml apps/hermes-relay-worker/wrangler.local.toml
+```
+
+Then fill in your own Cloudflare account, KV, Durable Object, and registry verification settings.
+
+Local development:
+
+```bash
+npm run relay:dev:hermes-registry
+npm run relay:dev:hermes-worker
+```
+
+Deploy to your Cloudflare account:
+
+```bash
+npm run relay:cf:whoami
+npm run relay:deploy:hermes-registry
+npm run relay:deploy:hermes-worker
+```
+
+Pair Hermes against your self-hosted Hermes registry:
+
+```bash
+npm run bridge:pair -- --backend hermes --server https://hermes-registry.example.com
+```
+
+Or:
+
+```bash
+CLAWKET_HERMES_REGISTRY_URL=https://hermes-registry.example.com npm run bridge:pair -- --backend hermes
+```
+
+Without `--server` or `CLAWKET_HERMES_REGISTRY_URL`, Hermes relay pairing uses the current production Hermes registry default.
+
 ## 6. Configure the Mobile Build
 
 If you are building the mobile app yourself, copy `apps/mobile/.env.example` to `.env.local` and set only the public values you actually want.
@@ -105,7 +152,7 @@ If you are building the mobile app yourself, copy `apps/mobile/.env.example` to 
 Examples:
 
 - support/legal links for your own fork
-- docs link for your own OpenClaw docs
+- docs link for your own WednesdayAI or OpenClaw-compatible docs
 - other optional integrations only if you operate those services yourself
 
 If you leave those values empty, the app hides or disables those integrations.
@@ -120,7 +167,7 @@ npm run mobile:config:check:ios
 
 Direct Xcode `Build` / `Archive` flows read `apps/mobile/.env.local` through `apps/mobile/ios/.xcode.env`, so iOS bundle-time `EXPO_PUBLIC_*` values stay aligned with the local Expo config.
 
-Private-service configuration and related self-hosting defaults are documented in [SELF_HOSTING_MODEL.md](../SELF_HOSTING_MODEL.md).
+This first brand-conversion slice intentionally does not choose final public relay domains, public package names, or store metadata. Keep any private-service configuration in local environment files or private deployment settings.
 
 When you add a new mobile env variable:
 
@@ -141,8 +188,8 @@ npm run test
 Then validate the full flow manually:
 
 1. choose either direct mode or relay mode
-2. if using relay mode, deploy or run your registry and relay
-3. pair the bridge with either a direct local URL or your own registry
+2. if using relay mode, deploy or run the matching OpenClaw-compatible or Hermes registry and relay
+3. pair the bridge with either a direct local URL or your own matching registry
 4. scan or import the resulting pairing data in the mobile app
 5. confirm that the connection uses your own endpoints
 

@@ -528,9 +528,10 @@ function AppContent({
   }, [currentAgentId, isPro]);
 
   useEffect(() => {
-    if (backendKind === 'openclaw' || currentAgentId === 'main') return;
-    setCurrentAgentIdState('main');
-    StorageService.setCurrentAgentId('main');
+    const forcedAgentId = resolveGlobalMainSessionKey(backendKind);
+    if (!forcedAgentId || currentAgentId === forcedAgentId) return;
+    setCurrentAgentIdState(forcedAgentId);
+    StorageService.setCurrentAgentId(forcedAgentId);
   }, [backendKind, currentAgentId]);
 
   const switchAgent = useCallback((id: string) => {

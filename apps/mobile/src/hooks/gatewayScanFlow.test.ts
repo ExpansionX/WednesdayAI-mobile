@@ -434,6 +434,41 @@ describe('gatewayScanFlow', () => {
     expect(result.relay?.clientToken).toBe('gct_new');
   });
 
+  it('preserves WednesdayAI backend identity when claiming an OpenClaw-compatible relay QR', async () => {
+    (RelayPairingService.claim as jest.Mock).mockResolvedValue({
+      gatewayId: 'gw_wednesdayai',
+      relayUrl: 'wss://relay.example.com/ws',
+      clientToken: 'gct_wednesdayai',
+      displayName: 'WednesdayAI Mac',
+      region: 'us',
+    });
+
+    const result = await claimRelayPairing({
+      url: '',
+      backendKind: 'wednesdayai',
+      transportKind: 'relay',
+      token: 'wednesday-token',
+      mode: 'relay',
+      relay: {
+        serverUrl: 'https://registry.example.com',
+        gatewayId: 'gw_wednesdayai',
+        accessCode: 'WED123',
+      },
+    }, { current: new Map() });
+
+    expect(result).toMatchObject({
+      backendKind: 'wednesdayai',
+      transportKind: 'relay',
+      mode: 'relay',
+      token: 'wednesday-token',
+      relay: {
+        gatewayId: 'gw_wednesdayai',
+        clientToken: 'gct_wednesdayai',
+        displayName: 'WednesdayAI Mac',
+      },
+    });
+  });
+
   it('claims a Hermes relay QR into a Hermes relay runtime config', async () => {
     (HermesRelayPairingService.claim as jest.Mock).mockResolvedValue({
       bridgeId: 'hbg_123',

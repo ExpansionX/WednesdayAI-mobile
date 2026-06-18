@@ -1,5 +1,6 @@
 {
   "Current": "Actual",
+  "WednesdayAI": "WednesdayAI",
   "Agents & Gateways": "Agentes y gateways",
   "Default": "Predeterminado",
   "Gateways": "Gateways",
@@ -70,7 +71,7 @@
   "Refreshing conversation...": "Actualizando conversación...",
   "Syncing conversation...": "Sincronizando conversación...",
   "Compacting context...": "Comprimiendo contexto...",
-  "Connection Error: Check your network connection and that OpenClaw or Hermes is running, or run \"clawket pair\" on your computer, then try again.": "Error de conexión: comprueba tu conexión de red y que OpenClaw o Hermes estén en ejecución, o ejecuta \"clawket pair\" en tu ordenador y vuelve a intentarlo.",
+  "Connection Error: Check your network connection and that WednesdayAI, OpenClaw, or Hermes is running, or run \"clawket pair\" on your computer, then try again.": "Error de conexión: comprueba tu conexión de red y que WednesdayAI, OpenClaw o Hermes estén en ejecución, o ejecuta \"clawket pair\" en tu ordenador y vuelve a intentarlo.",
   "Direct local TLS gateway connections are not supported in Clawket mobile yet. Disable OpenClaw gateway TLS for LAN pairing, or use Relay/Tailscale instead.": "Las conexiones directas a gateways locales con TLS todavía no son compatibles en Clawket mobile. Desactive el TLS del gateway de OpenClaw para el emparejamiento por LAN o use Relay/Tailscale.",
   "Device Pairing Required": "Emparejamiento de dispositivo requerido",
   "Pairing instruction bridge": "Este dispositivo aún no está aprobado.\n\nEjecuta `openclaw devices approve --latest` en tu equipo OpenClaw emparejado para aprobarlo.",
@@ -381,5 +382,6 @@
   "You now can connect your YouMind account.": "Ahora puedes conectar tu cuenta de YouMind.",
   "Open Add Connection and choose Use YouMind to pick an existing account or sign in with another one.": "Abre Add Connection y elige Use YouMind para seleccionar una cuenta existente o iniciar sesión con otra.",
   "Manage YouMind accounts": "Gestionar cuentas de YouMind",
-  "Sign out": "Sign out"
+  "Sign out": "Sign out",
+  "Shared from {{label}}": "Compartido desde {{label}}"
 }

@@ -1,5 +1,6 @@
 import { GatewayBackendKind, GatewayMode, GatewayTransportKind } from '../../types';
 import { PairingQrPayload } from '../../services/relay-pairing';
+import { isGatewayBackendKind } from '../../services/gateway-backends';
 
 export type QRScanResult = {
   url: string;
@@ -38,6 +39,19 @@ export function parseQRPayload(raw: string): QRScanResult | null {
     value === 'local' || value === 'tailscale' || value === 'cloudflare' || value === 'custom' || value === 'relay' || value === 'hermes'
       ? value
       : undefined
+  );
+  const normalizeBackendKind = (value: unknown): GatewayBackendKind | undefined => (
+    isGatewayBackendKind(value) ? value : undefined
+  );
+  const readBackendKind = (payload: Record<string, unknown>): GatewayBackendKind | undefined => (
+    normalizeBackendKind(payload.backendKind)
+      ?? normalizeBackendKind(payload.backend)
+      ?? normalizeBackendKind(payload.b)
+  );
+  const readSearchBackendKind = (params: URLSearchParams): GatewayBackendKind | undefined => (
+    normalizeBackendKind(params.get('backendKind'))
+      ?? normalizeBackendKind(params.get('backend'))
+      ?? normalizeBackendKind(params.get('b'))
   );
   const readRelay = (value: unknown): QRScanResult['relay'] => {
     if (!value || typeof value !== 'object') return undefined;
@@ -161,8 +175,11 @@ export function parseQRPayload(raw: string): QRScanResult | null {
       : typeof payload.supportsBootstrap === 'boolean'
         ? payload.supportsBootstrap
         : undefined;
+    const backendKind = readBackendKind(payload) ?? 'openclaw';
     return {
       url: relayUrl,
+      backendKind,
+      transportKind: 'relay',
       token: token || undefined,
       password: password || undefined,
       mode: 'relay',
@@ -189,12 +206,14 @@ export function parseQRPayload(raw: string): QRScanResult | null {
       const pairingPayload = readPairingPayload(obj);
       if (pairingPayload) return pairingPayload;
       if (obj.url && (obj.token || obj.password)) {
-      const mode = normalizeMode(obj.mode);
-      const relay = readRelay(obj.relay);
-      const hermes = readHermes(obj.hermes);
+        const mode = normalizeMode(obj.mode);
+        const backendKind = readBackendKind(obj as Record<string, unknown>)
+          ?? (mode === 'hermes' ? 'hermes' : undefined);
+        const relay = readRelay(obj.relay);
+        const hermes = readHermes(obj.hermes);
         return {
           url: String(obj.url),
-          ...(hermes ? { backendKind: 'hermes' as const } : {}),
+          ...(hermes ? { backendKind: 'hermes' as const } : backendKind ? { backendKind } : {}),
           ...(mode && mode !== 'hermes' ? { transportKind: mode } : {}),
           ...(typeof obj.token === 'string' ? { token: obj.token } : {}),
           ...(typeof obj.password === 'string' ? { password: obj.password } : {}),
@@ -218,11 +237,13 @@ export function parseQRPayload(raw: string): QRScanResult | null {
         const scheme = obj.tls ? 'wss' : 'ws';
         const port = obj.port ?? 18789;
         const mode = normalizeMode(obj.mode);
+        const backendKind = readBackendKind(obj as Record<string, unknown>)
+          ?? (mode === 'hermes' ? 'hermes' : undefined);
         const relay = readRelay(obj.relay);
         const hermes = readHermes(obj.hermes);
         return {
           url: `${scheme}://${obj.host}:${port}`,
-          ...(hermes ? { backendKind: 'hermes' as const } : {}),
+          ...(hermes ? { backendKind: 'hermes' as const } : backendKind ? { backendKind } : {}),
           ...(mode && mode !== 'hermes' ? { transportKind: mode } : {}),
           ...(typeof obj.token === 'string' ? { token: obj.token } : {}),
           ...(typeof obj.password === 'string' ? { password: obj.password } : {}),
@@ -246,6 +267,8 @@ export function parseQRPayload(raw: string): QRScanResult | null {
       if (directUrl && (tokenFromUrl || passwordFromUrl)) {
         const modeParam = url.searchParams.get('mode');
         const mode = normalizeMode(modeParam);
+        const backendKind = readSearchBackendKind(url.searchParams)
+          ?? (mode === 'hermes' ? 'hermes' : mode === 'relay' ? 'openclaw' : undefined);
         const serverUrl = (url.searchParams.get('serverUrl') ?? '').trim();
         const gatewayId = (url.searchParams.get('gatewayId') ?? '').trim();
         const relayProtocolVersionRaw = url.searchParams.get('relayProtocolVersion');
@@ -272,7 +295,8 @@ export function parseQRPayload(raw: string): QRScanResult | null {
           : undefined;
         return {
           url: directUrl,
-          ...(mode === 'relay' ? { backendKind: 'openclaw' as const, transportKind: 'relay' as const } : {}),
+          ...(backendKind ? { backendKind } : {}),
+          ...(mode === 'relay' ? { transportKind: 'relay' as const } : {}),
           ...(tokenFromUrl ? { token: tokenFromUrl } : {}),
           ...(passwordFromUrl ? { password: passwordFromUrl } : {}),
           mode,
@@ -302,6 +326,8 @@ export function parseQRPayload(raw: string): QRScanResult | null {
         const scheme = tls ? 'wss' : 'ws';
         const modeParam = url.searchParams.get('mode');
         const mode = normalizeMode(modeParam);
+        const backendKind = readSearchBackendKind(url.searchParams)
+          ?? (mode === 'hermes' ? 'hermes' : mode === 'relay' ? 'openclaw' : undefined);
         const serverUrl = (url.searchParams.get('serverUrl') ?? '').trim();
         const gatewayId = (url.searchParams.get('gatewayId') ?? '').trim();
         const relayProtocolVersionRaw = url.searchParams.get('relayProtocolVersion');
@@ -328,7 +354,8 @@ export function parseQRPayload(raw: string): QRScanResult | null {
           : undefined;
         return {
           url: `${scheme}://${host}:${port}`,
-          ...(mode === 'relay' ? { backendKind: 'openclaw' as const, transportKind: 'relay' as const } : {}),
+          ...(backendKind ? { backendKind } : {}),
+          ...(mode === 'relay' ? { transportKind: 'relay' as const } : {}),
           ...(token ? { token } : {}),
           ...(password ? { password } : {}),
           mode,

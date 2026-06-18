@@ -39,7 +39,7 @@ type EditorQuickStart = 'default' | 'local' | 'youmind';
 const YOUMIND_DEFAULT_URL = 'https://youmind.com';
 
 function getCreateEditorBackendKind(): GatewayBackendKind {
-  return 'openclaw';
+  return 'wednesdayai';
 }
 
 function getCreateEditorTransportKind(): GatewayTransportKind {
@@ -64,6 +64,10 @@ function normalizeEditorTransportKind(backendKind: GatewayBackendKind, transport
     return 'custom';
   }
   return transportKind;
+}
+
+function usesOpenClawCompatibleAuth(backendKind: GatewayBackendKind): boolean {
+  return backendKind === 'wednesdayai' || backendKind === 'openclaw';
 }
 
 function deriveHermesBridgeConfig(
@@ -187,7 +191,7 @@ export function useGatewayConfigForm({ gateway, initialConfig, debugMode, onSave
     () => toLegacyGatewayMode({ backendKind: editorBackendKind, transportKind: manualEditorTransportKind }),
     [editorBackendKind, manualEditorTransportKind],
   );
-  const editorRequiresDirectAuth = editorBackendKind === 'openclaw' && manualEditorTransportKind !== 'relay';
+  const editorRequiresDirectAuth = usesOpenClawCompatibleAuth(editorBackendKind) && manualEditorTransportKind !== 'relay';
 
   const setEditorBackendKind = useCallback((nextBackendKind: GatewayBackendKind) => {
     setEditorBackendKindState(nextBackendKind);
@@ -474,8 +478,8 @@ export function useGatewayConfigForm({ gateway, initialConfig, debugMode, onSave
       url: trimmedUrl,
       index: configs.length + 1,
     });
-    const token = backendKind === 'openclaw' && editorAuthMethodState === 'token' ? (trimmedToken || undefined) : undefined;
-    const password = backendKind === 'openclaw' && editorAuthMethodState === 'password' ? (trimmedPassword || undefined) : undefined;
+    const token = usesOpenClawCompatibleAuth(backendKind) && editorAuthMethodState === 'token' ? (trimmedToken || undefined) : undefined;
+    const password = usesOpenClawCompatibleAuth(backendKind) && editorAuthMethodState === 'password' ? (trimmedPassword || undefined) : undefined;
     const hermes = backendKind === 'hermes'
       ? deriveHermesBridgeConfig(trimmedUrl, configs.find((item) => item.id === editingConfigId)?.hermes)
       : undefined;

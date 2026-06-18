@@ -1,4 +1,4 @@
-import { CLAWKET_GITHUB_REPO_URL } from '../../config/app-links';
+import { WEDNESDAYAI_MOBILE_GITHUB_REPO_URL } from '../../config/app-links';
 
 export type AppUpdateAnnouncementAction =
   | {
@@ -192,7 +192,7 @@ export const APP_UPDATE_RELEASES: AppUpdateRelease[] = [
         subtitle: 'Tap to view our GitHub repository and leave a star~',
         action: {
           type: 'open_url',
-          url: CLAWKET_GITHUB_REPO_URL,
+          url: WEDNESDAYAI_MOBILE_GITHUB_REPO_URL,
         },
       },
       {
@@ -225,7 +225,7 @@ export const APP_UPDATE_RELEASES: AppUpdateRelease[] = [
         subtitle: 'Tap to view our GitHub repository and leave a star~',
         action: {
           type: 'open_url',
-          url: CLAWKET_GITHUB_REPO_URL,
+          url: WEDNESDAYAI_MOBILE_GITHUB_REPO_URL,
         },
       },
       {

@@ -113,6 +113,7 @@ export type SkillListSortMode = 'name' | 'createdAsc' | 'createdDesc' | 'updated
 // Uses `selectByBackend` so the dispatch stays centralized in one spot.
 export function getDefaultSkillListSortMode(backendKind: GatewayBackendKind): SkillListSortMode {
   return selectByBackend<SkillListSortMode>(backendKind, {
+    wednesdayai: 'name',
     openclaw: 'name',
     hermes: 'createdDesc',
   });

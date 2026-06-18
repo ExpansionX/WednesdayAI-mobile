@@ -42,7 +42,7 @@ This mobile app must keep both OpenClaw and Hermes usable during the migration p
 
 For all new mobile work, use this model:
 
-1. `backendKind` is the product backend: `openclaw` or `hermes`.
+1. `backendKind` is the product backend: `wednesdayai`, `openclaw`, `hermes`, or retained `youmind`. `wednesdayai` is currently OpenClaw-compatible in this first brand-conversion slice, but it must still remain an explicit backend identity.
 2. `transportKind` is the connection route: `local`, `relay`, `tailscale`, `cloudflare`, or `custom`.
 3. Legacy `mode` fields may still exist for compatibility, but new logic should prefer `backendKind` + `transportKind`.
 4. Do not add new screen-level or component-level branching that treats Hermes as just another `mode`.

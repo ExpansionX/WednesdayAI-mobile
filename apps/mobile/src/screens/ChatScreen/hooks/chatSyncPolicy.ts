@@ -42,6 +42,7 @@ export function getChatHeaderSyncState(input: ChatHeaderSyncStateInput): {
   // establish the gateway socket (OpenClaw). Resolution lives in the
   // shared backend selector so this file has no inline backend check.
   const awaitingSessionStatus: ChatHeaderStatusKind = selectByBackend(input.config, {
+    wednesdayai: 'connecting_gateway',
     openclaw: 'connecting_gateway',
     hermes: 'starting_hermes',
   });

@@ -92,12 +92,19 @@ describe('parseQRPayload', () => {
 
     expect(parseQRPayload(raw)).toEqual({
       url: '',
+      backendKind: 'openclaw',
+      transportKind: 'relay',
+      token: undefined,
+      password: undefined,
       mode: 'relay',
       relay: {
         serverUrl: 'https://registry.example.com',
         gatewayId: 'gateway_123',
         accessCode: 'AB7K9Q',
+        relayUrl: undefined,
         displayName: 'Lucy Mac',
+        protocolVersion: undefined,
+        supportsBootstrap: undefined,
       },
     });
   });
@@ -116,11 +123,16 @@ describe('parseQRPayload', () => {
 
     expect(parseQRPayload(raw)).toEqual({
       url: '',
+      backendKind: 'openclaw',
+      transportKind: 'relay',
+      token: undefined,
+      password: undefined,
       mode: 'relay',
       relay: {
         serverUrl: 'https://registry.example.com',
         gatewayId: 'gateway_123',
         accessCode: '123456',
+        relayUrl: undefined,
         displayName: 'Lucy Mac',
         protocolVersion: 2,
         supportsBootstrap: true,
@@ -141,13 +153,19 @@ describe('parseQRPayload', () => {
 
     expect(parseQRPayload(raw)).toEqual({
       url: '',
+      backendKind: 'openclaw',
+      transportKind: 'relay',
       token: 'gateway-token',
+      password: undefined,
       mode: 'relay',
       relay: {
         serverUrl: 'https://registry.example.com',
         gatewayId: 'gateway_123',
         accessCode: '123456',
+        relayUrl: undefined,
         displayName: 'Lucy Mac',
+        protocolVersion: undefined,
+        supportsBootstrap: undefined,
       },
     });
   });
@@ -165,13 +183,19 @@ describe('parseQRPayload', () => {
 
     expect(parseQRPayload(raw)).toEqual({
       url: '',
+      backendKind: 'openclaw',
+      transportKind: 'relay',
+      token: undefined,
       password: 'gateway-password',
       mode: 'relay',
       relay: {
         serverUrl: 'https://registry.example.com',
         gatewayId: 'gateway_123',
         accessCode: '123456',
+        relayUrl: undefined,
         displayName: 'Lucy Mac',
+        protocolVersion: undefined,
+        supportsBootstrap: undefined,
       },
     });
   });
@@ -284,7 +308,10 @@ describe('parseQRPayload', () => {
 
     expect(parseQRPayload(raw)).toEqual({
       url: 'wss://relay-us.example.com/ws',
+      backendKind: 'openclaw',
+      transportKind: 'relay',
       token: undefined,
+      password: undefined,
       mode: 'relay',
       relay: {
         serverUrl: 'https://registry.example.com',
@@ -292,6 +319,8 @@ describe('parseQRPayload', () => {
         accessCode: 'AB7K9Q',
         relayUrl: 'wss://relay-us.example.com/ws',
         displayName: 'Lucy Mac',
+        protocolVersion: undefined,
+        supportsBootstrap: undefined,
       },
     });
   });
@@ -311,6 +340,8 @@ describe('parseQRPayload', () => {
 
     expect(parseQRPayload(raw)).toEqual({
       url: 'wss://relay-us.example.com/ws',
+      backendKind: 'openclaw',
+      transportKind: 'relay',
       token: 'legacy-token',
       password: 'legacy-password',
       mode: 'relay',
@@ -320,6 +351,8 @@ describe('parseQRPayload', () => {
         accessCode: '123456',
         relayUrl: 'wss://relay-us.example.com/ws',
         displayName: 'Lucy Mac',
+        protocolVersion: undefined,
+        supportsBootstrap: undefined,
       },
     });
   });

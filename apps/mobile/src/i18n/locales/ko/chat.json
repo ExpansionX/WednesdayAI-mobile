@@ -1,5 +1,6 @@
 {
   "Current": "현재",
+  "WednesdayAI": "WednesdayAI",
   "Agents & Gateways": "에이전트 및 게이트웨이",
   "Default": "기본값",
   "Gateways": "게이트웨이",
@@ -70,7 +71,7 @@
   "Refreshing conversation...": "대화 새로고침 중...",
   "Syncing conversation...": "대화 동기화 중...",
   "Compacting context...": "컨텍스트를 압축하는 중...",
-  "Connection Error: Check your network connection and that OpenClaw or Hermes is running, or run \"clawket pair\" on your computer, then try again.": "연결 오류: 네트워크 연결과 OpenClaw 또는 Hermes 실행 상태를 확인하거나, 컴퓨터에서 \"clawket pair\"를 실행한 뒤 다시 시도해 주세요.",
+  "Connection Error: Check your network connection and that WednesdayAI, OpenClaw, or Hermes is running, or run \"clawket pair\" on your computer, then try again.": "연결 오류: 네트워크 연결과 WednesdayAI, OpenClaw 또는 Hermes 실행 상태를 확인하거나, 컴퓨터에서 \"clawket pair\"를 실행한 뒤 다시 시도해 주세요.",
   "Direct local TLS gateway connections are not supported in Clawket mobile yet. Disable OpenClaw gateway TLS for LAN pairing, or use Relay/Tailscale instead.": "Clawket mobile은 TLS가 켜진 로컬 Gateway 직접 연결을 아직 지원하지 않습니다. LAN 페어링을 사용하려면 OpenClaw gateway TLS를 끄거나 Relay/Tailscale을 사용하세요.",
   "Device Pairing Required": "기기 페어링 필요",
   "Pairing instruction bridge": "이 기기는 아직 승인되지 않았습니다.\n\n페어링된 OpenClaw 컴퓨터에서 `openclaw devices approve --latest` 를 실행해 승인하세요.",
@@ -381,5 +382,6 @@
   "You now can connect your YouMind account.": "이제 YouMind 계정을 연결할 수 있어요.",
   "Open Add Connection and choose Use YouMind to pick an existing account or sign in with another one.": "Add Connection을 연 뒤 Use YouMind를 선택하면 기존 계정을 고르거나 다른 계정으로 로그인할 수 있습니다.",
   "Manage YouMind accounts": "YouMind 계정 관리",
-  "Sign out": "Sign out"
+  "Sign out": "Sign out",
+  "Shared from {{label}}": "{{label}}에서 공유됨"
 }

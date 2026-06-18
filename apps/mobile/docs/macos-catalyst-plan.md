@@ -1,10 +1,12 @@
 # macOS Adaptation Plan
 
-Updated: 2026-03-15
+Updated: 2026-06-18
+
+Status: historical plan with current runbook pointers. The Mac Catalyst build/archive/export scripts now exist; use [macos-dev.md](./macos-dev.md) and [macos-app-store-submission.md](./macos-app-store-submission.md) for active commands.
 
 ## Conclusion
 
-Clawket should target `Mac Catalyst` first.
+WednesdayAI Mobile should target `Mac Catalyst` first.
 
 Reason:
 
@@ -13,19 +15,20 @@ Reason:
 - Apple officially supports bringing an iPad app to Mac with Mac Catalyst.
 - The lighter "run iPhone/iPad app on Apple Silicon Mac" route is not enough here because it only covers Apple Silicon Macs and the app is currently configured as iPhone-first.
 
-## What I found in this repo
+## Current State
 
 ### Native project state
 
-- `app.json` sets `ios.supportsTablet` to `false`.
-- `ios/Podfile` explicitly sets `:mac_catalyst_enabled => false`.
-- Xcode build settings currently show:
-  - `SUPPORTED_PLATFORMS = iphoneos iphonesimulator`
-  - `SUPPORTS_MACCATALYST = NO`
-  - `TARGETED_DEVICE_FAMILY = 1`
-- `ios/Clawket/Info.plist` is still an iOS-only plist with `LSRequiresIPhoneOS = true`.
+- The repository now has dedicated app-local scripts for Mac Catalyst development and release validation:
+  - `npm run dev:macos`
+  - `npm run build:macos`
+  - `npm run archive:macos`
+  - `npm run export:macos`
+- Mac Catalyst uses a Mac-specific entitlements path while preserving the iOS entitlements path.
+- The share extension remains excluded from Mac Catalyst.
+- The active runbooks are `apps/mobile/docs/macos-dev.md` and `apps/mobile/docs/macos-app-store-submission.md`.
 
-This means the project is not "almost already on Mac". The app has a good foundation, but the native target is still configured as iPhone-only.
+Earlier notes in this document describe the planning baseline from March 2026. Treat them as historical context, not as current setup instructions.
 
 ### JavaScript/runtime state
 
@@ -54,13 +57,12 @@ That matches your requirement and is also the lowest-risk path.
 
 This should be the main shipping path.
 
-Expected work:
+Current implementation status:
 
-1. Turn the iOS target into an iPad-capable target.
-2. Enable Mac Catalyst in the iOS native project.
-3. Add a small runtime helper such as `isAppleDesktop`.
-4. Gate or swap a few features that do not map cleanly to Mac.
-5. Test and trim unsupported extensions/features for Mac App Store submission.
+1. Use the existing Mac Catalyst scripts for build/archive/export.
+2. Keep current iOS release behavior unchanged unless a scoped macOS submission task changes it.
+3. Continue using targeted platform adjustments only where Mac interaction differs from iPhone/iPad.
+4. Validate submission details through `apps/mobile/docs/macos-app-store-submission.md`.
 
 ### Route B: "Designed for iPad/iPhone" on Apple Silicon Macs
 
@@ -70,7 +72,7 @@ Why not treat this as the main solution:
 
 - It does not give a real Mac app target.
 - It is limited to Apple Silicon Macs.
-- It does not solve current iPhone-only configuration.
+- It does not provide the same signed Catalyst archive/export path.
 - Store presentation and desktop affordances are weaker than a Catalyst build.
 
 ## Concrete app areas that need adjustment
@@ -173,10 +175,12 @@ Mac follow-up:
 
 Goal: get a local Mac Catalyst build running as early as possible.
 
+Status: historical. The repository now has local Mac Catalyst build scripts; use `npm run dev:macos` or `npm run build:macos`.
+
 Tasks:
 
 1. Enable iPad support in Expo/native config.
-2. Enable Mac Catalyst in the Podfile/Xcode target.
+2. Validate Mac Catalyst in the Podfile/Xcode target.
 3. Attempt a local Catalyst build.
 4. Identify native modules/targets that fail.
 
@@ -197,7 +201,7 @@ Tasks:
 
 ### Phase 2: UX polish for Mac
 
-Goal: keep the app looking like Clawket, but avoid obviously mobile-only behavior.
+Goal: keep the app looking like WednesdayAI Mobile, but avoid obviously mobile-only behavior.
 
 Tasks:
 

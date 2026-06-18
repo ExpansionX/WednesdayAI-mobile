@@ -1,5 +1,6 @@
 {
   "Current": "Aktuell",
+  "WednesdayAI": "WednesdayAI",
   "Agents & Gateways": "Agents und Gateways",
   "Default": "Standard",
   "Gateways": "Gateways",
@@ -70,7 +71,7 @@
   "Refreshing conversation...": "Konversation wird aktualisiert…",
   "Syncing conversation...": "Konversation wird synchronisiert…",
   "Compacting context...": "Kontext wird komprimiert…",
-  "Connection Error: Check your network connection and that OpenClaw or Hermes is running, or run \"clawket pair\" on your computer, then try again.": "Verbindungsfehler: Prüfe deine Netzwerkverbindung und ob OpenClaw oder Hermes läuft, oder führe auf deinem Computer „clawket pair“ aus und versuche es dann erneut.",
+  "Connection Error: Check your network connection and that WednesdayAI, OpenClaw, or Hermes is running, or run \"clawket pair\" on your computer, then try again.": "Verbindungsfehler: Prüfe deine Netzwerkverbindung und ob WednesdayAI, OpenClaw oder Hermes läuft, oder führe auf deinem Computer „clawket pair“ aus und versuche es dann erneut.",
   "Direct local TLS gateway connections are not supported in Clawket mobile yet. Disable OpenClaw gateway TLS for LAN pairing, or use Relay/Tailscale instead.": "Direkte lokale TLS-Gateway-Verbindungen werden in Clawket mobile derzeit nicht unterstützt. Deaktivieren Sie OpenClaw Gateway-TLS für LAN-Pairing oder verwenden Sie stattdessen Relay/Tailscale.",
   "Device Pairing Required": "Gerätekopplung erforderlich",
   "Pairing instruction bridge": "Dieses Gerät ist noch nicht genehmigt.\n\nFühre auf deinem gekoppelten OpenClaw-Rechner `openclaw devices approve --latest` aus, um es zu genehmigen.",
@@ -381,5 +382,6 @@
   "You now can connect your YouMind account.": "Du kannst jetzt dein YouMind-Konto verbinden.",
   "Open Add Connection and choose Use YouMind to pick an existing account or sign in with another one.": "Öffne Add Connection und wähle Use YouMind, um ein vorhandenes Konto auszuwählen oder dich mit einem anderen Konto anzumelden.",
   "Manage YouMind accounts": "YouMind-Konten verwalten",
-  "Sign out": "Sign out"
+  "Sign out": "Sign out",
+  "Shared from {{label}}": "Geteilt von {{label}}"
 }
