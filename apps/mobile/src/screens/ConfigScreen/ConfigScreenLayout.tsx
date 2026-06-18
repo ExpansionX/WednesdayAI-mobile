@@ -1639,7 +1639,9 @@ function EditorModal({ controller, theme, styles }: EditorModalProps): React.JSX
             </Text>
           </Pressable>
 
-          {!isEditing && controller.editorRequiresDirectAuth ? <ConnectionHelpManual activeMode="custom" /> : null}
+          {!isEditing && controller.editorRequiresDirectAuth ? (
+            <ConnectionHelpManual activeMode="custom" backendKind={controller.editorBackendKind === 'wednesdayai' ? 'wednesdayai' : 'openclaw'} />
+          ) : null}
         </ScrollView>
       )}
     </ModalSheet>

@@ -6,15 +6,35 @@ import { FontSize, FontWeight, Radius, Space } from '../../theme/tokens';
 import { CopyableCommand } from './CopyableCommand';
 import { QuickConnectGuideCard } from './QuickConnectGuideCard';
 import { ConnectionHelpStep, ConnectionHelpStepList } from './ConnectionHelpStepList';
+import type { GatewayBackendKind } from '../../types';
 
 type ManualConnectionMode = 'relay' | 'custom';
+type DirectAuthHelpBackendKind = Extract<GatewayBackendKind, 'wednesdayai' | 'openclaw'>;
 
 type Props = {
   activeMode: ManualConnectionMode;
+  backendKind?: DirectAuthHelpBackendKind;
 };
+
+export function getDirectAuthHelpCopy(backendKind: DirectAuthHelpBackendKind = 'openclaw'): {
+  credentialSource: string;
+  credentialStorage: string;
+} {
+  if (backendKind === 'wednesdayai') {
+    return {
+      credentialSource: 'Use the auth token or password from your WednesdayAI-compatible gateway configuration.',
+      credentialStorage: 'Your auth credential is stored securely on this device and used only for handshakes with your gateway over LAN, Tailscale, or your own Relay.',
+    };
+  }
+  return {
+    credentialSource: 'Open openclaw.json and find gateway.auth.token or gateway.auth.password to get this credential.',
+    credentialStorage: 'Your auth credential is stored securely on this device and used only for handshakes with your OpenClaw Gateway over LAN, Tailscale, or your own Relay.',
+  };
+}
 
 function useSteps(
   activeMode: ManualConnectionMode,
+  backendKind: DirectAuthHelpBackendKind,
   styles: ReturnType<typeof createStyles>,
   t: (key: string, options?: Record<string, unknown>) => string,
 ): ConnectionHelpStep[] {
@@ -49,6 +69,7 @@ function useSteps(
     ];
   }
 
+  const authHelpCopy = getDirectAuthHelpCopy(backendKind);
   return [
     {
       title: t('Enter the gateway URL'),
@@ -69,12 +90,10 @@ function useSteps(
       body: (
         <>
           <Text style={styles.helpTextMuted}>
-            {t('Open openclaw.json and find gateway.auth.token or gateway.auth.password to get this credential.')}
+            {t(authHelpCopy.credentialSource)}
           </Text>
           <Text style={[styles.helpTextMuted, styles.helpTextMutedSpacing]}>
-            {t(
-              'Your auth credential is stored securely on this device and used only for handshakes with your OpenClaw Gateway over LAN, Tailscale, or your own Relay.',
-            )}
+            {t(authHelpCopy.credentialStorage)}
           </Text>
         </>
       ),
@@ -96,11 +115,11 @@ export function ConnectionHelpQuick(): React.JSX.Element {
 }
 
 /** Manual tab — shows step-by-step instructions, always expanded */
-export function ConnectionHelpManual({ activeMode }: Props): React.JSX.Element {
+export function ConnectionHelpManual({ activeMode, backendKind = 'openclaw' }: Props): React.JSX.Element {
   const { theme } = useAppTheme();
   const { t } = useTranslation('config');
   const styles = useMemo(() => createStyles(theme.colors), [theme]);
-  const steps = useSteps(activeMode, styles, t);
+  const steps = useSteps(activeMode, backendKind, styles, t);
 
   return (
     <View style={styles.sectionContainer}>

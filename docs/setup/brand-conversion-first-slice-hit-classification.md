@@ -10,6 +10,7 @@ Post-execution adversarial reviews also required two follow-up classifications:
 - The documentation refresh requested after execution is retained as source-backed user/admin/developer documentation, not as a production identifier migration.
 - Round-3 review converted the in-app GitHub repository destination, fixed a WednesdayAI main-session regression, removed duplicated WednesdayAI poster branding, and aligned stale macOS submission bundle-ID guidance with the current checked-in native ID.
 - The final code-review loop fixed stale Hermes pairing and self-hosting registry documentation, root-level release command examples and artifact paths, iOS lifetime-product validation guidance in both root and app-local release docs, and WednesdayAI-inclusive chat recovery copy. These remediations were needed because they corrected behaviour or admin guidance the first implementation slice now exposes; they did not choose new production identifiers.
+- A subsequent standards/doc review aligned the mobile architecture instructions with the implemented `wednesdayai` backend identity, made WednesdayAI manual connection help backend-neutral instead of OpenClaw-specific, split self-hosting relay instructions into OpenClaw-compatible and Hermes Relay paths, and marked stale Catalyst enablement plans as historical now that Mac Catalyst scripts exist.
 
 Task 000 recorded confirmation-bound surfaces before implementation edits began.
 
@@ -94,6 +95,7 @@ OpenClaw, Hermes, and retained YouMind compatibility remain explicit.
 - App GitHub links now resolve to `https://github.com/ExpansionX/WednesdayAI-mobile`.
 - Mac Catalyst submission guidance now names the current checked-in iOS bundle ID `com.expansionx.clawket` instead of the stale `com.p697.clawket`.
 - Chat connection recovery copy now tells users to check WednesdayAI, OpenClaw, or Hermes when the default WednesdayAI backend cannot be reached.
+- WednesdayAI manual direct-auth help now avoids `openclaw.json` and OpenClaw Gateway wording; OpenClaw manual help keeps the OpenClaw-specific auth-file instructions.
 
 ### Compatibility or attribution
 
@@ -131,6 +133,8 @@ The root `SELF_HOSTING_MODEL.md` remains legacy planning/source material. `docs/
 - Hermes pairing documentation preserves the current command boundary: default `clawket pair` uses Hermes Relay for Hermes, while `clawket pair --local` remains the explicit local-pairing escape hatch.
 - README self-hosting documentation now distinguishes OpenClaw registry requirements from Hermes Relay's production-registry default and the `CLAWKET_HERMES_REGISTRY_URL` self-hosting override.
 - Root-level Android and iOS release docs use root-safe npm commands, explicit `cd apps/mobile` / `cd apps/mobile/android` context, or `apps/mobile/*` paths; app-local commands remain appropriate only in app-local docs.
+- The maintained self-hosting guide now documents separate OpenClaw-compatible relay and Hermes Relay worker stacks and pairing commands.
+- The Catalyst plan docs are retained as historical planning context and point to the active macOS development and submission runbooks.
 
 ### Pending confirmation
 
