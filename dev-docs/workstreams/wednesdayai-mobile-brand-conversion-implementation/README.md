@@ -6,6 +6,7 @@ owner: david
 rescued_branches: []
 contradictions: []
 staging_pointers:
+  - docs/plans/wednesdayai-mobile-brand-conversion-implementation
   - docs/superpowers/specs/2026-06-17-wednesdayai-mobile-brand-conversion-implementation.md
 updated: 2026-06-18
 ---
