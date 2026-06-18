@@ -383,5 +383,5 @@
   "Open Add Connection and choose Use YouMind to pick an existing account or sign in with another one.": "Add Connection を開いて Use YouMind を選択すると、既存アカウントを選ぶか別のアカウントでサインインできます。",
   "Manage YouMind accounts": "YouMind アカウントを管理",
   "Sign out": "Sign out",
-  "Poster branding label: {{label}}": "🐾 {{label}} 🐾"
+  "Shared from {{label}}": "{{label}} から共有"
 }
