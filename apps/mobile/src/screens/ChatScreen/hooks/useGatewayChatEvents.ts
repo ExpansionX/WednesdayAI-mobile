@@ -264,7 +264,7 @@ export function useGatewayChatEvents(params: Params) {
         return;
       }
       lastFatalErrorRef.current = { signature, at: now };
-      const connectionRecoveryText = i18n.t('Connection Error: Check your network connection and that OpenClaw or Hermes is running, or run "clawket pair" on your computer, then try again.', { ns: 'chat' });
+      const connectionRecoveryText = i18n.t('Connection Error: Check your network connection and that WednesdayAI, OpenClaw, or Hermes is running, or run "clawket pair" on your computer, then try again.', { ns: 'chat' });
       setMessages((prev) => [...prev, {
         id: makeId('err'),
         role: 'system',
@@ -930,7 +930,7 @@ export function useGatewayChatEvents(params: Params) {
           return;
         }
         lastFatalErrorRef.current = { signature, at: now };
-        const connectionRecoveryText = i18n.t('Connection Error: Check your network connection and that OpenClaw or Hermes is running, or run "clawket pair" on your computer, then try again.', { ns: 'chat' });
+        const connectionRecoveryText = i18n.t('Connection Error: Check your network connection and that WednesdayAI, OpenClaw, or Hermes is running, or run "clawket pair" on your computer, then try again.', { ns: 'chat' });
         setMessages((prev) => [...prev, {
           id: makeId('err'),
           role: 'system',

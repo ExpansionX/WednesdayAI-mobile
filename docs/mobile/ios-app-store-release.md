@@ -16,10 +16,12 @@ This document tracks the local Xcode release process and App Store Connect items
 - RevenueCat packages:
   - `$rc_monthly`
   - `$rc_annual`
+  - `$rc_lifetime`
 - App Store subscription group: `Clawket Pro`
 - App Store products:
   - `com.p697.clawket.pro.monthly`
   - `com.p697.clawket.pro.yearly`
+  - `com.p697.clawket.pro.lifetime`
 
 The first WednesdayAI Mobile brand-conversion slice updates visible app identity only. It does not choose final App Store metadata, RevenueCat identifiers, subscription names, Expo owner/project, URL scheme, or public package naming. Keep those values unchanged unless a later scoped migration explicitly changes them.
 
@@ -35,11 +37,12 @@ The first WednesdayAI Mobile brand-conversion slice updates visible app identity
 
 - [ ] `Clawket Pro Monthly` is configured
 - [ ] `Clawket Pro Yearly` is configured
-- [ ] Both are in the same subscription group: `Clawket Pro`
-- [ ] Both have pricing configured
-- [ ] Both have required localizations
-- [ ] Both have a review screenshot
-- [ ] Both are attached to the app version that will be submitted for review
+- [ ] `Clawket Pro Lifetime` is configured if the active RevenueCat offering still exposes lifetime purchase or upgrade UI
+- [ ] All active products are in the same subscription group or IAP family expected by App Store Connect: `Clawket Pro`
+- [ ] All active products have pricing configured
+- [ ] All active products have required localizations
+- [ ] All active products have a review screenshot
+- [ ] All active products are attached to the app version that will be submitted for review
 
 ### App metadata
 
@@ -59,7 +62,8 @@ The first WednesdayAI Mobile brand-conversion slice updates visible app identity
 - [ ] `default` offering uses:
   - [ ] `$rc_monthly` -> `com.p697.clawket.pro.monthly`
   - [ ] `$rc_annual` -> `com.p697.clawket.pro.yearly`
-- [ ] `Clawket Pro` entitlement is attached to both products
+  - [ ] `$rc_lifetime` -> `com.p697.clawket.pro.lifetime`, unless a scoped billing migration has removed lifetime from the app and offering
+- [ ] `Clawket Pro` entitlement is attached to every active monthly, yearly, and lifetime product
 - [ ] No app build is using `EXPO_PUBLIC_REVENUECAT_TEST_API_KEY`
 
 ## 3. Local Build Environment Checklist
@@ -92,7 +96,7 @@ Use this checklist in the same PR:
 Build the WebView assets before any release or TestFlight build:
 
 ```bash
-cd office-game && npm run build && cd ..
+npm run mobile:office:build
 ```
 
 Optional validation:
@@ -157,9 +161,11 @@ Before submitting to App Review, verify on a TestFlight or store-distribution bu
 - [ ] Free user sees the Pro paywall at the correct gated entry points
 - [ ] Monthly purchase succeeds
 - [ ] Yearly purchase succeeds
+- [ ] Lifetime purchase succeeds if `$rc_lifetime` is still present in the active offering
 - [ ] Restore purchases succeeds after reinstall
 - [ ] Membership card shows the correct plan type
 - [ ] Existing Pro user sees the read-only paywall state
+- [ ] Paywall shows the correct Lifetime CTA and does not show auto-renewal legal copy when `Lifetime` is selected, if lifetime remains active
 - [ ] Debug-only RevenueCat App User ID is hidden unless Debug Mode is enabled
 
 ## 10. Known Expected Warning Before Review
@@ -169,7 +175,7 @@ RevenueCat may show warnings like:
 - product status is `READY_TO_SUBMIT`
 - offering packages point at products that are not yet approved
 
-This is expected before App Review. These warnings should disappear after the subscription products are submitted with the app version and approved by Apple.
+This is expected before App Review. These warnings should disappear after the active subscription and lifetime products are submitted with the app version and approved by Apple.
 
 ## 11. Recommended Release Order
 
@@ -179,7 +185,7 @@ This is expected before App Review. These warnings should disappear after the su
 4. Archive locally in Xcode
 5. Upload to TestFlight from Xcode Organizer
 6. Confirm the build appears in App Store Connect / TestFlight
-7. Re-run monthly / yearly / restore validation
+7. Re-run monthly / yearly / lifetime / restore validation for every product still exposed by the active offering
 8. Archive and upload the final review build locally from Xcode
-9. Attach both subscription products to the app version
+9. Attach all active subscription and lifetime products to the app version
 10. Submit the app version for review

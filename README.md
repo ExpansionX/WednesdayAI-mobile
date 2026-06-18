@@ -60,8 +60,8 @@ WednesdayAI Mobile currently inherits Clawket's two connection paths:
 
 Current pairing behavior:
 
-- If the machine only has OpenClaw, `clawket pair` and `clawket pair --local` behave the same as before.
-- If the machine only has Hermes, `clawket pair` and `clawket pair --local` generate a Hermes local bridge QR.
+- If the machine only has OpenClaw, `clawket pair` uses relay pairing by default and `clawket pair --local` generates a local QR.
+- If the machine only has Hermes, `clawket pair` uses Hermes Relay by default and `clawket pair --local` generates a Hermes local bridge QR.
 - If the machine has both OpenClaw and Hermes, the bridge prints one QR per backend and clearly labels them.
 
 ## Workspace Layout
@@ -112,7 +112,7 @@ clawket pair
 This command auto-detects OpenClaw and Hermes on the machine:
 
 - OpenClaw uses relay pairing by default
-- Hermes uses local bridge pairing for now
+- Hermes uses Hermes Relay pairing by default
 - If both are available, you get one QR code per backend
 
 For direct local pairing without relay infrastructure:
@@ -217,7 +217,8 @@ WednesdayAI Mobile is designed so the public repository can be cloned and run wi
 
 Key defaults for self-hosters:
 
-- `clawket pair` requires `--server` or `CLAWKET_REGISTRY_URL` — no hardcoded registry
+- OpenClaw relay pairing with `clawket pair` requires `--server` or `CLAWKET_REGISTRY_URL` — no hardcoded OpenClaw registry is used.
+- Hermes relay pairing uses the production Hermes registry by default. For self-hosted Hermes Relay, pass `--server` or set `CLAWKET_HERMES_REGISTRY_URL`.
 - `clawket pair --local` works without any Cloudflare infrastructure
 - OpenClaw pairing state remains in its legacy config, while Hermes pairing state is stored separately, so upgrading the bridge does not break existing OpenClaw pairings
 - Checked-in `wrangler.toml` files use placeholder bindings and `example.com` endpoints only

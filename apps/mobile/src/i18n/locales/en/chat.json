@@ -71,7 +71,7 @@
   "Refreshing conversation...": "Refreshing conversation...",
   "Syncing conversation...": "Syncing conversation...",
   "Compacting context...": "Compacting context...",
-  "Connection Error: Check your network connection and that OpenClaw or Hermes is running, or run \"clawket pair\" on your computer, then try again.": "Connection Error: Check your network connection and that OpenClaw or Hermes is running, or run \"clawket pair\" on your computer, then try again.",
+  "Connection Error: Check your network connection and that WednesdayAI, OpenClaw, or Hermes is running, or run \"clawket pair\" on your computer, then try again.": "Connection Error: Check your network connection and that WednesdayAI, OpenClaw, or Hermes is running, or run \"clawket pair\" on your computer, then try again.",
   "Direct local TLS gateway connections are not supported in Clawket mobile yet. Disable OpenClaw gateway TLS for LAN pairing, or use Relay/Tailscale instead.": "Direct local TLS gateway connections are not supported in Clawket mobile yet. Disable OpenClaw gateway TLS for LAN pairing, or use Relay/Tailscale instead.",
   "Device Pairing Required": "Device Pairing Required",
   "Pairing instruction bridge": "This device is not approved yet.\n\nRun `openclaw devices approve --latest` on your paired OpenClaw machine to approve it.",

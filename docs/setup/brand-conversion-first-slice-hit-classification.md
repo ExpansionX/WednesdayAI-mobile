@@ -9,6 +9,7 @@ Post-execution adversarial reviews also required two follow-up classifications:
 - ID-free visible app shell strings and the new manual connection default are part of the safe visible identity slice and were converted to WednesdayAI.
 - The documentation refresh requested after execution is retained as source-backed user/admin/developer documentation, not as a production identifier migration.
 - Round-3 review converted the in-app GitHub repository destination, fixed a WednesdayAI main-session regression, removed duplicated WednesdayAI poster branding, and aligned stale macOS submission bundle-ID guidance with the current checked-in native ID.
+- The final code-review loop fixed stale Hermes pairing and self-hosting registry documentation, root-level release command examples and artifact paths, iOS lifetime-product validation guidance in both root and app-local release docs, and WednesdayAI-inclusive chat recovery copy. These remediations were needed because they corrected behaviour or admin guidance the first implementation slice now exposes; they did not choose new production identifiers.
 
 Task 000 recorded confirmation-bound surfaces before implementation edits began.
 
@@ -92,6 +93,7 @@ OpenClaw, Hermes, and retained YouMind compatibility remain explicit.
 - All six mobile config locale files include `WednesdayAI` backend and app-shell keys. All six chat locale files include the poster branding product label.
 - App GitHub links now resolve to `https://github.com/ExpansionX/WednesdayAI-mobile`.
 - Mac Catalyst submission guidance now names the current checked-in iOS bundle ID `com.expansionx.clawket` instead of the stale `com.p697.clawket`.
+- Chat connection recovery copy now tells users to check WednesdayAI, OpenClaw, or Hermes when the default WednesdayAI backend cannot be reached.
 
 ### Compatibility or attribution
 
@@ -126,6 +128,9 @@ The root `SELF_HOSTING_MODEL.md` remains legacy planning/source material. `docs/
 - `@p697/clawket`, `clawket pair`, `CLAWKET_REGISTRY_URL`, bridge scripts, relay examples, storage keys such as `clawket.*`, package/workspace names, asset filenames, native IDs, app groups, owner/project identifiers, and store/listing references remain current compatibility or release-boundary values.
 - App Store, Android Play, local module, and storage references retain existing identifiers unless a later human-confirmed migration changes them.
 - Billing product identifiers such as `com.p697.clawket.pro.*` remain retained Clawket-era commerce identifiers until a scoped billing migration changes them.
+- Hermes pairing documentation preserves the current command boundary: default `clawket pair` uses Hermes Relay for Hermes, while `clawket pair --local` remains the explicit local-pairing escape hatch.
+- README self-hosting documentation now distinguishes OpenClaw registry requirements from Hermes Relay's production-registry default and the `CLAWKET_HERMES_REGISTRY_URL` self-hosting override.
+- Root-level Android and iOS release docs use root-safe npm commands, explicit `cd apps/mobile` / `cd apps/mobile/android` context, or `apps/mobile/*` paths; app-local commands remain appropriate only in app-local docs.
 
 ### Pending confirmation
 

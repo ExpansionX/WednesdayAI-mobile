@@ -60,8 +60,8 @@ WednesdayAI Mobile 当前继承 Clawket 的两种连接方式：
 
 当前配对行为：
 
-- 如果机器上只有 OpenClaw，`clawket pair` 和 `clawket pair --local` 的行为与之前一致。
-- 如果机器上只有 Hermes，`clawket pair` 和 `clawket pair --local` 会生成 Hermes 本地 bridge 的二维码。
+- 如果机器上只有 OpenClaw，`clawket pair` 默认走 Relay 配对，`clawket pair --local` 会生成本地二维码。
+- 如果机器上只有 Hermes，`clawket pair` 默认走 Hermes Relay 配对，`clawket pair --local` 会生成 Hermes 本地 bridge 的二维码。
 - 如果机器上同时有 OpenClaw 和 Hermes，bridge 会分别输出两个二维码，并明确标注对应后端。
 
 ## 仓库结构
@@ -110,7 +110,7 @@ clawket pair
 这条命令会自动检测本机上的 OpenClaw 和 Hermes：
 
 - OpenClaw 默认走 Relay 配对
-- Hermes 当前默认走本地 bridge 配对
+- Hermes 默认走 Hermes Relay 配对
 - 如果两个后端都存在，会分别输出一个二维码
 
 如果你不想部署 relay，直接走本地配对：
@@ -215,7 +215,8 @@ WednesdayAI Mobile 的公共仓库默认就可以 clone 下来自行运行，不
 
 自托管关键默认行为：
 
-- `clawket pair` 需要 `--server` 或 `CLAWKET_REGISTRY_URL` — 没有硬编码的 Registry
+- OpenClaw 的 `clawket pair` Relay 配对需要 `--server` 或 `CLAWKET_REGISTRY_URL` — 不会使用硬编码的 OpenClaw Registry。
+- Hermes 的 Relay 配对默认使用生产 Hermes Registry。自托管 Hermes Relay 时，请传入 `--server` 或设置 `CLAWKET_HERMES_REGISTRY_URL`。
 - `clawket pair --local` 无需任何 Cloudflare 基础设施
 - OpenClaw 配对状态继续保留在旧的配置文件里，Hermes 使用独立状态文件，因此 bridge 升级不会直接破坏已有的 OpenClaw 配对
 - 仓库里的 `wrangler.toml` 只保留占位绑定和 `example.com` 端点

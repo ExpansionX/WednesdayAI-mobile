@@ -57,7 +57,7 @@ For Android real-device development, the normal loop is:
 Command:
 
 ```bash
-npm run dev:android
+npm run mobile:dev:android
 ```
 
 What this script does:
@@ -89,13 +89,13 @@ These changes require rebuilding and reinstalling the Android app:
 In those cases, rebuild the `debug` app:
 
 ```bash
-npx expo run:android
+npm run --workspace clawket android
 ```
 
 Or use Gradle directly:
 
 ```bash
-cd android
+cd apps/mobile/android
 ANDROID_HOME=/opt/homebrew/share/android-commandlinetools \
 JAVA_HOME=$(/usr/libexec/java_home -v 17) \
 ./gradlew app:assembleDebug -x lint -x test --configure-on-demand --build-cache
@@ -104,7 +104,7 @@ JAVA_HOME=$(/usr/libexec/java_home -v 17) \
 Artifact:
 
 ```text
-android/app/build/outputs/apk/debug/app-debug.apk
+apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 ### First-Time Device Setup
@@ -139,7 +139,7 @@ For packaged APKs, the Office tab uses the built inline asset instead of the dev
 Build it first:
 
 ```bash
-cd office-game && npm run build && cd ..
+npm run mobile:office:build
 ```
 
 If you skip this, the packaged app may show a blank Office screen or stale Office content.
@@ -147,7 +147,7 @@ If you skip this, the packaged app may show a blank Office screen or stale Offic
 ### Debug APK
 
 ```bash
-cd android
+cd apps/mobile/android
 ANDROID_HOME=/opt/homebrew/share/android-commandlinetools \
 JAVA_HOME=$(/usr/libexec/java_home -v 17) \
 ./gradlew app:assembleDebug -x lint -x test --configure-on-demand --build-cache
@@ -156,7 +156,7 @@ JAVA_HOME=$(/usr/libexec/java_home -v 17) \
 Artifact:
 
 ```text
-android/app/build/outputs/apk/debug/app-debug.apk
+apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 Recommended use:
@@ -167,9 +167,9 @@ Recommended use:
 ### Release APK
 
 ```bash
-cd office-game && npm run build && cd ..
+npm run mobile:office:build
 
-cd android
+cd apps/mobile/android
 ANDROID_HOME=/opt/homebrew/share/android-commandlinetools \
 JAVA_HOME=$(/usr/libexec/java_home -v 17) \
 ./gradlew app:assembleRelease -x lint -x test --configure-on-demand --build-cache \
@@ -179,7 +179,7 @@ JAVA_HOME=$(/usr/libexec/java_home -v 17) \
 Artifact:
 
 ```text
-android/app/build/outputs/apk/release/app-release.apk
+apps/mobile/android/app/build/outputs/apk/release/app-release.apk
 ```
 
 `-PreactNativeArchitectures=arm64-v8a` builds only arm64. This keeps APK size lower.  
@@ -209,7 +209,7 @@ This script is the canonical Google Play packaging flow. It now:
 Artifact:
 
 ```text
-android/app/build/outputs/bundle/release/app-release.aab
+apps/mobile/android/app/build/outputs/bundle/release/app-release.aab
 ```
 
 ### Release Signing Modes
@@ -222,7 +222,7 @@ The Android Gradle config now supports two release-signing modes:
 Release builds now require one of these:
 
 - a real release keystore configured through environment variables, or
-- a local `android/app/keystore.properties` file, or
+- a local `apps/mobile/android/app/keystore.properties` file, or
 - the explicit Gradle property `-Pclawket.allowDebugReleaseSigning=true`
 
 If neither a release keystore nor the debug-sign fallback flag is present, Gradle will stop the build with an error.
@@ -232,13 +232,13 @@ If neither a release keystore nor the debug-sign fallback flag is present, Gradl
 Install debug APK:
 
 ```bash
-adb install -r android/app/build/outputs/apk/debug/app-debug.apk
+adb install -r apps/mobile/android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
 Install release APK:
 
 ```bash
-adb install -r android/app/build/outputs/apk/release/app-release.apk
+adb install -r apps/mobile/android/app/build/outputs/apk/release/app-release.apk
 ```
 
 ## Signature Switching
@@ -253,7 +253,7 @@ When that happens:
 
 ```bash
 adb uninstall com.expansionx.clawket
-adb install android/app/build/outputs/apk/release/app-release.apk
+adb install apps/mobile/android/app/build/outputs/apk/release/app-release.apk
 ```
 
 ## Release Keystore Setup
@@ -267,7 +267,7 @@ The repo supports two configuration methods.
 1. Copy:
 
 ```bash
-cp android-keystore.properties.example android/app/keystore.properties
+cp apps/mobile/android-keystore.properties.example apps/mobile/android/app/keystore.properties
 ```
 
 2. Fill in:
@@ -281,7 +281,7 @@ keyPassword=...
 
 Notes:
 
-- `android/app/keystore.properties` is ignored by git.
+- `apps/mobile/android/app/keystore.properties` is ignored by git.
 - `storeFile` can point anywhere on disk; it does not need to live inside the repo.
 - This is the easiest local setup for signed bundles.
 
@@ -292,7 +292,7 @@ cd apps/mobile
 ./scripts/restore-android-signing.sh
 ```
 
-That script recreates `android/app/keystore.properties` from:
+That script recreates `apps/mobile/android/app/keystore.properties` from:
 
 - `CLAWKET_ANDROID_KEYSTORE_PATH`
 - `CLAWKET_ANDROID_KEY_ALIAS` (defaults to `upload`)
@@ -321,6 +321,7 @@ This is the better fit for CI or ephemeral shell sessions.
 The default Android release path should be EAS Build:
 
 ```bash
+cd apps/mobile
 eas build --platform android --profile production
 ```
 
@@ -333,7 +334,7 @@ Important:
 npm run --workspace clawket eas:env:sync
 ```
 
-- Store-distribution Android EAS builds now run a pre-install validation step and will fail if RevenueCat is missing or if `EXPO_PUBLIC_REVENUECAT_TEST_API_KEY` / `EXPO_PUBLIC_UNLOCK_PRO` are enabled.
+- Store-distribution Android builds must use production RevenueCat values and must not set `EXPO_PUBLIC_REVENUECAT_TEST_API_KEY` or `EXPO_PUBLIC_UNLOCK_PRO`. The current config checker enforces the production RevenueCat gate for iOS/all-platform checks; Android release owners should run `npm run mobile:config:check` and verify the Android EAS environment before upload.
 
 Use the local Gradle path below only as a fallback or recovery flow.
 
@@ -350,14 +351,14 @@ What it does:
 - builds the Office packaged assets
 - patches the known Android Gradle source-set issue in `@react-native-menu/menu` and `react-native-keyboard-controller`
 - restores the ignored local signing file
-- normalizes the generated Expo `android/app/build.gradle` release signing block
+- normalizes the generated Expo `apps/mobile/android/app/build.gradle` release signing block
 - runs `./gradlew app:bundleRelease`
 - expects release signing credentials to be configured first
 
 Artifact:
 
 ```text
-android/app/build/outputs/bundle/release/app-release.aab
+apps/mobile/android/app/build/outputs/bundle/release/app-release.aab
 ```
 
 The fallback local AAB build restores the ignored local signing file automatically before Gradle runs, but it still requires `CLAWKET_ANDROID_KEYSTORE_PATH` plus the keystore passwords.
@@ -373,6 +374,7 @@ npm run --workspace clawket build:android:apk
 If you only want a temporary local release build and do not have the keystore yet, keep using the existing APK path with the debug-sign fallback:
 
 ```bash
+cd apps/mobile/android
 ./gradlew app:assembleRelease -Pclawket.allowDebugReleaseSigning=true
 ```
 
@@ -385,6 +387,7 @@ The repo already includes store distribution profiles in `eas.json`.
 If you prefer EAS-managed Android credentials and cloud builds, use one of these:
 
 ```bash
+cd apps/mobile
 eas build -p android --profile production
 eas build -p android --profile preview
 ```
@@ -437,7 +440,7 @@ Recommended validation on a Play-delivered closed-test build:
 
 ## Maven Mirror for Mainland China
 
-`android/build.gradle` already places Aliyun Maven mirrors before `google()` and `mavenCentral()`:
+`apps/mobile/android/build.gradle` already places Aliyun Maven mirrors before `google()` and `mavenCentral()`:
 
 - `https://maven.aliyun.com/repository/google`
 - `https://maven.aliyun.com/repository/central`
@@ -460,7 +463,7 @@ Cause:
 
 Fix:
 
-- keep Aliyun mirrors before `google()` in `android/build.gradle`
+- keep Aliyun mirrors before `google()` in `apps/mobile/android/build.gradle`
 
 ### Android WebView Local HTML Failure (`ERR_EMPTY_RESPONSE`)
 
@@ -491,7 +494,7 @@ Fix:
 
 ```bash
 adb uninstall com.expansionx.clawket
-adb install android/app/build/outputs/apk/release/app-release.apk
+adb install apps/mobile/android/app/build/outputs/apk/release/app-release.apk
 ```
 
 ### Release Signing Config Missing
@@ -528,20 +531,20 @@ Mitigation:
 Use this for daily Android development:
 
 ```bash
-npm run dev:android
+npm run mobile:dev:android
 ```
 
 Use this when native code changed:
 
 ```bash
-npx expo run:android
+npm run --workspace clawket android
 ```
 
 Use this when you need a packaged release-variant APK:
 
 ```bash
-cd office-game && npm run build && cd ..
-cd android && ./gradlew app:assembleRelease -x lint -x test --configure-on-demand --build-cache -Pclawket.allowDebugReleaseSigning=true -PreactNativeArchitectures=arm64-v8a
+npm run mobile:office:build
+cd apps/mobile/android && ./gradlew app:assembleRelease -x lint -x test --configure-on-demand --build-cache -Pclawket.allowDebugReleaseSigning=true -PreactNativeArchitectures=arm64-v8a
 ```
 
 Use this when you need a store-ready signed AAB for Google Play:
