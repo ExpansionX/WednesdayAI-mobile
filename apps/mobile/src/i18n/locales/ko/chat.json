@@ -382,5 +382,6 @@
   "You now can connect your YouMind account.": "이제 YouMind 계정을 연결할 수 있어요.",
   "Open Add Connection and choose Use YouMind to pick an existing account or sign in with another one.": "Add Connection을 연 뒤 Use YouMind를 선택하면 기존 계정을 고르거나 다른 계정으로 로그인할 수 있습니다.",
   "Manage YouMind accounts": "YouMind 계정 관리",
-  "Sign out": "Sign out"
+  "Sign out": "Sign out",
+  "🐾 {{brand}} x {{product}} 🐾": "🐾 {{brand}} × {{product}} 🐾"
 }

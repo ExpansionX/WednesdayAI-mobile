@@ -113,6 +113,21 @@ describe('parseQRPayload', () => {
       expect(result?.mode).toBe('relay');
       expect(result?.token).toBe('wednesday_token');
     });
+
+    it('preserves compact b backend alias on OpenClaw-compatible relay payloads', () => {
+      const payload = JSON.stringify({
+        v: 2,
+        k: 'cp',
+        b: 'wednesdayai',
+        s: 'https://relay.example.com',
+        g: 'ocg_wednesdayai',
+        a: 'wednesday_access_code',
+      });
+      const result = parseQRPayload(payload);
+      expect(result?.backendKind).toBe('wednesdayai');
+      expect(result?.transportKind).toBe('relay');
+      expect(result?.mode).toBe('relay');
+    });
   });
 
   describe('Hermes local v1 payload', () => {
@@ -229,6 +244,32 @@ describe('parseQRPayload', () => {
       const result = parseQRPayload(payload);
       expect(result?.url).toBe('ws://10.0.0.5:18789');
       expect(result?.password).toBe('pw');
+    });
+
+    it('preserves compact b backend alias on direct url payloads', () => {
+      const payload = JSON.stringify({
+        url: 'wss://relay.example.com/ws',
+        token: 'direct_token',
+        mode: 'relay',
+        b: 'wednesdayai',
+      });
+      const result = parseQRPayload(payload);
+      expect(result?.backendKind).toBe('wednesdayai');
+      expect(result?.transportKind).toBe('relay');
+      expect(result?.mode).toBe('relay');
+    });
+
+    it('preserves compact b backend alias on host payloads', () => {
+      const payload = JSON.stringify({
+        host: '192.168.1.50',
+        token: 'legacy_direct_token',
+        mode: 'relay',
+        b: 'wednesdayai',
+      });
+      const result = parseQRPayload(payload);
+      expect(result?.backendKind).toBe('wednesdayai');
+      expect(result?.transportKind).toBe('relay');
+      expect(result?.mode).toBe('relay');
     });
   });
 

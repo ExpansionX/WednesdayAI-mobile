@@ -207,8 +207,7 @@ export function parseQRPayload(raw: string): QRScanResult | null {
       if (pairingPayload) return pairingPayload;
       if (obj.url && (obj.token || obj.password)) {
         const mode = normalizeMode(obj.mode);
-        const backendKind = normalizeBackendKind(obj.backendKind)
-          ?? normalizeBackendKind(obj.backend)
+        const backendKind = readBackendKind(obj as Record<string, unknown>)
           ?? (mode === 'hermes' ? 'hermes' : undefined);
         const relay = readRelay(obj.relay);
         const hermes = readHermes(obj.hermes);
@@ -238,8 +237,7 @@ export function parseQRPayload(raw: string): QRScanResult | null {
         const scheme = obj.tls ? 'wss' : 'ws';
         const port = obj.port ?? 18789;
         const mode = normalizeMode(obj.mode);
-        const backendKind = normalizeBackendKind(obj.backendKind)
-          ?? normalizeBackendKind(obj.backend)
+        const backendKind = readBackendKind(obj as Record<string, unknown>)
           ?? (mode === 'hermes' ? 'hermes' : undefined);
         const relay = readRelay(obj.relay);
         const hermes = readHermes(obj.hermes);

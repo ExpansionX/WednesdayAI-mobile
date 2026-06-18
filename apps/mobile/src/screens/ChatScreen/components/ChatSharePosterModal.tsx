@@ -289,7 +289,12 @@ export function ChatSharePosterModal({
       </View>
 
       {/* Branding */}
-      <Text style={s.branding}>{`\u{1F43E} ${posterBrandingLabel} \u{1F43E}`}</Text>
+      <Text style={s.branding}>
+        {t('🐾 {{brand}} x {{product}} 🐾', {
+          brand: posterBrandingLabel,
+          product: productBrandingLabel,
+        })}
+      </Text>
     </>
   );
 
