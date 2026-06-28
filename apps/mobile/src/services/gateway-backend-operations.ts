@@ -245,10 +245,15 @@ const HERMES_OPERATIONS: GatewayBackendOperations = {
   },
 };
 
+const WEDNESDAYAI_OPERATIONS: GatewayBackendOperations = {
+  ...OPENCLAW_OPERATIONS,
+};
+
 export function getGatewayBackendOperations(config: GatewayConfig | null): GatewayBackendOperations {
-  return resolveGatewayBackendKind(config) === 'hermes'
-    ? HERMES_OPERATIONS
-    : OPENCLAW_OPERATIONS;
+  const kind = resolveGatewayBackendKind(config);
+  if (kind === 'hermes') return HERMES_OPERATIONS;
+  if (kind === 'wednesdayai') return WEDNESDAYAI_OPERATIONS;
+  return OPENCLAW_OPERATIONS;
 }
 
 function deriveBaseUrl(urlText: string | undefined, wsPathPattern: RegExp): string | null {
