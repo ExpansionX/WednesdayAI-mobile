@@ -160,6 +160,8 @@ export class GatewayClient {
     'model.current',
     'agents.list',
     'agent.identity.get',
+    'sessions.usage',
+    'usage.cost',
   ]);
   private ws: WebSocket | null = null;
   private config: GatewayConfig | null = null;

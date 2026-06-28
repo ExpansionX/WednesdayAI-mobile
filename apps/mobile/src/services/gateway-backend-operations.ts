@@ -200,23 +200,30 @@ const sharedOperations = {
     request: GatewayRequestFn,
     params: { startDate: string; endDate: string },
   ): Promise<UsageResult> {
-    const result = await request<UsageResult>('sessions.usage', {
+    const result = await request<UsageResult | null>('sessions.usage', {
       startDate: params.startDate,
       endDate: params.endDate,
       limit: 500,
       includeContextWeight: false,
     });
-    return (result ?? {}) as UsageResult;
+    return {
+      sessions: result?.sessions,
+      totals: result?.totals,
+      costPresentation: result?.costPresentation,
+    };
   },
   async fetchCostSummary(
     request: GatewayRequestFn,
     params: { startDate: string; endDate: string },
   ): Promise<CostSummary> {
-    const result = await request<CostSummary>('usage.cost', {
+    const result = await request<CostSummary | null>('usage.cost', {
       startDate: params.startDate,
       endDate: params.endDate,
     });
-    return (result ?? {}) as CostSummary;
+    return {
+      totals: result?.totals,
+      costPresentation: result?.costPresentation,
+    };
   },
 };
 
@@ -249,10 +256,19 @@ const WEDNESDAYAI_OPERATIONS: GatewayBackendOperations = {
   ...OPENCLAW_OPERATIONS,
 };
 
+// YouMind retains OpenClaw-compatible operations as a compatibility descriptor.
+// gatewayConnection/modelSelection/configRead/configWrite are capability-gated
+// at the call site via YOUMIND_CAPABILITIES; YOUMIND_OPERATIONS is explicit here
+// so the dispatch is never silent and future per-backend divergence has a named anchor.
+const YOUMIND_OPERATIONS: GatewayBackendOperations = {
+  ...OPENCLAW_OPERATIONS,
+};
+
 export function getGatewayBackendOperations(config: GatewayConfig | null): GatewayBackendOperations {
   const kind = resolveGatewayBackendKind(config);
   if (kind === 'hermes') return HERMES_OPERATIONS;
   if (kind === 'wednesdayai') return WEDNESDAYAI_OPERATIONS;
+  if (kind === 'youmind') return YOUMIND_OPERATIONS;
   return OPENCLAW_OPERATIONS;
 }
 
@@ -267,7 +283,9 @@ function deriveBaseUrl(urlText: string | undefined, wsPathPattern: RegExp): stri
   } catch {
     return urlText
       .replace(/^ws(s?):\/\//, 'http$1://')
-      .replace(/\/+$/, '')
-      .replace(wsPathPattern, '');
+      .split('?')[0]
+      .split('#')[0]
+      .replace(wsPathPattern, '')
+      .replace(/\/+$/, '');
   }
 }

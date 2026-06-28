@@ -113,5 +113,14 @@ export function ModelsScreen(): React.JSX.Element {
         hideHeader
       />
     ),
+    youmind: (
+      <ModelsView
+        gateway={gateway}
+        topInset={0}
+        onBack={() => navigation.goBack()}
+        modelConfig={modelConfig}
+        hideHeader
+      />
+    ),
   });
 }
