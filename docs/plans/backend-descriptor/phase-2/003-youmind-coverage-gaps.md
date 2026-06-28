@@ -24,47 +24,19 @@ when written. Covered by existing implementation in:
 
 Two insertions in `apps/mobile/src/services/gateway-backends.test.ts`.
 
----
-
-### Change A — add youmind test to `selectByBackend` describe block
-
-- **File:** `apps/mobile/src/services/gateway-backends.test.ts`
-- **Anchor:** end of `describe('selectByBackend', ...)` block — the last test before the closing `});` (line 89–92)
-- **Before:**
-
-```javascript
-    it('treats unknown string inputs as openclaw', () => {
-      expect(selectByBackend('totally-unknown' as any, { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('A');
-    });
-  });
-```
-
-- **After:**
-
-```javascript
-    it('treats unknown string inputs as openclaw', () => {
-      expect(selectByBackend('totally-unknown' as any, { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('A');
-    });
-
-    it('returns the explicit youmind branch when a youmind option is provided', () => {
-      expect(selectByBackend('youmind', { wednesdayai: 'W', openclaw: 'A', hermes: 'B', youmind: 'Y' })).toBe('Y');
-    });
-
-    it('falls back to the openclaw branch for youmind when no youmind option is provided', () => {
-      expect(selectByBackend('youmind', { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('A');
-    });
-  });
-```
+**Apply Change B first (higher line ~204), then Change A (lower line ~89).** This keeps
+Change A's offset stable after B inserts lines. Always locate anchors by exact string
+match, not by line number.
 
 ---
 
-### Change B — add youmind test to `getGatewayBackendDescriptor` describe block
+### Change B (apply first) — add youmind test to `getGatewayBackendDescriptor` describe block
 
 - **File:** `apps/mobile/src/services/gateway-backends.test.ts`
-- **Anchor:** end of `describe('getGatewayBackendDescriptor', ...)` block — the last test before the closing `});` (line 204–210)
+- **Anchor:** end of `describe('getGatewayBackendDescriptor', ...)` block — last test before closing `});` (~line 204–210)
 - **Before:**
 
-```javascript
+```ts
     it('returns the matching descriptor for a string kind', () => {
       expect(getGatewayBackendDescriptor('wednesdayai').kind).toBe('wednesdayai');
       expect(getGatewayBackendDescriptor('wednesdayai').label).toBe('WednesdayAI');
@@ -76,7 +48,7 @@ Two insertions in `apps/mobile/src/services/gateway-backends.test.ts`.
 
 - **After:**
 
-```javascript
+```ts
     it('returns the matching descriptor for a string kind', () => {
       expect(getGatewayBackendDescriptor('wednesdayai').kind).toBe('wednesdayai');
       expect(getGatewayBackendDescriptor('wednesdayai').label).toBe('WednesdayAI');
@@ -93,9 +65,39 @@ Two insertions in `apps/mobile/src/services/gateway-backends.test.ts`.
 
 ---
 
-The `describe('selectByBackend', ...)` block closes with `  });` at line 92, and the
-`describe('getGatewayBackendDescriptor', ...)` block closes at line 210. Both Before
-strings are unique in the file because of the surrounding context.
+### Change A (apply second) — add youmind tests to `selectByBackend` describe block
+
+- **File:** `apps/mobile/src/services/gateway-backends.test.ts`
+- **Anchor:** end of `describe('selectByBackend', ...)` block — last test before closing `});` (~line 89–92)
+- **Before:**
+
+```ts
+    it('treats unknown string inputs as openclaw', () => {
+      expect(selectByBackend('totally-unknown' as any, { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('A');
+    });
+  });
+```
+
+- **After:**
+
+```ts
+    it('treats unknown string inputs as openclaw', () => {
+      expect(selectByBackend('totally-unknown' as any, { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('A');
+    });
+
+    it('returns the explicit youmind branch when a youmind option is provided', () => {
+      expect(selectByBackend('youmind', { wednesdayai: 'W', openclaw: 'A', hermes: 'B', youmind: 'Y' })).toBe('Y');
+    });
+
+    it('falls back to the openclaw branch for youmind when no youmind option is provided', () => {
+      expect(selectByBackend('youmind', { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('A');
+    });
+  });
+```
+
+---
+
+Both Before strings are unique in the file by content.
 
 ## Allowed moves
 

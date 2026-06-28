@@ -5,7 +5,7 @@ title: Add WEDNESDAYAI_OPERATIONS constant and update getGatewayBackendOperation
 status: ready
 depends_on: ["001"]
 parallel: false
-conflicts_with: ["001"]
+conflicts_with: []
 files:
   - apps/mobile/src/services/gateway-backend-operations.ts
 irreversible: false

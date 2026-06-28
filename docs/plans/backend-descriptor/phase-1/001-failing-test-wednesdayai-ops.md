@@ -5,7 +5,7 @@ title: Create gateway-backend-operations.test.ts with failing wednesdayai refere
 status: ready
 depends_on: []
 parallel: false
-conflicts_with: ["002"]
+conflicts_with: []
 files:
   - apps/mobile/src/services/gateway-backend-operations.test.ts
 irreversible: false
@@ -38,30 +38,29 @@ same conventions; any divergence must be recorded in the decisions-ledger.
 - **Before:** *(absent)*
 - **After:** create with exactly:
 
-```python
+```ts
 import { getGatewayBackendOperations } from './gateway-backend-operations';
-import type { GatewayConfig } from '../types';
 
 describe('gateway-backend-operations', () => {
   describe('getGatewayBackendOperations', () => {
     it('returns a WednesdayAI-specific operations object distinct from the OpenClaw operations', () => {
-      const wednesdayaiOps = getGatewayBackendOperations({ backendKind: 'wednesdayai' } as GatewayConfig);
-      const openclawOps = getGatewayBackendOperations({ backendKind: 'openclaw' } as GatewayConfig);
+      const wednesdayaiOps = getGatewayBackendOperations({ backendKind: 'wednesdayai' } as any);
+      const openclawOps = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
       expect(wednesdayaiOps).not.toBe(openclawOps);
     });
 
     it('returns usesConnectHandshake true for WednesdayAI (OpenClaw-compatible baseline)', () => {
-      const ops = getGatewayBackendOperations({ backendKind: 'wednesdayai' } as GatewayConfig);
+      const ops = getGatewayBackendOperations({ backendKind: 'wednesdayai' } as any);
       expect(ops.usesConnectHandshake).toBe(true);
     });
 
     it('returns usesConnectHandshake false for Hermes', () => {
-      const ops = getGatewayBackendOperations({ backendKind: 'hermes' } as GatewayConfig);
+      const ops = getGatewayBackendOperations({ backendKind: 'hermes' } as any);
       expect(ops.usesConnectHandshake).toBe(false);
     });
 
     it('returns usesConnectHandshake true for OpenClaw', () => {
-      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as GatewayConfig);
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
       expect(ops.usesConnectHandshake).toBe(true);
     });
   });
