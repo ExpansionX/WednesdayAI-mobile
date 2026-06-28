@@ -65,6 +65,7 @@ export function ModelsScreen(): React.JSX.Element {
       settings.loadGatewaySettings,
       settings.loadingGatewaySettings,
       settings.savingGatewaySettings,
+      settings.supportsRuntimeSettings,
     ],
   );
 

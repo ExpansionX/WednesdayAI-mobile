@@ -158,6 +158,7 @@ export class GatewayClient {
     'last-heartbeat',
     'models.list',
     'model.current',
+    'model.get',
     'agents.list',
     'agent.identity.get',
     'sessions.usage',

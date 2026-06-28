@@ -207,8 +207,12 @@ const sharedOperations = {
       includeContextWeight: false,
     });
     return {
+      updatedAt: result?.updatedAt,
+      startDate: result?.startDate,
+      endDate: result?.endDate,
       sessions: result?.sessions,
       totals: result?.totals,
+      aggregates: result?.aggregates,
       costPresentation: result?.costPresentation,
     };
   },
@@ -221,6 +225,9 @@ const sharedOperations = {
       endDate: params.endDate,
     });
     return {
+      updatedAt: result?.updatedAt,
+      days: result?.days,
+      daily: result?.daily,
       totals: result?.totals,
       costPresentation: result?.costPresentation,
     };
@@ -239,6 +246,11 @@ const HERMES_OPERATIONS: GatewayBackendOperations = {
   usesConnectHandshake: false,
   ...sharedOperations,
   async getCurrentModelState(request: GatewayRequestFn): Promise<GatewayCurrentModelState> {
+    // Hermes exposes two distinct model RPCs:
+    // - model.current → lightweight (currentModel/Provider/BaseUrl/note only; no models list)
+    // - model.get → full state with models[] + providers[]
+    // getCurrentModelState only needs the lightweight current selection → model.current.
+    // getModelSelectionState needs the full list → inherits model.get from sharedOperations.
     const result = await request<GatewayCurrentModelState>('model.current', {});
     return {
       currentModel: result?.currentModel ?? '',
@@ -281,11 +293,14 @@ function deriveBaseUrl(urlText: string | undefined, wsPathPattern: RegExp): stri
     url.pathname = url.pathname.replace(wsPathPattern, '') || '/';
     return url.toString().replace(/\/+$/, '');
   } catch {
-    return urlText
+    const stripped = urlText
       .replace(/^ws(s?):\/\//, 'http$1://')
       .split('?')[0]
       .split('#')[0]
       .replace(wsPathPattern, '')
       .replace(/\/+$/, '');
+    // Guard: if stripping consumed the :// delimiter (e.g. bare ws://?token),
+    // the result is not a valid URL — return null rather than a broken "http:" string.
+    return /^https?:\/\//.test(stripped) ? stripped : null;
   }
 }

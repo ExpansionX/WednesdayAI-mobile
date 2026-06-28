@@ -98,6 +98,28 @@ describe('gateway-backend-operations', () => {
       expect(ops.getBaseUrl({ url: 'ws://[invalid/v1/hermes/ws?token=abc' } as any))
         .toBe('http://[invalid');
     });
+
+    it('catch path: returns null when stripping produces a bare protocol with no host (GEMINI-3 regression)', () => {
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      // ws:// with no host — new URL('http://') throws; catch path would previously return
+      // 'http:' (replace(/\/+$/) strips the // delimiter). After GEMINI-3 fix: returns null.
+      expect(ops.getBaseUrl({ url: 'ws://' } as any)).toBeNull();
+    });
+
+    it('openclaw: strips query string from a valid wss:// URL on the try path', () => {
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      expect(ops.getBaseUrl({ url: 'wss://example.com/ws?token=abc' } as any)).toBe('https://example.com');
+    });
+
+    it('hermes: strips query string from a valid wss:// URL on the try path', () => {
+      const ops = getGatewayBackendOperations({ backendKind: 'hermes' } as any);
+      expect(ops.getBaseUrl({ url: 'wss://example.com/v1/hermes/ws?token=abc' } as any)).toBe('https://example.com');
+    });
+
+    it('youmind: strips the /ws suffix (inherits OpenClaw pattern)', () => {
+      const ops = getGatewayBackendOperations({ backendKind: 'youmind' } as any);
+      expect(ops.getBaseUrl({ url: 'wss://example.com/ws' } as any)).toBe('https://example.com');
+    });
   });
 
   describe('getGatewayBackendOperations — RPC dispatch', () => {
@@ -136,13 +158,126 @@ describe('gateway-backend-operations', () => {
       expect(spy).toHaveBeenCalledWith('model.set', expect.objectContaining({ model: 'claude-3-5-sonnet' }));
     });
 
-    it('hermes: getModelSelectionState dispatches model.get (inherited from sharedOperations)', async () => {
+    it('hermes: getModelSelectionState dispatches model.get (intentional: model.get returns models/providers, model.current does not)', async () => {
       const spy = jest.fn().mockResolvedValue({});
       const ops = getGatewayBackendOperations({ backendKind: 'hermes' } as any);
       await ops.getModelSelectionState(spy as any);
-      // Documents current behavior: Hermes inherits model.get for getModelSelectionState
-      // while getCurrentModelState uses the Hermes-specific model.current override.
+      // Intentional: Hermes has two distinct model RPCs.
+      // model.current → lightweight (currentModel/Provider/BaseUrl/note only, no models list).
+      // model.get → full HermesModelState with models[] and providers[].
+      // getModelSelectionState needs models/providers → uses model.get.
+      // getCurrentModelState needs only the current selection → overrides to model.current.
       expect(spy).toHaveBeenCalledWith('model.get', {});
+    });
+  });
+
+  describe('getGatewayBackendOperations — getAgentFile contract', () => {
+    it('rejects with "File not found" when RPC response has no file field', async () => {
+      const spy = jest.fn().mockResolvedValue({});
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      await expect(ops.getAgentFile(spy as any, 'agent-1', 'AGENTS.md')).rejects.toThrow('File not found');
+    });
+
+    it('resolves with the file payload when present', async () => {
+      const fakeFile = { name: 'AGENTS.md', path: '/agents/AGENTS.md', missing: false, content: '# Agents' };
+      const spy = jest.fn().mockResolvedValue({ file: fakeFile });
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      const result = await ops.getAgentFile(spy as any, 'agent-1', 'AGENTS.md');
+      expect(result).toBe(fakeFile);
+    });
+  });
+
+  describe('getGatewayBackendOperations — Hermes setModelSelection dispatch', () => {
+    it('hermes: setModelSelection dispatches model.set (inherited, not model.current — intentional asymmetry)', async () => {
+      const spy = jest.fn().mockResolvedValue({});
+      const ops = getGatewayBackendOperations({ backendKind: 'hermes' } as any);
+      await ops.setModelSelection(spy as any, { model: 'claude-3-5-sonnet', scope: 'global' });
+      // Intentional: Hermes reads use model.current (getCurrentModelState) or model.get (getModelSelectionState),
+      // but writes use model.set (inherited from sharedOperations). Hermes Model Selection Rule mandates
+      // global-scoped writes converge on a shared operation — this test pins that invariant.
+      expect(spy).toHaveBeenCalledWith('model.set', expect.objectContaining({ model: 'claude-3-5-sonnet' }));
+    });
+  });
+
+  describe('getGatewayBackendOperations — fetchUsage / fetchCostSummary', () => {
+    it('fetchUsage: dispatches sessions.usage with correct date params', async () => {
+      const spy = jest.fn().mockResolvedValue(null);
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      await ops.fetchUsage(spy as any, { startDate: '2026-01-01', endDate: '2026-01-31' });
+      expect(spy).toHaveBeenCalledWith('sessions.usage', expect.objectContaining({
+        startDate: '2026-01-01',
+        endDate: '2026-01-31',
+      }));
+    });
+
+    it('fetchUsage: returns all 7 UsageResult fields without truncation', async () => {
+      const mockResult = {
+        updatedAt: 1234567890,
+        startDate: '2026-01-01',
+        endDate: '2026-01-31',
+        sessions: [{ key: 'sess-a', usage: null }],
+        totals: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0, totalTokens: 3, totalCost: 0.01, inputCost: 0.001, outputCost: 0.009, cacheReadCost: 0, cacheWriteCost: 0, missingCostEntries: 0 },
+        aggregates: { messages: { total: 5, user: 2, assistant: 3, toolCalls: 0, toolResults: 0, errors: 0 }, tools: { totalCalls: 0, uniqueTools: 0, tools: [] }, byModel: [], byProvider: [], byAgent: [], byChannel: [], daily: [] },
+        costPresentation: { mode: 'actual' as const },
+      };
+      const spy = jest.fn().mockResolvedValue(mockResult);
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      const result = await ops.fetchUsage(spy as any, { startDate: '2026-01-01', endDate: '2026-01-31' });
+      expect(result.updatedAt).toBe(1234567890);
+      expect(result.startDate).toBe('2026-01-01');
+      expect(result.endDate).toBe('2026-01-31');
+      expect(result.sessions).toEqual(mockResult.sessions);
+      expect(result.totals).toEqual(mockResult.totals);
+      expect(result.aggregates).toEqual(mockResult.aggregates);
+      expect(result.costPresentation).toEqual(mockResult.costPresentation);
+    });
+
+    it('fetchUsage: null response yields all fields undefined', async () => {
+      const spy = jest.fn().mockResolvedValue(null);
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      const result = await ops.fetchUsage(spy as any, { startDate: '2026-01-01', endDate: '2026-01-31' });
+      expect(result.updatedAt).toBeUndefined();
+      expect(result.startDate).toBeUndefined();
+      expect(result.endDate).toBeUndefined();
+      expect(result.sessions).toBeUndefined();
+      expect(result.aggregates).toBeUndefined();
+    });
+
+    it('fetchCostSummary: dispatches usage.cost with correct date params', async () => {
+      const spy = jest.fn().mockResolvedValue(null);
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      await ops.fetchCostSummary(spy as any, { startDate: '2026-01-01', endDate: '2026-01-31' });
+      expect(spy).toHaveBeenCalledWith('usage.cost', expect.objectContaining({
+        startDate: '2026-01-01',
+        endDate: '2026-01-31',
+      }));
+    });
+
+    it('fetchCostSummary: returns all 5 CostSummary fields without truncation', async () => {
+      const mockResult = {
+        updatedAt: 9876543210,
+        days: 30,
+        daily: [{ date: '2026-01-01', input: 0, output: 0, cacheRead: 0, cacheWrite: 0, totalTokens: 0, totalCost: 0, inputCost: 0, outputCost: 0, cacheReadCost: 0, cacheWriteCost: 0, missingCostEntries: 0 }],
+        totals: { input: 1, output: 2, cacheRead: 0, cacheWrite: 0, totalTokens: 3, totalCost: 0.01, inputCost: 0.001, outputCost: 0.009, cacheReadCost: 0, cacheWriteCost: 0, missingCostEntries: 0 },
+        costPresentation: { mode: 'currency' as const },
+      };
+      const spy = jest.fn().mockResolvedValue(mockResult);
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      const result = await ops.fetchCostSummary(spy as any, { startDate: '2026-01-01', endDate: '2026-01-31' });
+      expect(result.updatedAt).toBe(9876543210);
+      expect(result.days).toBe(30);
+      expect(result.daily).toEqual(mockResult.daily);
+      expect(result.totals).toEqual(mockResult.totals);
+      expect(result.costPresentation).toEqual(mockResult.costPresentation);
+    });
+
+    it('fetchCostSummary: null response yields all fields undefined', async () => {
+      const spy = jest.fn().mockResolvedValue(null);
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      const result = await ops.fetchCostSummary(spy as any, { startDate: '2026-01-01', endDate: '2026-01-31' });
+      expect(result.updatedAt).toBeUndefined();
+      expect(result.days).toBeUndefined();
+      expect(result.daily).toBeUndefined();
     });
   });
 });
