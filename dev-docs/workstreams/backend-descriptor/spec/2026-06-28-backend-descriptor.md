@@ -1,6 +1,6 @@
 ---
 doc_type: spec
-status: active
+status: shipped
 workstream: backend-descriptor
 change_kind: behaviour
 ---
