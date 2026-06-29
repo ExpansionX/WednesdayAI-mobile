@@ -2786,6 +2786,9 @@ export class GatewayClient {
       case 'model.get':
       case 'sessions.usage':
       case 'usage.cost':
+      case 'config.get':
+      case 'tools.catalog':
+      case 'agents.files.list':
         return true;
       default:
         return false;

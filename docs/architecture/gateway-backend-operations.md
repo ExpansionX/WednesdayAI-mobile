@@ -155,13 +155,13 @@ Coverage includes:
   (catch path → null), bare `ws://` (GEMINI-3 → null)
 - Try-path query stripping (GLM52-4 regression): `ws://host.invalid/v1/hermes/ws?token=abc` →
   `http://host.invalid` via `url.search = ''`
-- RPC dispatch for all 16 methods across all four backends
+- RPC dispatch for all 14 methods and 1 property across all four backends
 - Error propagation (fetchUsage/fetchCostSummary reject without swallowing)
 - `getAgentFile` across all four backends
 
 ## Admin note
 
-> **For relay operators**: The retry delays (`HERMES_BRIDGE_UNAVAILABLE_RETRY_DELAYS_MS = [750ms, 750ms]`)
+> **For relay operators**: The retry delays (`HERMES_BRIDGE_UNAVAILABLE_RETRY_DELAYS_MS = [750, 750]`)
 > mean that a transient bridge disconnect can cause up to ~2.5 seconds of additional latency on
 > affected reads before the error surfaces to the user. This is intentional: a transiently
 > reattaching bridge recovers within that window without user-visible errors in most cases.

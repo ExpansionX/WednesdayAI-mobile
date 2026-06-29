@@ -253,6 +253,7 @@ describe('gateway-backend-operations', () => {
           const ops = getGatewayBackendOperations({ backendKind } as any);
           const result = await ops.getAgentFile(spy as any, 'agent-1', 'AGENTS.md');
           expect(result).toBe(fakeFile);
+          expect(spy).toHaveBeenCalledWith('agents.files.get', { agentId: 'agent-1', name: 'AGENTS.md' });
         });
       });
     }
