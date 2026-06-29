@@ -1,3 +1,13 @@
+---
+audience: developer
+component: apps/mobile
+sources:
+  - apps/mobile/src/services/gateway-backends.ts
+  - apps/mobile/src/services/gateway-backend-operations.ts
+  - apps/mobile/src/types/index.ts
+generated: 2026-06-30
+---
+
 # WednesdayAI Backend Descriptor Plan
 
 ## Current anchors
@@ -22,6 +32,18 @@ The first behaviour-changing slice has implemented the minimal `wednesdayai` bac
 - does not choose final native IDs, npm scope, CLI command, Expo owner/project, relay domains, or YouMind disposition.
 
 Future backend work should build on this state rather than re-adding `wednesdayai` as if it were still only planned.
+
+## Implemented second slice
+
+The second behaviour-changing slice added explicit named operation objects for all four backends in `apps/mobile/src/services/gateway-backend-operations.ts`:
+
+- `WEDNESDAYAI_OPERATIONS` — `{ ...OPENCLAW_OPERATIONS }` spread; distinct named object so WednesdayAI never silently falls through to the OpenClaw reference, and future per-backend divergence has a named anchor.
+- `YOUMIND_OPERATIONS` — same pattern; retained as an explicit compatibility descriptor (see YouMind disposition section below for the open disposition question).
+- `getGatewayBackendOperations` dispatch now handles all four `GatewayBackendKind` values explicitly: `hermes → HERMES_OPERATIONS`, `wednesdayai → WEDNESDAYAI_OPERATIONS`, `youmind → YOUMIND_OPERATIONS`, `openclaw → OPENCLAW_OPERATIONS` (default).
+- `HERMES_BRIDGE_RETRY_METHODS` was extended to include `model.get`, `sessions.usage`, `usage.cost`, `config.get`, `tools.catalog`, and `agents.files.list`. `agents.files.get` is intentionally excluded (edit-base staleness risk — see `docs/architecture/gateway-backend-operations.md` for full rationale).
+- 62 tests cover the full dispatch, URL normalization, and RPC contract for all four backends.
+
+See `docs/architecture/gateway-backend-operations.md` for the full developer reference on the operations interface, dispatch table, retry eligibility, and URL normalization.
 
 ## Backend identities
 

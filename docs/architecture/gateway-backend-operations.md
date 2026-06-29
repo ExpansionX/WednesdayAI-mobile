@@ -5,7 +5,7 @@ sources:
   - apps/mobile/src/services/gateway-backend-operations.ts
   - apps/mobile/src/services/gateway.ts
   - apps/mobile/src/services/gateway-backends.ts
-generated: 2026-06-29
+generated: 2026-06-30
 ---
 
 # Gateway Backend Operations
