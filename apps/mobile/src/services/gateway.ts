@@ -149,9 +149,28 @@ export class GatewayClient {
   private static readonly RECONNECT_READY_TIMEOUT_MS = 6_000;
   private static readonly HISTORY_CACHE_TTL_MS = 1_000;
   private static readonly HERMES_BRIDGE_UNAVAILABLE_RETRY_DELAYS_MS = [750, 750];
-  // Idempotent reads only. Mutating calls (chat.send, chat.abort, etc.) must
-  // never be auto-retried because the bridge may have already accepted the
-  // first attempt and a retry would duplicate the side effect.
+  // Retry-eligibility set for idempotent Hermes relay reads (NOT an event whitelist).
+  // Mutating calls (chat.send, chat.abort, model.set, config.patch, agents.files.set, etc.)
+  // must never be auto-retried because the bridge may have already accepted the first
+  // attempt and a retry would duplicate the side effect.
+  //
+  // agents.files.get is intentionally EXCLUDED even though it is a read with no backend
+  // side effect. It is the edit base for read-modify-write flows: the file editor fetches
+  // content → user edits → setAgentFile writes it back. Auto-retrying after a
+  // [BRIDGE_UNAVAILABLE] can silently return NEWER file content if the file changed in the
+  // ~750ms gap, so a subsequent write targets a base the user never saw. setAgentFile takes
+  // no base-hash token (unlike config.get whose write pair patchConfig/setConfig pass back
+  // baseHash for server-side staleness rejection), so there is no backend guard. A transient
+  // [BRIDGE_UNAVAILABLE] surfacing as an error the user retries explicitly is honest; a
+  // silent base shift is not. Pure display reads lose auto-retry, which is an acceptable cost.
+  //
+  // tools.catalog and agents.files.list are pure display reads. On retry they may return a
+  // NEWER snapshot (e.g. a plugin installed in the ~750ms gap). This is expected and
+  // harmless for UI refresh; no downstream write depends on a first-attempt catalog/list base.
+  //
+  // Model RPCs: both model.get and model.current are included.
+  //   model.current → Hermes lightweight state (getCurrentModelState).
+  //   model.get → full state with models/providers (getModelSelectionState, shared path).
   private static readonly HERMES_BRIDGE_RETRY_METHODS = new Set<string>([
     'sessions.list',
     'chat.history',
@@ -163,6 +182,9 @@ export class GatewayClient {
     'agent.identity.get',
     'sessions.usage',
     'usage.cost',
+    'config.get',
+    'tools.catalog',
+    'agents.files.list',
   ]);
   private ws: WebSocket | null = null;
   private config: GatewayConfig | null = null;
@@ -1356,8 +1378,8 @@ export class GatewayClient {
     return getGatewayBackendOperations(this.config);
   }
 
-  private readonly sendBackendRequest = <T = unknown>(method: string, params?: object): Promise<T> => (
-    this.sendRequest(method, params) as Promise<T>
+  private readonly sendBackendRequest = async <T = unknown>(method: string, params?: object): Promise<T> => (
+    this.sendRequestWithHermesBridgeRetry(method, params ?? {}) as Promise<T>
   );
 
   private async sendRequestWithHermesBridgeRetry(method: string, params: object): Promise<unknown> {
@@ -2762,6 +2784,8 @@ export class GatewayClient {
       case 'models.list':
       case 'model.current':
       case 'model.get':
+      case 'sessions.usage':
+      case 'usage.cost':
         return true;
       default:
         return false;

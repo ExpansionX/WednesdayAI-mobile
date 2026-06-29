@@ -71,4 +71,4 @@ public surface is `getGatewayBackendOperations` only.
 
 ## Done when
 
-`WAI_TYPECHECK_CMD="cd apps/mobile && npm run typecheck" WAI_TEST_CMD="cd apps/mobile && npx jest --testPathPattern=gateway-backend-operations.test --no-coverage" bash ~/.claude/wai/scripts/task-gate.sh backend-descriptor 002` exits 0 with all 4 tests in `gateway-backend-operations.test.ts` passing.
+`WAI_TYPECHECK_CMD="cd apps/mobile && npm run typecheck" WAI_TEST_CMD="cd apps/mobile && npx jest --testPathPatterns=gateway-backend-operations.test --no-coverage" bash ~/.claude/wai/scripts/task-gate.sh backend-descriptor 002` exits 0 with all 4 tests in `gateway-backend-operations.test.ts` passing.

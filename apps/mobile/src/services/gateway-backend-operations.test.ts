@@ -28,28 +28,42 @@ describe('gateway-backend-operations', () => {
     });
   });
 
-  describe('getGatewayBackendOperations — object identity', () => {
-    it('returns a separate operations object instance for wednesdayai vs openclaw (currently shares openclaw methods)', () => {
-      // NOTE: WEDNESDAYAI_OPERATIONS is { ...OPENCLAW_OPERATIONS }. This test guards
-      // reference identity only — a separate named constant for future per-backend overrides.
-      // Behavioral divergence requires an explicit override in WEDNESDAYAI_OPERATIONS.
+  describe('getGatewayBackendOperations — object identity and method sharing', () => {
+    it('wednesdayai: separate container, shared method references (OpenClaw-compatible baseline)', () => {
+      // WEDNESDAYAI_OPERATIONS = { ...OPENCLAW_OPERATIONS } — shallow spread.
+      // Container is a distinct object; every method is the same function reference as OpenClaw's.
+      // Pins BOTH invariants: container inequality detects accidental re-merge,
+      // method equality detects accidental independent re-implementation.
       const wednesdayaiOps = getGatewayBackendOperations({ backendKind: 'wednesdayai' } as any);
       const openclawOps = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
       expect(wednesdayaiOps).not.toBe(openclawOps);
+      expect(wednesdayaiOps.getCurrentModelState).toBe(openclawOps.getCurrentModelState);
+      expect(wednesdayaiOps.getBaseUrl).toBe(openclawOps.getBaseUrl);
     });
 
-    it('returns a separate operations object instance for youmind vs openclaw', () => {
-      // NOTE: YOUMIND_OPERATIONS is { ...OPENCLAW_OPERATIONS }. Separate constant ensures
-      // the youmind dispatch branch is never silent and has an anchor for future divergence.
+    it('youmind: separate container, shared method references (OpenClaw-compatible baseline)', () => {
+      // YOUMIND_OPERATIONS = { ...OPENCLAW_OPERATIONS } — same pattern as WednesdayAI above.
       const youmindOps = getGatewayBackendOperations({ backendKind: 'youmind' } as any);
       const openclawOps = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
       expect(youmindOps).not.toBe(openclawOps);
+      expect(youmindOps.getCurrentModelState).toBe(openclawOps.getCurrentModelState);
+      expect(youmindOps.getBaseUrl).toBe(openclawOps.getBaseUrl);
     });
 
-    it('returns a separate operations object instance for hermes vs openclaw', () => {
+    it('hermes: separate container AND divergent method references (genuine override)', () => {
+      // Hermes overrides getCurrentModelState (model.current) and getBaseUrl (/v1/hermes/ws).
+      // This test pins that divergence so an accidental removal of the Hermes override is caught.
       const hermesOps = getGatewayBackendOperations({ backendKind: 'hermes' } as any);
       const openclawOps = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
       expect(hermesOps).not.toBe(openclawOps);
+      expect(hermesOps.getCurrentModelState).not.toBe(openclawOps.getCurrentModelState);
+      expect(hermesOps.getBaseUrl).not.toBe(openclawOps.getBaseUrl);
+      // Pin WHICH getBaseUrl implementation won, not just that references differ.
+      // wss://host/v1/hermes/ws is discriminative: Hermes strips /v1/hermes/ws → 'https://host';
+      // OpenClaw strips only the trailing /ws → 'https://host/v1/hermes'.
+      // A wrong Hermes override using OpenClaw's /ws pattern passes reference inequality but fails here.
+      expect(hermesOps.getBaseUrl({ url: 'wss://host/v1/hermes/ws' } as any)).toBe('https://host');
+      expect(openclawOps.getBaseUrl({ url: 'wss://host/v1/hermes/ws' } as any)).toBe('https://host/v1/hermes');
     });
 
     it('returns the same object reference for null config as explicit openclaw', () => {
@@ -90,13 +104,26 @@ describe('gateway-backend-operations', () => {
       expect(ops.getBaseUrl({ url: 'ws://localhost:3000/ws' } as any)).toBe('http://localhost:3000');
     });
 
-    it('catch path: strips query string before applying wsPathPattern (GLM52-4 regression)', () => {
+    it('hermes: strips query string from a ws:// URL on the try path (GLM52-4 regression)', () => {
       const ops = getGatewayBackendOperations({ backendKind: 'hermes' } as any);
-      // [invalid forces new URL() to throw — triggers the catch path
-      // Before fix: ?token=abc prevented wsPathPattern match → path leaked into result
-      // After fix: query string is stripped first → wsPathPattern matches correctly
-      expect(ops.getBaseUrl({ url: 'ws://[invalid/v1/hermes/ws?token=abc' } as any))
-        .toBe('http://[invalid');
+      // host.invalid is a syntactically valid RFC-3986 single-label host — new URL() does not
+      // perform DNS resolution, so this URL parses successfully on the TRY path (url.search = '').
+      // The test pins try-path query stripping: wss URLs with query strings must return the
+      // base host without the token. The catch-path split('?')[0] branch is unreachable for
+      // non-null results (any URL whose try-path new URL() throws has a malformed host that
+      // also rejects the nested guard-2 new URL()), but the try-path contract is what matters
+      // for real-world WS URLs passed through this function.
+      expect(ops.getBaseUrl({ url: 'ws://host.invalid/v1/hermes/ws?token=abc' } as any))
+        .toBe('http://host.invalid');
+    });
+
+    it('catch path: returns null for malformed hostname (unclosed bracket)', () => {
+      const ops = getGatewayBackendOperations({ backendKind: 'hermes' } as any);
+      // [invalid forces new URL() to throw in the try path; the catch path strips the
+      // wsPathPattern and query, then tries new URL('http://[invalid') which also throws
+      // → the nested guard returns null instead of leaking the broken string to callers.
+      expect(ops.getBaseUrl({ url: 'ws://[invalid/v1/hermes/ws' } as any))
+        .toBeNull();
     });
 
     it('catch path: returns null when stripping produces a bare protocol with no host (GEMINI-3 regression)', () => {
@@ -119,6 +146,21 @@ describe('gateway-backend-operations', () => {
     it('youmind: strips the /ws suffix (inherits OpenClaw pattern)', () => {
       const ops = getGatewayBackendOperations({ backendKind: 'youmind' } as any);
       expect(ops.getBaseUrl({ url: 'wss://example.com/ws' } as any)).toBe('https://example.com');
+    });
+
+    it('youmind: returns null for null config', () => {
+      const ops = getGatewayBackendOperations({ backendKind: 'youmind' } as any);
+      expect(ops.getBaseUrl(null)).toBeNull();
+    });
+
+    it('youmind: handles ws:// (non-TLS) URLs correctly', () => {
+      const ops = getGatewayBackendOperations({ backendKind: 'youmind' } as any);
+      expect(ops.getBaseUrl({ url: 'ws://localhost:3000/ws' } as any)).toBe('http://localhost:3000');
+    });
+
+    it('youmind: strips query string from valid wss:// URL', () => {
+      const ops = getGatewayBackendOperations({ backendKind: 'youmind' } as any);
+      expect(ops.getBaseUrl({ url: 'wss://example.com/ws?token=abc' } as any)).toBe('https://example.com');
     });
   });
 
@@ -169,21 +211,146 @@ describe('gateway-backend-operations', () => {
       // getCurrentModelState needs only the current selection → overrides to model.current.
       expect(spy).toHaveBeenCalledWith('model.get', {});
     });
-  });
 
-  describe('getGatewayBackendOperations — getAgentFile contract', () => {
-    it('rejects with "File not found" when RPC response has no file field', async () => {
+    it('openclaw: getModelSelectionState dispatches model.get', async () => {
       const spy = jest.fn().mockResolvedValue({});
       const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
-      await expect(ops.getAgentFile(spy as any, 'agent-1', 'AGENTS.md')).rejects.toThrow('File not found');
+      await ops.getModelSelectionState(spy as any);
+      expect(spy).toHaveBeenCalledWith('model.get', {});
     });
 
-    it('resolves with the file payload when present', async () => {
-      const fakeFile = { name: 'AGENTS.md', path: '/agents/AGENTS.md', missing: false, content: '# Agents' };
-      const spy = jest.fn().mockResolvedValue({ file: fakeFile });
+    it('wednesdayai: getModelSelectionState dispatches model.get (OpenClaw-compatible)', async () => {
+      const spy = jest.fn().mockResolvedValue({});
+      const ops = getGatewayBackendOperations({ backendKind: 'wednesdayai' } as any);
+      await ops.getModelSelectionState(spy as any);
+      expect(spy).toHaveBeenCalledWith('model.get', {});
+    });
+
+    it('youmind: getModelSelectionState dispatches model.get (OpenClaw-compatible)', async () => {
+      const spy = jest.fn().mockResolvedValue({});
+      const ops = getGatewayBackendOperations({ backendKind: 'youmind' } as any);
+      await ops.getModelSelectionState(spy as any);
+      expect(spy).toHaveBeenCalledWith('model.get', {});
+    });
+  });
+
+  describe('getGatewayBackendOperations — getAgentFile contract (all backends)', () => {
+    // getAgentFile is inherited from sharedOperations by all backends.
+    // Testing each backendKind explicitly catches a future per-backend override.
+    const backendKinds = ['openclaw', 'wednesdayai', 'youmind', 'hermes'] as const;
+
+    for (const backendKind of backendKinds) {
+      describe(`${backendKind}`, () => {
+        it('rejects with "File not found" when RPC response has no file field', async () => {
+          const spy = jest.fn().mockResolvedValue({});
+          const ops = getGatewayBackendOperations({ backendKind } as any);
+          await expect(ops.getAgentFile(spy as any, 'agent-1', 'AGENTS.md')).rejects.toThrow('File not found');
+        });
+
+        it('resolves with the file payload when present', async () => {
+          const fakeFile = { name: 'AGENTS.md', path: '/agents/AGENTS.md', missing: false, content: '# Agents' };
+          const spy = jest.fn().mockResolvedValue({ file: fakeFile });
+          const ops = getGatewayBackendOperations({ backendKind } as any);
+          const result = await ops.getAgentFile(spy as any, 'agent-1', 'AGENTS.md');
+          expect(result).toBe(fakeFile);
+        });
+      });
+    }
+  });
+
+  describe('getGatewayBackendOperations — shared RPC dispatch coverage', () => {
+    // sharedOperations methods tested against openclaw as canonical baseline.
+    // The method-reference tests above guarantee the same functions reach all backends.
+
+    it('listModels dispatches models.list', async () => {
+      const spy = jest.fn().mockResolvedValue({ models: [] });
       const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
-      const result = await ops.getAgentFile(spy as any, 'agent-1', 'AGENTS.md');
-      expect(result).toBe(fakeFile);
+      await ops.listModels(spy as any);
+      expect(spy).toHaveBeenCalledWith('models.list', {});
+    });
+
+    it('listModels returns [] when response has no models field', async () => {
+      const spy = jest.fn().mockResolvedValue({});
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      const result = await ops.listModels(spy as any);
+      expect(result).toEqual([]);
+    });
+
+    it('getConfig dispatches config.get', async () => {
+      const spy = jest.fn().mockResolvedValue({});
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      await ops.getConfig(spy as any);
+      expect(spy).toHaveBeenCalledWith('config.get', {});
+    });
+
+    it('getConfig returns { config: null, hash: null } on null response', async () => {
+      const spy = jest.fn().mockResolvedValue(null);
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      const result = await ops.getConfig(spy as any);
+      expect(result).toEqual({ config: null, hash: null });
+    });
+
+    it('patchConfig dispatches config.patch with raw and baseHash', async () => {
+      const spy = jest.fn().mockResolvedValue({});
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      await ops.patchConfig(spy as any, 'key: value', 'abc123');
+      expect(spy).toHaveBeenCalledWith('config.patch', { raw: 'key: value', baseHash: 'abc123' });
+    });
+
+    it('patchConfig returns { ok: false } on null response', async () => {
+      const spy = jest.fn().mockResolvedValue(null);
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      const result = await ops.patchConfig(spy as any, 'x', 'h');
+      expect(result).toEqual({ ok: false, config: undefined, hash: undefined });
+    });
+
+    it('setConfig dispatches config.set with raw and baseHash', async () => {
+      const spy = jest.fn().mockResolvedValue({});
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      await ops.setConfig(spy as any, 'key: value', 'abc123');
+      expect(spy).toHaveBeenCalledWith('config.set', { raw: 'key: value', baseHash: 'abc123' });
+    });
+
+    it('setConfig returns { ok: false } on null response', async () => {
+      const spy = jest.fn().mockResolvedValue(null);
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      const result = await ops.setConfig(spy as any, 'x', 'h');
+      expect(result).toEqual({ ok: false, config: undefined, path: undefined });
+    });
+
+    it('fetchToolsCatalog dispatches tools.catalog with agentId and includePlugins', async () => {
+      const spy = jest.fn().mockResolvedValue({ agentId: 'agent-1', profiles: [], groups: [] });
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      await ops.fetchToolsCatalog(spy as any, 'agent-1');
+      expect(spy).toHaveBeenCalledWith('tools.catalog', { agentId: 'agent-1', includePlugins: true });
+    });
+
+    it('listAgentFiles dispatches agents.files.list with agentId', async () => {
+      const spy = jest.fn().mockResolvedValue({ files: [] });
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      await ops.listAgentFiles(spy as any, 'agent-1');
+      expect(spy).toHaveBeenCalledWith('agents.files.list', { agentId: 'agent-1' });
+    });
+
+    it('listAgentFiles returns [] when response has no files field', async () => {
+      const spy = jest.fn().mockResolvedValue({});
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      const result = await ops.listAgentFiles(spy as any, 'agent-1');
+      expect(result).toEqual([]);
+    });
+
+    it('setAgentFile dispatches agents.files.set with agentId, name, content', async () => {
+      const spy = jest.fn().mockResolvedValue({ ok: true });
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      await ops.setAgentFile(spy as any, 'agent-1', 'AGENTS.md', '# Agents');
+      expect(spy).toHaveBeenCalledWith('agents.files.set', { agentId: 'agent-1', name: 'AGENTS.md', content: '# Agents' });
+    });
+
+    it('setAgentFile returns { ok: false } on null response', async () => {
+      const spy = jest.fn().mockResolvedValue(null);
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      const result = await ops.setAgentFile(spy as any, 'agent-1', 'AGENTS.md', '# Agents');
+      expect(result).toEqual({ ok: false });
     });
   });
 
@@ -232,7 +399,7 @@ describe('gateway-backend-operations', () => {
       expect(result.costPresentation).toEqual(mockResult.costPresentation);
     });
 
-    it('fetchUsage: null response yields all fields undefined', async () => {
+    it('fetchUsage: null response yields all 7 fields undefined', async () => {
       const spy = jest.fn().mockResolvedValue(null);
       const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
       const result = await ops.fetchUsage(spy as any, { startDate: '2026-01-01', endDate: '2026-01-31' });
@@ -240,7 +407,9 @@ describe('gateway-backend-operations', () => {
       expect(result.startDate).toBeUndefined();
       expect(result.endDate).toBeUndefined();
       expect(result.sessions).toBeUndefined();
+      expect(result.totals).toBeUndefined();
       expect(result.aggregates).toBeUndefined();
+      expect(result.costPresentation).toBeUndefined();
     });
 
     it('fetchCostSummary: dispatches usage.cost with correct date params', async () => {
@@ -271,13 +440,29 @@ describe('gateway-backend-operations', () => {
       expect(result.costPresentation).toEqual(mockResult.costPresentation);
     });
 
-    it('fetchCostSummary: null response yields all fields undefined', async () => {
+    it('fetchCostSummary: null response yields all 5 fields undefined', async () => {
       const spy = jest.fn().mockResolvedValue(null);
       const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
       const result = await ops.fetchCostSummary(spy as any, { startDate: '2026-01-01', endDate: '2026-01-31' });
       expect(result.updatedAt).toBeUndefined();
       expect(result.days).toBeUndefined();
       expect(result.daily).toBeUndefined();
+      expect(result.totals).toBeUndefined();
+      expect(result.costPresentation).toBeUndefined();
+    });
+
+    it('fetchUsage: propagates RPC errors to caller', async () => {
+      const spy = jest.fn().mockRejectedValue(new Error('RPC timeout'));
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      await expect(ops.fetchUsage(spy as any, { startDate: '2026-01-01', endDate: '2026-01-31' }))
+        .rejects.toThrow('RPC timeout');
+    });
+
+    it('fetchCostSummary: propagates RPC errors to caller', async () => {
+      const spy = jest.fn().mockRejectedValue(new Error('RPC timeout'));
+      const ops = getGatewayBackendOperations({ backendKind: 'openclaw' } as any);
+      await expect(ops.fetchCostSummary(spy as any, { startDate: '2026-01-01', endDate: '2026-01-31' }))
+        .rejects.toThrow('RPC timeout');
     });
   });
 });

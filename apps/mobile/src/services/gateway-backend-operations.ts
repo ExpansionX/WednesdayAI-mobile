@@ -299,8 +299,15 @@ function deriveBaseUrl(urlText: string | undefined, wsPathPattern: RegExp): stri
       .split('#')[0]
       .replace(wsPathPattern, '')
       .replace(/\/+$/, '');
-    // Guard: if stripping consumed the :// delimiter (e.g. bare ws://?token),
-    // the result is not a valid URL — return null rather than a broken "http:" string.
-    return /^https?:\/\//.test(stripped) ? stripped : null;
+    // Guard 1: if stripping consumed the :// delimiter (e.g. bare ws://), return null.
+    if (!/^https?:\/\//.test(stripped)) return null;
+    // Guard 2: validate the stripped result is a parseable URL (catches malformed hosts
+    // like http://[invalid that pass the regex but would crash callers using fetch/Image).
+    try {
+      new URL(stripped);
+      return stripped;
+    } catch {
+      return null;
+    }
   }
 }

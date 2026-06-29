@@ -30,9 +30,9 @@ coverage tests which exercise already-working code (Phase 2).
 
 | id | title | phase | deps/conflicts |
 |----|-------|-------|----------------|
-| 001 | Create gateway-backend-operations.test.ts with failing wednesdayai reference-inequality test | 1 | dep: - | conflicts: none |
-| 002 | Add WEDNESDAYAI_OPERATIONS constant and update getGatewayBackendOperations dispatch | 1 | dep: 001 | conflicts: none |
-| 003 | Fill youmind coverage gaps in gateway-backends.test.ts (descriptor + selectByBackend) | 2 | dep: 002 | conflicts: none |
+| 001 | Create gateway-backend-operations.test.ts with failing wednesdayai reference-inequality test | 1 | dep: -, conflicts: none |
+| 002 | Add WEDNESDAYAI_OPERATIONS constant and update getGatewayBackendOperations dispatch | 1 | dep: 001, conflicts: none |
+| 003 | Fill youmind coverage gaps in gateway-backends.test.ts (descriptor + selectByBackend) | 2 | dep: 002, conflicts: none |
 
 ## Execute notes
 
