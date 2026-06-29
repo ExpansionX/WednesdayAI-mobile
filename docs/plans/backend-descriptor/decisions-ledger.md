@@ -27,3 +27,12 @@ Dispatch hits `if (kind === 'wednesdayai') return WEDNESDAYAI_OPERATIONS;` at `g
 
 **(c) Incident-symptom assertion:**
 `change_kind: behaviour` (not bugfix); no prior incident. The behaviour being added is: WednesdayAI configs get an explicit named operations object rather than silently sharing the OpenClaw reference. The test `expect(wednesdayaiOps).not.toBe(openclawOps)` directly asserts the symptom-of-absence (reference shared) no longer exists. Passes.
+
+## Post-review known issues
+
+Non-actionable findings adjudicated during the `/wai:close` pre-graduation code-review loop (round 1, 2026-06-30). These are logged here so future review rounds do not re-surface them as fresh blockers.
+
+| id | file:line | severity | finding | why non-actionable |
+|----|-----------|----------|---------|-------------------|
+| KI-1 | `gateway-backend-operations.test.ts:373` | low | `fetchUsage` dispatch assertion omits `limit: 500` and `includeContextWeight: false` from `expect.objectContaining` | Deferred — date params are the user-visible contract; internal pagination params are implementation details. Not introduced by this diff. |
+| KI-2 | `gateway-backend-operations.test.ts` (multiple) | low | Null-response paths untested for `setModelSelection`, `fetchToolsCatalog`, `getCurrentModelState`, `getModelSelectionState` | Pre-existing gap consistent across many other methods; fallback shapes are trivially safe. Not introduced by this diff. |
