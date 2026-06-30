@@ -293,21 +293,8 @@ function deriveBaseUrl(urlText: string | undefined, wsPathPattern: RegExp): stri
     url.pathname = url.pathname.replace(wsPathPattern, '') || '/';
     return url.toString().replace(/\/+$/, '');
   } catch {
-    const stripped = urlText
-      .replace(/^ws(s?):\/\//, 'http$1://')
-      .split('?')[0]
-      .split('#')[0]
-      .replace(wsPathPattern, '')
-      .replace(/\/+$/, '');
-    // Guard 1: if stripping consumed the :// delimiter (e.g. bare ws://), return null.
-    if (!/^https?:\/\//.test(stripped)) return null;
-    // Guard 2: validate the stripped result is a parseable URL (catches malformed hosts
-    // like http://[invalid that pass the regex but would crash callers using fetch/Image).
-    try {
-      new URL(stripped);
-      return stripped;
-    } catch {
-      return null;
-    }
+    // new URL() is the only throw source in the try block. If the ws(s)->http(s) scheme
+    // swap still leaves an unparseable input, there is no base URL to derive.
+    return null;
   }
 }

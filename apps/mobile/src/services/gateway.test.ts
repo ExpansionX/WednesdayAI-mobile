@@ -1,4 +1,4 @@
-import { extractText, GatewayClient } from './gateway';
+import { extractText, GatewayClient, HERMES_BRIDGE_RETRY_METHODS, HERMES_BRIDGE_TRACED_METHODS } from './gateway';
 import type { ConnectChallengePayload } from '../types';
 import { RELAY_CONTROL_PREFIX, selectRelayConnectAuth } from './gateway-relay';
 
@@ -2149,6 +2149,90 @@ describe('GatewayClient', () => {
 
       await expect(client.request('models.list')).rejects.toThrow('[BRIDGE_UNAVAILABLE]');
       expect(sendRequestSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('retries newly-added config.get on [BRIDGE_UNAVAILABLE] for Hermes relay', async () => {
+      client.configure({
+        url: 'wss://example.com',
+        token: 'abc',
+        mode: 'hermes',
+        backendKind: 'hermes',
+        transportKind: 'relay',
+      } as any);
+      (client as any).activeRoute = 'relay';
+
+      const sendRequestSpy = jest
+        .spyOn(client as unknown as { sendRequest: (method: string, params?: object) => Promise<unknown> }, 'sendRequest')
+        .mockRejectedValueOnce(new Error('[BRIDGE_UNAVAILABLE] Hermes bridge is temporarily unavailable. Please retry.'))
+        .mockResolvedValue({ config: {}, hash: 'abc123' });
+
+      const pending = client.request<{ config: object; hash: string }>('config.get', {});
+      await flushPromises();
+      expect(sendRequestSpy).toHaveBeenCalledTimes(1);
+      expect(sendRequestSpy).toHaveBeenNthCalledWith(1, 'config.get', {});
+
+      jest.advanceTimersByTime(750);
+      await flushPromises();
+      await expect(pending).resolves.toEqual({ config: {}, hash: 'abc123' });
+      expect(sendRequestSpy).toHaveBeenCalledTimes(2);
+      expect(sendRequestSpy).toHaveBeenNthCalledWith(2, 'config.get', {});
+    });
+
+    it('retries config.get up to two times on [BRIDGE_UNAVAILABLE] for Hermes relay', async () => {
+      client.configure({
+        url: 'wss://example.com',
+        token: 'abc',
+        mode: 'hermes',
+        backendKind: 'hermes',
+        transportKind: 'relay',
+      } as any);
+      (client as any).activeRoute = 'relay';
+
+      const sendRequestSpy = jest
+        .spyOn(client as unknown as { sendRequest: (method: string, params?: object) => Promise<unknown> }, 'sendRequest')
+        .mockRejectedValueOnce(new Error('[BRIDGE_UNAVAILABLE] Hermes bridge is temporarily unavailable. Please retry.'))
+        .mockRejectedValueOnce(new Error('[BRIDGE_UNAVAILABLE] Hermes bridge is temporarily unavailable. Please retry.'))
+        .mockResolvedValue({ config: {}, hash: 'abc123' });
+
+      const pending = client.request<{ config: object; hash: string }>('config.get', {});
+      await flushPromises();
+      expect(sendRequestSpy).toHaveBeenCalledTimes(1);
+
+      jest.advanceTimersByTime(750);
+      await flushPromises();
+      expect(sendRequestSpy).toHaveBeenCalledTimes(2);
+
+      jest.advanceTimersByTime(750);
+      await flushPromises();
+      await expect(pending).resolves.toEqual({ config: {}, hash: 'abc123' });
+      expect(sendRequestSpy).toHaveBeenCalledTimes(3);
+    });
+
+    it('does NOT retry agents.files.get on [BRIDGE_UNAVAILABLE] — read-modify-write exclusion', async () => {
+      client.configure({
+        url: 'wss://example.com',
+        token: 'abc',
+        mode: 'hermes',
+        backendKind: 'hermes',
+        transportKind: 'relay',
+      } as any);
+      (client as any).activeRoute = 'relay';
+
+      const sendRequestSpy = jest
+        .spyOn(client as unknown as { sendRequest: (method: string, params?: object) => Promise<unknown> }, 'sendRequest')
+        .mockRejectedValue(new Error('[BRIDGE_UNAVAILABLE] Hermes bridge is temporarily unavailable. Please retry.'));
+
+      await expect(
+        client.getAgentFile('plan.md', 'main'),
+      ).rejects.toThrow('[BRIDGE_UNAVAILABLE]');
+      expect(sendRequestSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it('HERMES_BRIDGE_RETRY_METHODS ⊆ HERMES_BRIDGE_TRACED_METHODS: every retry method is also traced', () => {
+      expect(HERMES_BRIDGE_RETRY_METHODS.size).toBeGreaterThan(0);
+      for (const method of HERMES_BRIDGE_RETRY_METHODS) {
+        expect(HERMES_BRIDGE_TRACED_METHODS.has(method)).toBe(true);
+      }
     });
 
     it('deduplicates concurrent chat history requests for the same session and limit', async () => {

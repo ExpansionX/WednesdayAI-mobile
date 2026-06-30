@@ -1024,5 +1024,6 @@
   "Add {{count}} links": "Agregar {{count}} enlaces",
   "Paste at least one valid http:// or https:// link.": "Pega al menos un enlace http:// o https:// válido.",
   "Some links need attention": "Algunos enlaces necesitan atención",
-  "Remove invalid lines before submitting. We only accept valid http:// or https:// links.": "Elimina las líneas no válidas antes de enviar. Solo aceptamos enlaces http:// o https:// válidos."
+  "Remove invalid lines before submitting. We only accept valid http:// or https:// links.": "Elimina las líneas no válidas antes de enviar. Solo aceptamos enlaces http:// o https:// válidos.",
+  "Model selection is not available for this backend.": "La selección de modelos no está disponible para este backend."
 }

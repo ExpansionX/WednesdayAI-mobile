@@ -1047,5 +1047,6 @@
   "Add {{count}} links": "添加 {{count}} 个链接",
   "Paste at least one valid http:// or https:// link.": "请至少粘贴一个有效的 http:// 或 https:// 链接。",
   "Some links need attention": "部分链接需要处理",
-  "Remove invalid lines before submitting. We only accept valid http:// or https:// links.": "请先移除无效内容再提交。我们只接受有效的 http:// 或 https:// 链接。"
+  "Remove invalid lines before submitting. We only accept valid http:// or https:// links.": "请先移除无效内容再提交。我们只接受有效的 http:// 或 https:// 链接。",
+  "Model selection is not available for this backend.": "该后端不支持模型选择。"
 }
