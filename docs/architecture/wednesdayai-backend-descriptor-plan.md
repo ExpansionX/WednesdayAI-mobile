@@ -4,8 +4,9 @@ component: apps/mobile
 sources:
   - apps/mobile/src/services/gateway-backends.ts
   - apps/mobile/src/services/gateway-backend-operations.ts
+  - apps/mobile/src/services/gateway.ts
   - apps/mobile/src/types/index.ts
-generated: 2026-06-30
+generated: 2026-07-01
 ---
 
 # WednesdayAI Backend Descriptor Plan
@@ -41,6 +42,7 @@ The second behaviour-changing slice added explicit named operation objects for a
 - `YOUMIND_OPERATIONS` — same pattern; retained as an explicit compatibility descriptor (see YouMind disposition section below for the open disposition question).
 - `getGatewayBackendOperations` dispatch now handles all four `GatewayBackendKind` values explicitly: `hermes → HERMES_OPERATIONS`, `wednesdayai → WEDNESDAYAI_OPERATIONS`, `youmind → YOUMIND_OPERATIONS`, `openclaw → OPENCLAW_OPERATIONS` (default).
 - `HERMES_BRIDGE_RETRY_METHODS` was extended to include `model.get`, `sessions.usage`, `usage.cost`, `config.get`, `tools.catalog`, and `agents.files.list`. `agents.files.get` is intentionally excluded (edit-base staleness risk — see `docs/architecture/gateway-backend-operations.md` for full rationale).
+- `HERMES_BRIDGE_RETRY_METHODS` and a companion constant `HERMES_BRIDGE_TRACED_METHODS` are module-level exports in `gateway.ts` (not private class members). `HERMES_BRIDGE_TRACED_METHODS = { 'connect' } ∪ HERMES_BRIDGE_RETRY_METHODS`; `shouldTraceRequest` is implemented as a set lookup against it. Both exports allow the subset invariant to be asserted in tests without private-class casts.
 - 62 tests cover the full dispatch, URL normalization, and RPC contract for all four backends.
 
 See `docs/architecture/gateway-backend-operations.md` for the full developer reference on the operations interface, dispatch table, retry eligibility, and URL normalization.

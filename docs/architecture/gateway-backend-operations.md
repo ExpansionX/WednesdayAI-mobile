@@ -5,7 +5,7 @@ sources:
   - apps/mobile/src/services/gateway-backend-operations.ts
   - apps/mobile/src/services/gateway.ts
   - apps/mobile/src/services/gateway-backends.ts
-generated: 2026-06-30
+generated: 2026-07-01
 ---
 
 # Gateway Backend Operations
@@ -73,12 +73,10 @@ base URL suitable for `fetch`/`Image` callers:
 1. **Try path** (all syntactically valid URLs): replaces `ws://` → `http://` and `wss://` → `https://`,
    clears `search` and `hash`, removes the backend-specific path suffix via `wsPathPattern`, strips
    trailing slashes.
-2. **Catch path** (malformed URLs where `new URL()` throws): strips `ws://`→`http://` by string
-   replacement, removes query (`split('?')[0]`), hash (`split('#')[0]`), and path suffix by regex,
-   then validates the result with a nested `new URL()` guard — returns `null` if the stripped
-   result is not a parseable URL. In practice the catch path always returns `null` because any URL
-   malformed enough to throw in the try path has a host/port defect that also fails the nested
-   guard. The try path handles all real-world WebSocket URLs.
+2. **Catch path** (malformed URLs where `new URL()` throws): `new URL()` is the only throw source
+   in the try block. If the `ws(s)://` → `http(s)://` scheme swap still leaves an unparseable
+   host, `deriveBaseUrl` returns `null` immediately — there is no base URL to derive. The try
+   path handles all real-world WebSocket URLs.
 
 Pattern per backend:
 - openclaw / wednesdayai / youmind: `/\/ws\/?$/`
@@ -104,6 +102,10 @@ sendBackendRequest(method, params)
 
 For non-Hermes backends (`openclaw`, `wednesdayai`, `youmind`) the eligibility check returns false
 immediately, `delays = []`, and the loop runs exactly once — no retry, no behavioral change.
+
+Both `HERMES_BRIDGE_RETRY_METHODS` and `HERMES_BRIDGE_TRACED_METHODS` are module-level exported
+constants (not private class members). This allows tests to assert the subset invariant and
+per-method membership without private-class casts or reflection.
 
 ### Retry-eligible methods (`HERMES_BRIDGE_RETRY_METHODS`)
 
@@ -132,6 +134,29 @@ because they may have already been accepted by the bridge on the first attempt.
 
 Chat operations (`chat.send`, `chat.abort`) bypass `sendBackendRequest` entirely and call
 `sendRequest` directly — they are never candidates for automatic retry regardless of the set.
+
+### Request tracing (`HERMES_BRIDGE_TRACED_METHODS`)
+
+`HERMES_BRIDGE_TRACED_METHODS` is a module-level exported Set of methods for which `GatewayClient`
+opens a request-level trace span. It is defined as a strict superset of `HERMES_BRIDGE_RETRY_METHODS`:
+
+```text
+HERMES_BRIDGE_TRACED_METHODS = { 'connect' } ∪ HERMES_BRIDGE_RETRY_METHODS
+```
+
+`shouldTraceRequest(method: string): boolean` returns `HERMES_BRIDGE_TRACED_METHODS.has(method)` —
+a set lookup, not a switch statement. The subset invariant is enforced in tests:
+
+```typescript
+// Every retry-eligible method must also be traced
+for (const method of HERMES_BRIDGE_RETRY_METHODS) {
+  expect(HERMES_BRIDGE_TRACED_METHODS.has(method)).toBe(true);
+}
+```
+
+This invariant means: adding a 14th method to `HERMES_BRIDGE_RETRY_METHODS` automatically
+includes it in tracing without a matching `case` in a switch, and test coverage cannot silently
+drift from the live Set via a hardcoded `it.each` list.
 
 ### Error stack preservation
 
