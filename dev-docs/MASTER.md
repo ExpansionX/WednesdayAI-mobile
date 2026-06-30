@@ -5,7 +5,7 @@
 
 | Workstream | Status | Title | Rescued branches | Contradictions | Staging pointers |
 |---|---|---|---|---|---|
-| backend-descriptor | draft | backend-descriptor | - | - | 1 |
+| backend-descriptor | shipped | backend-descriptor | - | - | 1 |
 | wednesdayai-mobile-brand-conversion-implementation | shipped | WednesdayAI Mobile Brand Conversion Implementation | - | - | 0 |
 | wednesdayai-mobile-init | executed | WednesdayAI Mobile Init | - | - | 1 |
 | wednesdayai-mobile-repo-setup-brand-conversion | shipped | WednesdayAI Mobile Repository Setup and Brand Conversion | - | - | 2 |
