@@ -1024,5 +1024,6 @@
   "Add {{count}} links": "링크 {{count}}개 추가",
   "Paste at least one valid http:// or https:// link.": "유효한 http:// 또는 https:// 링크를 최소 하나 이상 붙여넣어 주세요.",
   "Some links need attention": "확인이 필요한 링크가 있습니다",
-  "Remove invalid lines before submitting. We only accept valid http:// or https:// links.": "제출하기 전에 잘못된 줄을 제거해 주세요. 유효한 http:// 또는 https:// 링크만 허용됩니다."
+  "Remove invalid lines before submitting. We only accept valid http:// or https:// links.": "제출하기 전에 잘못된 줄을 제거해 주세요. 유효한 http:// 또는 https:// 링크만 허용됩니다.",
+  "Model selection is not available for this backend.": "이 백엔드에서는 모델 선택을 사용할 수 없습니다."
 }

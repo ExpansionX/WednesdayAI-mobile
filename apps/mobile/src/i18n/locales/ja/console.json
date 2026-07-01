@@ -1024,5 +1024,6 @@
   "Add {{count}} links": "{{count}} 件のリンクを追加",
   "Paste at least one valid http:// or https:// link.": "有効な http:// または https:// リンクを少なくとも 1 つ貼り付けてください。",
   "Some links need attention": "確認が必要なリンクがあります",
-  "Remove invalid lines before submitting. We only accept valid http:// or https:// links.": "送信前に無効な行を取り除いてください。有効な http:// または https:// リンクのみ受け付けます。"
+  "Remove invalid lines before submitting. We only accept valid http:// or https:// links.": "送信前に無効な行を取り除いてください。有効な http:// または https:// リンクのみ受け付けます。",
+  "Model selection is not available for this backend.": "このバックエンドではモデル選択はご利用いただけません。"
 }

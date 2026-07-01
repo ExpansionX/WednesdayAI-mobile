@@ -200,23 +200,37 @@ const sharedOperations = {
     request: GatewayRequestFn,
     params: { startDate: string; endDate: string },
   ): Promise<UsageResult> {
-    const result = await request<UsageResult>('sessions.usage', {
+    const result = await request<UsageResult | null>('sessions.usage', {
       startDate: params.startDate,
       endDate: params.endDate,
       limit: 500,
       includeContextWeight: false,
     });
-    return (result ?? {}) as UsageResult;
+    return {
+      updatedAt: result?.updatedAt,
+      startDate: result?.startDate,
+      endDate: result?.endDate,
+      sessions: result?.sessions,
+      totals: result?.totals,
+      aggregates: result?.aggregates,
+      costPresentation: result?.costPresentation,
+    };
   },
   async fetchCostSummary(
     request: GatewayRequestFn,
     params: { startDate: string; endDate: string },
   ): Promise<CostSummary> {
-    const result = await request<CostSummary>('usage.cost', {
+    const result = await request<CostSummary | null>('usage.cost', {
       startDate: params.startDate,
       endDate: params.endDate,
     });
-    return (result ?? {}) as CostSummary;
+    return {
+      updatedAt: result?.updatedAt,
+      days: result?.days,
+      daily: result?.daily,
+      totals: result?.totals,
+      costPresentation: result?.costPresentation,
+    };
   },
 };
 
@@ -232,6 +246,11 @@ const HERMES_OPERATIONS: GatewayBackendOperations = {
   usesConnectHandshake: false,
   ...sharedOperations,
   async getCurrentModelState(request: GatewayRequestFn): Promise<GatewayCurrentModelState> {
+    // Hermes exposes two distinct model RPCs:
+    // - model.current → lightweight (currentModel/Provider/BaseUrl/note only; no models list)
+    // - model.get → full state with models[] + providers[]
+    // getCurrentModelState only needs the lightweight current selection → model.current.
+    // getModelSelectionState needs the full list → inherits model.get from sharedOperations.
     const result = await request<GatewayCurrentModelState>('model.current', {});
     return {
       currentModel: result?.currentModel ?? '',
@@ -245,10 +264,24 @@ const HERMES_OPERATIONS: GatewayBackendOperations = {
   },
 };
 
+const WEDNESDAYAI_OPERATIONS: GatewayBackendOperations = {
+  ...OPENCLAW_OPERATIONS,
+};
+
+// YouMind retains OpenClaw-compatible operations as a compatibility descriptor.
+// gatewayConnection/modelSelection/configRead/configWrite are capability-gated
+// at the call site via YOUMIND_CAPABILITIES; YOUMIND_OPERATIONS is explicit here
+// so the dispatch is never silent and future per-backend divergence has a named anchor.
+const YOUMIND_OPERATIONS: GatewayBackendOperations = {
+  ...OPENCLAW_OPERATIONS,
+};
+
 export function getGatewayBackendOperations(config: GatewayConfig | null): GatewayBackendOperations {
-  return resolveGatewayBackendKind(config) === 'hermes'
-    ? HERMES_OPERATIONS
-    : OPENCLAW_OPERATIONS;
+  const kind = resolveGatewayBackendKind(config);
+  if (kind === 'hermes') return HERMES_OPERATIONS;
+  if (kind === 'wednesdayai') return WEDNESDAYAI_OPERATIONS;
+  if (kind === 'youmind') return YOUMIND_OPERATIONS;
+  return OPENCLAW_OPERATIONS;
 }
 
 function deriveBaseUrl(urlText: string | undefined, wsPathPattern: RegExp): string | null {
@@ -260,9 +293,8 @@ function deriveBaseUrl(urlText: string | undefined, wsPathPattern: RegExp): stri
     url.pathname = url.pathname.replace(wsPathPattern, '') || '/';
     return url.toString().replace(/\/+$/, '');
   } catch {
-    return urlText
-      .replace(/^ws(s?):\/\//, 'http$1://')
-      .replace(/\/+$/, '')
-      .replace(wsPathPattern, '');
+    // new URL() is the only throw source in the try block. If the ws(s)->http(s) scheme
+    // swap still leaves an unparseable input, there is no base URL to derive.
+    return null;
   }
 }

@@ -89,6 +89,14 @@ describe('gateway-backends', () => {
     it('treats unknown string inputs as openclaw', () => {
       expect(selectByBackend('totally-unknown' as any, { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('A');
     });
+
+    it('returns the explicit youmind branch when a youmind option is provided', () => {
+      expect(selectByBackend('youmind', { wednesdayai: 'W', openclaw: 'A', hermes: 'B', youmind: 'Y' })).toBe('Y');
+    });
+
+    it('falls back to the openclaw branch for youmind when no youmind option is provided', () => {
+      expect(selectByBackend('youmind', { wednesdayai: 'W', openclaw: 'A', hermes: 'B' })).toBe('A');
+    });
   });
 
   describe('resolveGlobalMainSessionKey', () => {
@@ -206,6 +214,11 @@ describe('gateway-backends', () => {
       expect(getGatewayBackendDescriptor('wednesdayai').label).toBe('WednesdayAI');
       expect(getGatewayBackendDescriptor('hermes').kind).toBe('hermes');
       expect(getGatewayBackendDescriptor('openclaw').kind).toBe('openclaw');
+    });
+
+    it('returns the YouMind compatibility descriptor for the youmind kind', () => {
+      expect(getGatewayBackendDescriptor('youmind').kind).toBe('youmind');
+      expect(getGatewayBackendDescriptor('youmind').label).toBe('YouMind');
     });
   });
 

@@ -3,7 +3,7 @@ import { RefreshCw } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
-import { HeaderActionButton } from '../../components/ui';
+import { EmptyState, HeaderActionButton } from '../../components/ui';
 import { HermesModelSelectionView } from '../../components/console/HermesModelSelectionView';
 import { ModelsView } from '../../components/console/ModelsView';
 import { useAppContext } from '../../contexts/AppContext';
@@ -15,7 +15,24 @@ import type { ConsoleStackParamList } from './ConsoleTab';
 
 type ModelsNavigation = NativeStackNavigationProp<ConsoleStackParamList, 'ModelList'>;
 
-export function ModelsScreen(): React.JSX.Element {
+function YouMindModelsScreen(): React.JSX.Element {
+  const { t } = useTranslation('console');
+  const navigation = useNavigation<ModelsNavigation>();
+  useNativeStackModalHeader({
+    navigation,
+    title: t('Models'),
+    rightContent: null,
+    onClose: () => navigation.goBack(),
+  });
+  return (
+    <EmptyState
+      title={t('No models available')}
+      subtitle={t('Model selection is not available for this backend.')}
+    />
+  );
+}
+
+function ModelsScreenInner(): React.JSX.Element {
   const { gateway, gatewayEpoch, config } = useAppContext();
   const { t } = useTranslation('console');
   const navigation = useNavigation<ModelsNavigation>();
@@ -65,6 +82,7 @@ export function ModelsScreen(): React.JSX.Element {
       settings.loadGatewaySettings,
       settings.loadingGatewaySettings,
       settings.savingGatewaySettings,
+      settings.supportsRuntimeSettings,
     ],
   );
 
@@ -83,7 +101,7 @@ export function ModelsScreen(): React.JSX.Element {
   // HermesModelSelectionView take different prop shapes, so instead of an
   // inline `if (backendKind === 'hermes')` branch we dispatch through the
   // capability registry's `selectByBackend` helper, which returns the
-  // React element for whichever backend is active. This keeps ModelsScreen
+  // React element for whichever backend is active. This keeps ModelsScreenInner
   // free of screen-level `backend === 'hermes'` checks — all backend
   // decisions flow through `src/services/gateway-backends.ts`.
   return selectByBackend(config, {
@@ -113,5 +131,19 @@ export function ModelsScreen(): React.JSX.Element {
         hideHeader
       />
     ),
+  });
+}
+
+// Thin dispatcher: YouMind renders a static EmptyState and needs no gateway
+// settings hooks. All other backends mount ModelsScreenInner which owns the
+// heavy useGatewayRuntimeSettings lifecycle. Uses selectByBackend so backend
+// dispatch stays centralized in gateway-backends.ts with no raw kind checks.
+export function ModelsScreen(): React.JSX.Element {
+  const { config } = useAppContext();
+  return selectByBackend(config, {
+    youmind: <YouMindModelsScreen />,
+    wednesdayai: <ModelsScreenInner />,
+    openclaw: <ModelsScreenInner />,
+    hermes: <ModelsScreenInner />,
   });
 }
